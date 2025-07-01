@@ -14,7 +14,6 @@
 
 </head>
 
-
 <body>
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
