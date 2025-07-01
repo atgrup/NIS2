@@ -119,89 +119,175 @@ body, html {
   width: 70px;
   height: auto;
 }
-/*INDEX.PHP*/
 
-    .indexStencil {
-        width: 290px;
-        height: 895px;
-        background: #072989;
-    }
+.homeIndex {
+    border-radius: 10px;
+    background: #072989;
+    width: 1000px;
+    height: 610px;
+    flex-shrink: 0;
+    margin-left: 70px;
+    padding: 30px;
+}
 
-    .bg-mi-color {
-        background-color: #072989;
-        color: white;
-        border: 20px;
-    }
+.titulo {
+    color: #FFF;
+    font-family: "Instrument Sans", sans-serif;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+}
 
-    .stencil {
-        display: flex;
-        flex-direction: row;
-    }
+.introIndex {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+    flex-wrap: wrap;
+    color: #FFF;
+    font-family: "Instrument Sans";
+    font-size: 16px;
+    gap: 40px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    width: 843px;
+}
 
-    .btns {
-        gap: 55%;
-        display: flex;
-    }
+.tituloIndice {
+    color: #5E5E5E;
+    font-family: "Instrument Sans";
+    font-size: 60px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
 
-    .contenedorTablaStencil {
-        border-radius: 40px;
-        background: #FFF;
-        padding: 30px;
-        width: 73%;
-        height: 850px;
-        display: flex;
-        align-self: center;
-        flex-direction: column;
-        margin-left: 20px;
-    }
+}
 
-    .stencilBody {
-        background-color: #E6E6E6;
-    }
+.indexNav {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 370px;
 
-    .cajaArchivos {
-        display: flex;
-        flex-direction: row;
-        color: white;
-        justify-content: center;
-        gap: 50px;
-    }
+    margin-left: 70px;
 
-    .footerNaV {
-        color: #FFF;
-        font-family: "Instrument Sans";
-        font-size: 15px;
-        font-weight: 400;
-        text-align: center;
-        position: absolute;
-        bottom: 40px;
-        left: 4%;
-    }
+}
 
-    .tituloNIS {
-        color: #FFF;
-        font-family: "Instrument Sans";
-        font-size: 36px;
-        font-style: normal;
-        font-weight: 700;
-        line-height: normal;
-        margin-top: 70px;
-        text-align: center;
-    }
+.registerButn {
+  display: inline-block;
+  text-decoration: none;
+  color: #002f86;
+  border: 2px solid #002f86;
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: "Instrument Sans", sans-serif;
+  font-weight: 700;
+  text-transform: uppercase;
+}
 
-    .menuNav {
-        margin-top: 70px;
-        gap: 50px;
-        display: flex;
-        flex-direction: column;
-    }
-    .headertable{
-        margin-top:100px;
-    }
-    .imgEmpresa{
-        position: absolute;
-        bottom: 50px;
-        border-radius: 120px;
-        width: 60px;
-        height: auto;
-    }
+.registerButn:hover {
+  background: #002f86;
+  color: white;
+}
+
+
+.candadito {
+    width: 200px;
+    height: auto;
+}
+
+.btnsnav {
+    display: flex;
+    gap: 30px;
+}
+.funcionesIndex{
+  border: 0.5px solid white;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.indexStencil {
+    width: 290px;
+    height: 895px;
+    background: #072989;
+}
+
+.bg-mi-color {
+    background-color: #072989;
+    color: white;
+    border: 20px;
+}
+
+.stencil {
+    display: flex;
+    flex-direction: row;
+}
+
+.btns {
+    gap: 55%;
+    display: flex;
+}
+
+.contenedorTablaStencil {
+    border-radius: 40px;
+    background: #FFF;
+    padding: 30px;
+    width: 73%;
+    height: 850px;
+    display: flex;
+    align-self: center;
+    flex-direction: column;
+    margin-left: 20px;
+}
+
+.stencilBody {
+    background-color: #E6E6E6;
+}
+
+.cajaArchivos {
+    display: flex;
+    flex-direction: row;
+    color: white;
+    justify-content: center;
+    gap: 50px;
+}
+
+.footerNaV {
+    color: #FFF;
+    font-family: "Instrument Sans";
+    font-size: 15px;
+    font-weight: 400;
+    text-align: center;
+    position: absolute;
+    bottom: 40px;
+    left: 4%;
+}
+
+.tituloNIS {
+    color: #FFF;
+    font-family: "Instrument Sans";
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    margin-top: 70px;
+    text-align: center;
+}
+
+.menuNav {
+    margin-top: 70px;
+    gap: 50px;
+    display: flex;
+    flex-direction: column;
+}
+.headertable{
+    margin-top:100px;
+}
+.imgEmpresa{
+    position: absolute;
+    bottom: 50px;
+    border-radius: 120px;
+    width: 60px;
+    height: auto;
+}

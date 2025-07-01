@@ -18,7 +18,6 @@
 
 </head>
 
-
 <body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
