@@ -31,7 +31,7 @@
             Para los proveedores, esto implica mayores responsabilidades contractuales y técnicas, ya que las empresas
             deberán garantizar que toda su cadena de suministro cumple también con los requisitos de seguridad, lo que
             podría traducirse en auditorías, controles más estrictos y posibles sanciones en caso de incumplimiento.
-            <img src="candadito.png" class="candadito">
+            <img src="img/candadito.png" class="candadito">
             <div class="funcionesIndex">
                 <div class="titulo">Consultores</div>
                 Si eres consultor o auditor, ponte en contacto con tu empresa para darte de alta en esta plataforma.
