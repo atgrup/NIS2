@@ -73,6 +73,7 @@
         color: #4D4D4D;
         text-align: center;
         font-family: "Instrument Sans";
+        border: 0.5
         font-size: 18px;
         font-style: normal;
         padding: 2px 10px;
