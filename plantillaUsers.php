@@ -17,7 +17,13 @@
         rel="stylesheet">
 
 </head>
-
+<style>
+    .bg-mi-color {
+    background-color: #072989;
+    color: white;
+    border-radius: 40px;
+}
+    </style>
 <body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
