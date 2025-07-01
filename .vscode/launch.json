@@ -9,7 +9,7 @@
             "type": "chrome",
             "request": "launch",
             "name": "Launch Chrome against localhost",
-            "url": "http://localhost:80/ANIS2/login.php",
+            "url": "http://localhost:80/NIS2/index.php",
             "webRoot": "${workspaceFolder}"
         }
     ]

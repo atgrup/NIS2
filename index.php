@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=
-    , initial-scale=1.0">
+    <meta name="viewport" content="width= initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="./assets/styles/style.css">
     <!--google fonts-->
@@ -102,8 +101,8 @@ padding: 20px;
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
         <div class="btnsnav">
-            <button class="registerButn">registrar</button>
-            <button class="registerButn">iniciar sesión</button>
+            <a href="registro.php" class="registerButn">registrar</a>
+            <a href="login.php" class="registerButn">iniciar sesión</a>
         </div>
     </nav>
 

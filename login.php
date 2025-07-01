@@ -1,39 +1,9 @@
 <?php
 $mensaje = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
-
-    if ($conexion->connect_error) {
-        die("Error de conexión: " . $conexion->connect_error);
-    }
-
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-
-    $stmt = $conexion->prepare("SELECT password FROM usuarios WHERE correo = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-
-    $stmt->store_result();
-
-    if ($stmt->num_rows === 1) {
-        $stmt->bind_result($hash);
-        $stmt->fetch();
-
-        if (password_verify($password, $hash)) {
-            // Aquí puedes redirigir o iniciar sesión
-            $mensaje = "✅ ¡Login exitoso!";
-            // header("Location: dashboard.php"); exit;
-        } else {
-            $mensaje = "❌ Contraseña incorrecta.";
-        }
-    } else {
-        $mensaje = "❌ El correo no está registrado.";
-    }
-
-    $stmt->close();
-    $conexion->close();
+if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
+    $mensaje = "❌ Correo o contraseña incorrectos.";
+} elseif (isset($_GET['logout']) && $_GET['logout'] === 'ok') {
+    $mensaje = "✅ Has cerrado sesión correctamente.";
 }
 ?>
 
@@ -52,26 +22,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="d-flex align-items-center justify-content-center">
-
-  <div class="login-box text-center shadow">
-    <h3 class="mb-4">NIS2</h3>
-
-    <?php if (!empty($mensaje)): ?>
-      <div class="alert alert-info"><?php echo $mensaje; ?></div>
-    <?php endif; ?>
-
-    <form method="POST" action="">
-      <div class="form-group text-start mb-3">
-        <label for="email" class="form-label">Email</label>
-        <input type="email" name="email" id="email" class="form-control" placeholder="Ingresa tu email" required>
+  <main class="main-container container-fluid">
+    <div class="row w-100 justify-content-center align-items-center">
+      <div class="col-md-5">
+        <div class="register-box text-center shadow">
+            <h3 class="mb-4">NIS2</h3>
+            <?php if (!empty($mensaje)): ?>
+              <div class="alert alert-info"><?php echo $mensaje; ?></div>
+            <?php endif; ?>
+            <form method="POST" action="procesar_login.php">
+              <div class="form-group text-start mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" id="email" class="form-control" placeholder="Ingresa tu email" required>
+              </div>
+              <div class="form-group text-start mb-4">
+                <label for="password" class="form-label">Contraseña</label>
+                <input type="password" name="password" id="password" class="form-control" placeholder="Ingresa tu contraseña" required>
+              </div>
+              <button type="submit" class="btn btn-outline-light w-100 mt-2">INICIAR SESIÓN</button>
+            </form>
+        </div>
       </div>
-      <div class="form-group text-start mb-4">
-        <label for="password" class="form-label">Contraseña</label>
-        <input type="password" name="password" id="password" class="form-control" placeholder="Ingresa tu contraseña" required>
+
+      <div class="col-md-5 info-text">
+        <a href="#" onclick="window.history.back(); return false;" class="back-arrow mb-3 d-block">&#8592;</a>
+        <h3>Si ya eres proveedor o en caso que necesites darte de alta como uno….</h3>
+        <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
+
+        <div class="register-section">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE" class="europe-icon">
+        </div>
       </div>
-      <button type="submit" class="btn btn-outline-light w-100 mt-2">INICIAR SESIÓN</button>
-    </form>
-  </div>
+    </div>
+  </main>
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
