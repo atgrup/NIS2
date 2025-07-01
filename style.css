@@ -1,0 +1,121 @@
+/* Estilos globales */
+body, html {
+  height: 100%;
+  margin: 0;
+  background-color: #E9E8E8!important;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Caja de login */
+.login-box {
+  background-color: #002f86;
+  padding: 2.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 350px;
+}
+
+.login-box h3 {
+  color: white;
+  font-weight: bold;
+}
+
+/* Caja de registro */
+.register-box {
+  background-color: #002f86;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 100%;
+  max-width: 350px;
+}
+
+.register-box h3 {
+  color: white;
+  font-weight: bold;
+  margin-bottom: 2rem;
+}
+
+/* Formulario */
+.form-label {
+  color: white;
+  font-weight: bold;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-control {
+  border-radius: 1rem;
+}
+
+/* Botones */
+.btn-outline-light {
+  border: 1px solid white;
+  color: white;
+  font-weight: bold!important; 
+}
+
+.btn-outline-light:hover {
+  background-color: white;
+  color: #002f86;
+}
+
+.btn-custom {
+  border: 1px solid white;
+  background-color: white;
+  color: #002f86;
+  font-weight: bold;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2rem;
+}
+
+.btn-custom:hover {
+  background-color: #dce3f1;
+  color: #002f86;
+}
+
+/* Contenedores y secciones */
+.main-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.info-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+
+.info-text h3 {
+  font-weight: bold;
+  color: #002f86;
+}
+
+.info-text p {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.register-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.back-arrow {
+  font-size: 3rem;
+  color: #002f86;
+  text-decoration: none;
+}
+
+.europe-icon {
+  width: 70px;
+  height: auto;
+}
