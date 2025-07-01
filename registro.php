@@ -1,36 +1,16 @@
 <?php
 $mensaje = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
-
-    if ($conexion->connect_error) {
-        die("Error de conexión: " . $conexion->connect_error);
-    }
-
-    $correo = $_POST['email'];
-    $password = $_POST['password'];
-    $repeat = $_POST['repeat-password'];
-    $tipo_usuario_id = 2; // cliente por defecto
-
-    if ($password !== $repeat) {
+if (isset($_GET['success']) && $_GET['success'] === '1') {
+    $mensaje = "✅ Registro exitoso. Ya puedes iniciar sesión.";
+} elseif (isset($_GET['error'])) {
+    if ($_GET['error'] === 'pass') {
         $mensaje = "❌ Las contraseñas no coinciden.";
+    } elseif ($_GET['error'] === 'email') {
+        $mensaje = "❌ El correo ya está registrado.";
     } else {
-        $hash = password_hash($password, PASSWORD_DEFAULT);
-
-        $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, ?)");
-        $stmt->bind_param("ssi", $correo, $hash, $tipo_usuario_id);
-
-        if ($stmt->execute()) {
-            $mensaje = "✅ Registro exitoso. Ya puedes iniciar sesión.";
-        } else {
-            $mensaje = "❌ Error al registrar: " . $stmt->error;
-        }
-
-        $stmt->close();
+        $mensaje = "❌ Error desconocido al registrar.";
     }
-
-    $conexion->close();
 }
 ?>
 
@@ -59,7 +39,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="alert alert-info"><?php echo $mensaje; ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="">
+            <form method="POST" action="procesar_registro.php">
                 <div class="form-group text-start mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" name="email" class="form-control" placeholder="Ingresa tu email" required>
@@ -78,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </div>
 
       <div class="col-md-5 info-text">
-        <a href="#" class="back-arrow mb-3 d-block">&#8592;</a>
+        <a href="#" onclick="window.history.back(); return false;" class="back-arrow mb-3 d-block">&#8592;</a>
         <h3>Si ya eres proveedor o en caso que necesites darte de alta como uno….</h3>
         <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
 
