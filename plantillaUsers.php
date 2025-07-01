@@ -133,7 +133,7 @@
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
-                    <img src="Arrow 1.png">
+                    <img src="img/Arrow 1.png">
                 </button>
                 <div class="col-sm">
                     <button type="button" class="btn bg-mi-color  btn-lg">
@@ -175,7 +175,7 @@
                         </tr>
                     </tbody>
                 </table>
-                <img src="banderita.png" class="imgEmpresa">
+                <img src="img/banderita.png" class="imgEmpresa">
             </div>
         </div>
 
