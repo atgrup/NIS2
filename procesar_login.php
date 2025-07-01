@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if (password_verify($password, $hash)) {
             // Login exitoso: aquí puedes iniciar sesión, por ejemplo
             $_SESSION['usuario'] = $email;
-            header("Location: index.php"); // Cambia por tu página protegida
+            header("Location: plantillaUsers.php"); // Cambia por tu página protegida
             exit;
         } else {
             header("Location: login.php?error=contraseña");
