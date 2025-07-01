@@ -18,8 +18,8 @@
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
         <div class="btnsnav">
-            <a href="registro.php" class="registerButn">registrar</a>
-            <a href="login.php" class="registerButn">iniciar sesión</a>
+            <a href="registro.php" class="registerButn">REGISTRARSE</a>
+            <a href="login.php" class="registerButn">INICIAR SESIÓN</a>
         </div>
     </nav>
 
