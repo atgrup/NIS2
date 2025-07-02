@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width= initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="assets/styles/style.css">
     <!--google fonts-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,8 +18,8 @@
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
         <div class="btnsnav">
-            <a href="registro.php" class="registerButn">REGISTRARSE</a>
-            <a href="login.php" class="registerButn">INICIAR SESIÓN</a>
+            <a href="pages/registro.php" class="registerButn">REGISTRARSE</a>
+            <a href="pages/login.php" class="registerButn">INICIAR SESIÓN</a>
         </div>
     </nav>
 
@@ -31,7 +31,7 @@
             Para los proveedores, esto implica mayores responsabilidades contractuales y técnicas, ya que las empresas
             deberán garantizar que toda su cadena de suministro cumple también con los requisitos de seguridad, lo que
             podría traducirse en auditorías, controles más estrictos y posibles sanciones en caso de incumplimiento.
-            <img src="img/candadito.png" class="candadito">
+            <img src="assets/img/candadito.png" class="candadito">
             <div class="funcionesIndex">
                 <div class="titulo">Consultores</div>
                 Si eres consultor o auditor, ponte en contacto con tu empresa para darte de alta en esta plataforma.
