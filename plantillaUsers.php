@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=
     , initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="./assets/styles/style.css">
+    <link rel="stylesheet" href="style.css">
     <!--google fonts-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
@@ -18,92 +18,12 @@
 
 </head>
 <style>
-    .indexStencil {
-        width: 290px;
-        height: 895px;
-        background: #072989;
-    }
-
     .bg-mi-color {
-        background-color: #072989;
-        color: white;
-        border: 20px;
-    }
-
-    .stencil {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .btns {
-        gap: 55%;
-        display: flex;
-    }
-
-    .contenedorTablaStencil {
-        border-radius: 40px;
-        background: #FFF;
-        padding: 30px;
-        width: 73%;
-        height: 850px;
-        display: flex;
-        align-self: center;
-        flex-direction: column;
-        margin-left: 20px;
-    }
-
-    .stencilBody {
-        background-color: #E6E6E6;
-    }
-
-    .cajaArchivos {
-        display: flex;
-        flex-direction: row;
-        color: white;
-        justify-content: center;
-        gap: 50px;
-    }
-
-    .footerNaV {
-        color: #FFF;
-        font-family: "Instrument Sans";
-        font-size: 15px;
-        font-weight: 400;
-        text-align: center;
-        position: absolute;
-        bottom: 40px;
-        left: 4%;
-    }
-
-    .tituloNIS {
-        color: #FFF;
-        font-family: "Instrument Sans";
-        font-size: 36px;
-        font-style: normal;
-        font-weight: 700;
-        line-height: normal;
-        margin-top: 70px;
-        text-align: center;
-    }
-
-    .menuNav {
-        margin-top: 70px;
-        gap: 50px;
-        display: flex;
-        flex-direction: column;
-    }
-    .headertable{
-        margin-top:100px;
-    }
-    .imgEmpresa{
-        position: absolute;
-        bottom: 50px;
-        border-radius: 120px;
-        width: 60px;
-        height: auto;
-    }
-</style>
-
+    background-color: #072989;
+    color: white;
+    border-radius: 40px;
+}
+    </style>
 <body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
@@ -133,7 +53,7 @@
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
-                    <img src="Arrow 1.png">
+                    <img src="img/Arrow 1.png">
                 </button>
                 <div class="col-sm">
                     <button type="button" class="btn bg-mi-color  btn-lg">
@@ -175,7 +95,7 @@
                         </tr>
                     </tbody>
                 </table>
-                <img src="banderita.png" class="imgEmpresa">
+                <img src="img/banderita.png" class="imgEmpresa">
             </div>
         </div>
 
