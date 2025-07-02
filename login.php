@@ -46,8 +46,8 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
 
       <div class="col-md-5 info-text">
         <a href="#" onclick="window.history.back(); return false;" class="back-arrow mb-3 d-block">&#8592;</a>
-        <h3>Si ya eres proveedor o en caso que necesites darte de alta como uno….</h3>
-        <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
+        <h3>¿Ya eres proveedor? Inicia sesión para acceder a tu cuenta.</h3>
+        <p>Si aún no te has registrado, verifica que cuentas con la documentación actualizada y que cumples con los requisitos de la normativa NIS2 antes de darte de alta.</p>
 
         <div class="register-section">
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE" class="europe-icon">
