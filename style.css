@@ -120,6 +120,7 @@ body, html {
   height: auto;
 }
 
+/*INDEX.PHP*/
 .homeIndex {
     border-radius: 10px;
     background: #072989;
@@ -213,19 +214,13 @@ body, html {
     background: #072989;
 }
 
-.bg-mi-color {
-    background-color: #072989;
-    color: white;
-    border: 20px;
-}
-
 .stencil {
     display: flex;
     flex-direction: row;
 }
 
 .btns {
-    gap: 55%;
+    gap: 53%;
     display: flex;
 }
 
