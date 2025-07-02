@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=
     , initial-scale=1.0">
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../assets/styles/style.css">
     <!--google fonts-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
@@ -53,7 +53,7 @@
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
-                    <img src="img/Arrow 1.png">
+                    <img src="../assets/img/Arrow 1.png">
                 </button>
                 <div class="col-sm">
                     <button type="button" class="btn bg-mi-color  btn-lg">
@@ -95,7 +95,7 @@
                         </tr>
                     </tbody>
                 </table>
-                <img src="img/banderita.png" class="imgEmpresa">
+                <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
         </div>
 

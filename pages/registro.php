@@ -20,7 +20,7 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Registro NIS2</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../assets/styles/style.css">
 
   <!-- Google Fonts: Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -39,21 +39,26 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
                 <div class="alert alert-info"><?php echo $mensaje; ?></div>
             <?php endif; ?>
 
-            <form method="POST" action="procesar_registro.php">
-                <div class="form-group text-start mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" id="email" name="email" class="form-control" placeholder="Ingresa tu email" required>
-                </div>
-                <div class="form-group text-start mb-3">
-                    <label for="password" class="form-label">Contraseña</label>
-                    <input type="password" id="password" name="password" class="form-control" placeholder="Ingresa tu contraseña" required>
-                </div>
-                <div class="form-group text-start mb-4">
-                    <label for="repeat-password" class="form-label">Repite la contraseña</label>
-                    <input type="password" id="repeat-password" name="repeat-password" class="form-control" placeholder="Repite tu contraseña" required>
-                </div>
-                <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
-            </form>
+            <form method="POST" action="../api/auth/procesar_registro.php">
+              <div class="form-group text-start mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" id="email" name="email" class="form-control" placeholder="Ingresa tu email" required>
+              </div>
+              <div class="form-group text-start mb-3">
+                  <label for="nombre_empresa" class="form-label">Nombre de la empresa</label>
+                  <input type="text" id="nombre_empresa" name="nombre_empresa" class="form-control" placeholder="Ingresa el nombre de tu empresa" required>
+              </div>
+              <div class="form-group text-start mb-3">
+                  <label for="password" class="form-label">Contraseña</label>
+                  <input type="password" id="password" name="password" class="form-control" placeholder="Ingresa tu contraseña" required>
+              </div>
+              <div class="form-group text-start mb-4">
+                  <label for="repeat-password" class="form-label">Repite la contraseña</label>
+                  <input type="password" id="repeat-password" name="repeat-password" class="form-control" placeholder="Repite tu contraseña" required>
+              </div>
+              <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
+          </form>
+
         </div>
       </div>
 
