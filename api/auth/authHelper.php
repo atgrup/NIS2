@@ -1,19 +1,21 @@
 <?php
 function checkAuthAndGetRole() {
-    $headers = getallheaders();
-    if (!isset($headers['Authorization'])) {
+    session_start();
+    if (!isset($_SESSION['rol']) || !isset($_SESSION['id'])) {
         http_response_code(401);
         echo json_encode(['error' => 'No autorizado']);
         exit;
     }
-    $token = str_replace('Bearer ', '', $headers['Authorization']);
-    
-    // Aquí implementa la función para decodificar JWT, validar, etc.
-    $payload = decodeJwt($token);
-    if (!$payload) {
+    return $_SESSION['rol'];
+}
+
+function getUserId() {
+    session_start();
+    if (!isset($_SESSION['id'])) {
         http_response_code(401);
-        echo json_encode(['error' => 'Token inválido']);
+        echo json_encode(['error' => 'No autorizado']);
         exit;
     }
-    return $payload->rol;
+    return $_SESSION['id'];
+
 }
