@@ -1,3 +1,15 @@
+<?php
+session_start();
+
+// Verifica que el usuario esté logueado
+if (!isset($_SESSION['rol'])) {
+    header("Location: ../api/auth/login.php"); // o la ruta a tu login
+    exit;
+}
+
+$rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: administrador, consultor, proveedor
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -29,21 +41,40 @@
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
             <div class="menuNav">
-                <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
-                </div>
-                <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
-
-
-                </div>
-                <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
-                </div>
-            </div>
+                <?php if ($rol === 'administrador'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil" data-section="usuarios">USUARIOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil" data-section="consultores">CONSULTORES</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil" data-section="proveedores">PROVEEDORES</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">ARCHIVOS</button>
+                    </div>
+                <?php elseif ($rol === 'consultor'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">ARCHIVOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">PROVEEDORES</button>
+                    </div>
+                <?php else: /* proveedor */ ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil">ARCHIVOS</button>
+                    </div>
+                <?php endif; ?>
             <div class="footerNaV">
                 Política de cookies<br>
                 Terminos y condiciones
