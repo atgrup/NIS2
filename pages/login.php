@@ -13,7 +13,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login NIS2</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../assets/styles/style.css">
 
   <!-- Google Fonts: Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
@@ -30,7 +30,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
             <?php if (!empty($mensaje)): ?>
               <div class="alert alert-info"><?php echo $mensaje; ?></div>
             <?php endif; ?>
-            <form method="POST" action="procesar_login.php">
+            <form method="POST" action="../api/auth/procesar_login.php">
               <div class="form-group text-start mb-3">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" name="email" id="email" class="form-control" placeholder="Ingresa tu email" required>
