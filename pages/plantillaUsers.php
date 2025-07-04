@@ -30,18 +30,18 @@
             <h1 class="tituloNIS">NIS2</h1>
             <div class="menuNav">
                 <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
+                    <div class="textoStencil">Subir Archivo</div>
+                    <div class="textoStencil"> </div>
                 </div>
                 <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
+                    <div class="textoStencil">Borrar Archivo</div>
+                    <div class="textoStencil"> </div>
 
 
                 </div>
                 <div class="cajaArchivos">
-                    <div class="textoStencil">Gernador 1</div>
-                    <div class="textoStencil"> imagen</div>
+                    <div class="textoStencil">Actualizar Archivo</div>
+                    <div class="textoStencil"> </div>
                 </div>
             </div>
             <div class="footerNaV">
