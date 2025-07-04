@@ -67,33 +67,59 @@
             <div class="headertable">
                 <table class="table table-bordered border-secondary">
                     <thead>
-                        <tr>
-                            <th scope="col">#</th>
-                            <th scope="col">First</th>
-                            <th scope="col">Last</th>
-                            <th scope="col">Handle</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row">1</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>@mdo</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">2</th>
-                            <td>Jacob</td>
-                            <td>Thornton</td>
-                            <td>@fat</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">3</th>
-                            <td>John</td>
-                            <td>Doe</td>
-                            <td>@social</td>
-                        </tr>
-                    </tbody>
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col">Nombre del archivo</th>
+    <th scope="col">Fecha</th>
+    <th scope="col">Estado</th>
+  </tr>
+</thead>
+<tbody>
+<?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+session_start();
+
+$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
+
+$correo = $_SESSION['correo'] ?? null;
+
+if ($correo) {
+    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+    $stmt->bind_param("s", $correo);
+    $stmt->execute();
+    $stmt->bind_result($usuario_id, $proveedor_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    $stmt = $conexion->prepare("SELECT id, nombre_archivo, fecha_subida, revision_estado FROM archivos_subidos WHERE proveedor_id = ?");
+    $stmt->bind_param("i", $proveedor_id);
+    $stmt->execute();
+    $stmt->bind_result($id, $nombre, $fecha, $estado);
+
+    $i = 1;
+    while ($stmt->fetch()) {
+        $estado_icono = match($estado) {
+            'aprobado' => "<span class='text-success'>&#10004;</span>",
+            'rechazado' => "<span class='text-danger'>&#10006;</span>",
+            default => "<span class='text-muted'>Pendiente</span>",
+        };
+
+        echo "<tr>
+                <th scope='row'>{$i}</th>
+                <td>" . htmlspecialchars($nombre) . "</td>
+                <td>{$fecha}</td>
+                <td class='text-center'>{$estado_icono}</td>
+              </tr>";
+        $i++;
+    }
+
+    $stmt->close();
+}
+$conexion->close();
+?>
+</tbody>
+
                 </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
