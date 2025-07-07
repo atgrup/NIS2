@@ -82,6 +82,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         rel="stylesheet">
     <script src="./assets/js/script.js"></script>
 </head>
+<script>
+  const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
+</script>
 
 <style>
     .bg-mi-color {
@@ -200,13 +203,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
+            
             <div class="d-flex justify-content-end mb-3">
                 <div class="input-group" style="width: 300px; position:absolute; bottom:60px; right:100px;">
                     <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
                     <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
+                <div id="contenido-dinamico"></div>
                 </div>
             </div>
-
         </div>
     </main>
 </body>
