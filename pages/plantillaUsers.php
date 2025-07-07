@@ -122,7 +122,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
-                    <img src="../assets/img/Arrow 1.png">
+                   <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
                 </button>
                 <div class="col-sm">
                     <button type="button" class="btn bg-mi-color  btn-lg">
