@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap"
         rel="stylesheet">
-    <script src="./assets/js/script.js"></script>
+
 </head>
 
 <style>
@@ -98,20 +98,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
-                    <div class="cajaArchivos"><button class="textoStencil" data-section="usuarios">USUARIOS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil" data-section="consultores">CONSULTORES</button>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="usuarios">USUARIOS</button>
                     </div>
-                    <div class="cajaArchivos"><button class="textoStencil" data-section="proveedores">PROVEEDORES</button>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="consultores">CONSULTORES</button>
                     </div>
-                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="proveedores">PROVEEDORES</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
                 <?php elseif ($rol === 'consultor'): ?>
-                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil">PROVEEDORES</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PROVEEDORES</button></div>
                 <?php else: ?>
-                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
                 <?php endif; ?>
                 <div class="footerNaV">
                     <form action="../api/auth/logout.php" method="post">
@@ -140,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                     </form>
                 </div>
             </div>
-            <div class="headertable">
+            <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <table class="table table-bordered border-secondary">
                     <thead>
                         <tr>
@@ -150,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                             <th>Estado</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tabla-body">
                         <?php
                         error_reporting(E_ALL);
                         ini_set('display_errors', 1);
@@ -209,6 +220,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 
         </div>
     </main>
+        <script src="../assets/js/script.js"></script>
 </body>
-
 </html>

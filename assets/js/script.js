@@ -101,3 +101,27 @@ document.getElementById('buscadorUsuarios').addEventListener('input', function (
     fila.style.display = contenidoFila.includes(texto) ? '' : 'none';
   });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("button[data-section]").forEach((boton) => {
+    boton.addEventListener("click", function () {
+      const seccion = this.getAttribute("data-section");
+
+      fetch(`cargar_datos.php?seccion=${seccion}`)
+        .then((response) => {
+          if (!response.ok) throw new Error("Error al cargar datos");
+          return response.text();
+        })
+        .then((html) => {
+          const tbody = document.querySelector("tbody");
+          if (tbody) {
+            tbody.innerHTML = html;
+          }
+        })
+        .catch((error) => {
+          console.error("Error AJAX:", error);
+          alert("Error al cargar los datos.");
+        });
+    });
+  });
+});
