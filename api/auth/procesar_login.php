@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/conexion.php'; 
+require_once '../includes/conexion.php';
 
 session_start();
 
@@ -7,7 +7,7 @@ $correo = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
 
 if (empty($correo) || empty($password)) {
-    echo "Faltan campos obligatorios.";
+    header("Location: ../../pages/login.php?error=credenciales");
     exit;
 }
 
@@ -28,17 +28,18 @@ if ($result->num_rows === 1) {
     if (password_verify($password, $user['password'])) {
         $_SESSION['id_usuario'] = $user['id_usuarios'];
         $_SESSION['correo'] = $correo;
-        $_SESSION['rol'] = $user['rol']; // Ej: ADMINISTRADOR, CONSULTOR, etc.
+        $_SESSION['rol'] = $user['rol'];
 
-        header("Location: ../../pages/plantillaUsers.php"); // o la ruta que corresponda
+        header("Location: ../../pages/plantillaUsers.php");
         exit;
     } else {
-        echo "Contraseña incorrecta.";
+        header("Location: ../../pages/login.php?error=credenciales");
+        exit;
     }
 } else {
-    echo "Usuario no encontrado.";
+    header("Location: ../../pages/login.php?error=credenciales");
+    exit;
 }
 ?>
-
 
 
