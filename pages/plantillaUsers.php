@@ -53,6 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -81,6 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <main class="stencil">
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
+            <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
                     <div class="cajaArchivos"><button class="textoStencil" data-section="usuarios">USUARIOS</button></div>
@@ -97,8 +99,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                     <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
                 <?php endif; ?>
             <div class="footerNaV">
-                Política de cookies<br>
-                Terminos y condiciones
+                <form action="../api/auth/logout.php" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+
+                <p>Política de cookies</p><br>
+                <p>Terminos y condiciones</p>
             </div>
         </nav>
         <div class="contenedorTablaStencil">
