@@ -1,14 +1,17 @@
 <?php
 session_start();
 
-// Verifica que el usuario esté logueado
 if (!isset($_SESSION['rol'])) {
-    header("Location: ../api/auth/login.php"); // o la ruta a tu login
+    header("Location: ../api/auth/login.php");
     exit;
 }
 
-$rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: administrador, consultor, proveedor
+$rol = strtolower($_SESSION['rol']);
+
+$correo = isset($_SESSION['correo']) ? $_SESSION['correo'] : null;
+$nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,6 +43,7 @@ $rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: a
     <main class="stencil">
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
+            <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
                     <div class="cajaArchivos">
@@ -76,8 +80,12 @@ $rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: a
                     </div>
                 <?php endif; ?>
             <div class="footerNaV">
-                Política de cookies<br>
-                Terminos y condiciones
+                <form action="../api/auth/logout.php" method="post">
+                    <button type="submit">Cerrar sesión</button>
+                </form>
+
+                <p>Política de cookies</p><br>
+                <p>Terminos y condiciones</p>
             </div>
         </nav>
 
