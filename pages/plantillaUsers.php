@@ -101,7 +101,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 Terminos y condiciones
             </div>
         </nav>
-
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
