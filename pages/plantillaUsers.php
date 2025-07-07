@@ -82,12 +82,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         rel="stylesheet">
 
 </head>
+<script>
+  const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
+</script>
 
 <style>
     .bg-mi-color {
         background-color: #072989;
         color: white;
         border-radius: 40px;
+    }
+    button{
+        background:none;
+        color: white;
+        border:none;
+        
+    }
+    .logout{
+        border: 1px solid white;
+        border-radius:10px;
+        padding: 3px 10px;
     }
 </style>
 
@@ -126,7 +140,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <?php endif; ?>
                 <div class="footerNaV">
                     <form action="../api/auth/logout.php" method="post">
-                        <button type="submit">Cerrar sesión</button>
+                        <button class="logout" type="submit">Cerrar sesión</button>
                     </form>
 
                     <p>Política de cookies</p><br>
@@ -134,17 +148,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
         </nav>
         <div class="contenedorTablaStencil">
-            <div class="btns">
-                <button type="button" class="btn bg-mi-color  btn-lg">
+            <div class="btnsnav justify-content-end">
+                <button type="button" class="btn bg-mi-color  btn-md align-items-center">
                     <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
                 </button>
                 <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color  btn-lg">
+                    <button type="button" class="btn bg-mi-color  btn-lg text-center">
                         Normativas
                     </button>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg">
-                            Subir archivo
+                        <label for="archivo" class="btn bg-mi-color btn-lg text-center">
+                            Subir archivo <img src="../assets/img/descarga.png">
                         </label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
                             required>
@@ -211,13 +225,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
+            
             <div class="d-flex justify-content-end mb-3">
                 <div class="input-group" style="width: 300px; position:absolute; bottom:60px; right:100px;">
                     <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
                     <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
+                <div id="contenido-dinamico"></div>
                 </div>
             </div>
-
         </div>
     </main>
         <script src="../assets/js/script.js"></script>

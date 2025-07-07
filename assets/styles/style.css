@@ -50,6 +50,8 @@ h4{
 .btn-outline-light:hover {
   background-color: white;
   color: #002f86;
+  border: 1px solid #002f86;
+  border-radius: 20px;
 }
 
 .btn-custom {
@@ -187,7 +189,8 @@ h4{
 
 .btnsnav {
     display: flex;
-    gap: 30px;
+    justify-content:end;
+    gap: 56%;
 }
 .funcionesIndex{
   border: 0.5px solid white;
