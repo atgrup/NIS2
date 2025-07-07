@@ -92,6 +92,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         color: white;
         border-radius: 40px;
     }
+    button{
+        background:none;
+        color: white;
+        border:none;
+        
+    }
+    .logout{
+        border: 1px solid white;
+        border-radius:10px;
+        padding: 3px 10px;
+    }
 </style>
 
 <body class="stencilBody">
@@ -118,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <?php endif; ?>
                 <div class="footerNaV">
                     <form action="../api/auth/logout.php" method="post">
-                        <button type="submit">Cerrar sesión</button>
+                        <button class="logout" type="submit">Cerrar sesión</button>
                     </form>
 
                     <p>Política de cookies</p><br>
@@ -126,17 +137,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
         </nav>
         <div class="contenedorTablaStencil">
-            <div class="btns">
-                <button type="button" class="btn bg-mi-color  btn-lg">
+            <div class="btnsnav justify-content-end">
+                <button type="button" class="btn bg-mi-color  btn-md align-items-center">
                     <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
                 </button>
                 <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color  btn-lg">
+                    <button type="button" class="btn bg-mi-color  btn-lg text-center">
                         Normativas
                     </button>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg">
-                            Subir archivo
+                        <label for="archivo" class="btn bg-mi-color btn-lg text-center">
+                            Subir archivo <img src="../assets/img/descarga.png">
                         </label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
                             required>
