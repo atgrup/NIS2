@@ -1,0 +1,170 @@
+<?php
+require_once __DIR__ . '/../models/ConsultorModel.php';
+require_once __DIR__ . '/../auth/AuthHelper.php';
+
+class ConsultorController {
+    private static $model;
+
+    private static function getModel() {
+        if (!self::$model) {
+            self::$model = new ConsultorModel();
+        }
+        return self::$model;
+    }
+
+    private static function checkAuthAndGetRole() {
+        session_start();
+        if (!isset($_SESSION['rol'])) {
+            http_response_code(401);
+            echo json_encode(['error' => 'No autorizado']);
+            exit;
+        }
+        return $_SESSION['rol'];
+    }
+
+    public static function listar() {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $usuarios = self::getModel()->findAll();
+        echo json_encode($usuarios);
+    }
+
+    public static function verPerfil($id) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'consultor' || $_SESSION['id'] != $id) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $consultor = self::getModel()->findById($id);
+        if ($consultor) {
+            echo json_encode($consultor);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Consultor no encontrado']);
+        }
+    }
+
+    public static function verArchivosProveedor($idProveedor) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'consultor') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $consultorId = $_SESSION['id'];
+        if (!self::getModel()->consultorTieneAcceso($consultorId, $idProveedor)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'No tiene acceso a este proveedor']);
+            exit;
+        }
+
+        $archivos = self::getModel()->obtenerArchivosProveedor($idProveedor);
+        echo json_encode($archivos);
+    }
+
+    public static function historialArchivo($idProveedor, $nombreArchivo) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'consultor') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $consultorId = $_SESSION['id'];
+        if (!self::getModel()->consultorTieneAcceso($consultorId, $idProveedor)) {
+            http_response_code(403);
+            echo json_encode(['error' => 'No tiene acceso a este proveedor']);
+            exit;
+        }
+
+        $historial = self::getModel()->obtenerHistorialArchivo($idProveedor, $nombreArchivo);
+        echo json_encode($historial);
+    }
+
+    public static function ver($id) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'admin' && $_SESSION['id'] != $id) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $usuario = self::getModel()->findById($id);
+        if ($usuario) {
+            echo json_encode($usuario);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Usuario no encontrado']);
+        }
+    }
+
+    public static function crear() {
+        $rol = self::checkAuthAndGetRole();
+        if (!in_array($rol, ['admin', 'proveedor'])) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!isset($data['nombre'], $data['email'], $data['tipo_usuario'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Faltan datos']);
+            return;
+        }
+
+        // if (self::getModel()->create($data)) {
+        //     echo json_encode(['mensaje' => 'Usuario creado']);
+        // } else {
+        //     http_response_code(500);
+        //     echo json_encode(['error' => 'Error al crear usuario']);
+        // }
+    }
+
+    public static function actualizar($id) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'admin' && $_SESSION['id'] != $id) {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!isset($data['nombre'], $data['email'], $data['tipo_usuario'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Faltan datos']);
+            return;
+        }
+
+        if (self::getModel()->update($id, $data)) {
+            echo json_encode(['mensaje' => 'Usuario actualizado']);
+        } else {
+            http_response_code(500);
+            echo json_encode(['error' => 'Error al actualizar usuario']);
+        }
+    }
+
+    public static function borrar($id) {
+        $rol = self::checkAuthAndGetRole();
+        if ($rol !== 'admin') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Acceso denegado']);
+            exit;
+        }
+
+        // if (self::getModel()->delete($id)) {
+        //     echo json_encode(['mensaje' => 'Usuario eliminado']);
+        // } else {
+        //     http_response_code(500);
+        //     echo json_encode(['error' => 'Error al eliminar usuario']);
+        // }
+    }
+}
