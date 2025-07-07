@@ -1,13 +1,56 @@
 <?php
 session_start();
 
-// Verifica que el usuario esté logueado
 if (!isset($_SESSION['rol'])) {
-    header("Location: ../api/auth/login.php"); // o la ruta a tu login
+    header("Location: ../api/auth/login.php");
     exit;
 }
 
-$rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: administrador, consultor, proveedor
+$rol = strtolower($_SESSION['rol']);
+
+$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
+if ($conexion->connect_error) {
+    die("Error de conexión: " . $conexion->connect_error);
+}
+
+// SUBIR ARCHIVO ORDENADO POR USUARIO
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
+    $archivo = $_FILES['archivo'];
+    $nombre_original = basename($archivo['name']);
+    $nombre_archivo = time() . "_" . $nombre_original;
+
+    $correo = $_SESSION['correo'];
+
+    // Obtener ID del proveedor
+    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+    $stmt->bind_param("s", $correo);
+    $stmt->execute();
+    $stmt->bind_result($usuario_id, $proveedor_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Crear carpeta personalizada por correo
+    $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
+    $carpeta_url = '../documentos_subidos/' . $correo;
+
+    if (!is_dir($carpeta_usuario)) {
+        mkdir($carpeta_usuario, 0775, true);
+    }
+
+    $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
+    $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+
+    if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+        $stmt->execute();
+        $stmt->close();
+
+        echo "<script>alert('✅ Archivo subido correctamente');</script>";
+    } else {
+        echo "<script>alert('❌ Error al subir el archivo');</script>";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -15,69 +58,44 @@ $rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: a
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=
-    , initial-scale=1.0">
+    <meta name="viewport" content="width=, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="../assets/styles/style.css">
-    <!--google fonts-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous">
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap"
         rel="stylesheet">
-
 </head>
+
 <style>
-    .bg-mi-color {
+.bg-mi-color {
     background-color: #072989;
     color: white;
     border-radius: 40px;
 }
-    </style>
+</style>
+
 <body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
             <div class="menuNav">
-<<<<<<< HEAD
-    
                 <?php if ($rol === 'administrador'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil" data-section="usuarios">USUARIOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil" data-section="consultores">CONSULTORES</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil" data-section="proveedores">PROVEEDORES</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">ARCHIVOS</button>
-                    </div>
+                    <div class="cajaArchivos"><button class="textoStencil" data-section="usuarios">USUARIOS</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil" data-section="consultores">CONSULTORES</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil" data-section="proveedores">PROVEEDORES</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
                 <?php elseif ($rol === 'consultor'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">ARCHIVOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">PROVEEDORES</button>
-                    </div>
-                <?php else: /* proveedor */ ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil">ARCHIVOS</button>
-                    </div>
+                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil">PROVEEDORES</button></div>
+                <?php else: ?>
+                    <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
                 <?php endif; ?>
->>>>>>> main
             <div class="footerNaV">
                 Política de cookies<br>
                 Terminos y condiciones
@@ -93,72 +111,75 @@ $rol = strtolower($_SESSION['rol']); // convierte a minúsculas por seguridad: a
                     <button type="button" class="btn bg-mi-color  btn-lg">
                         Normativas
                     </button>
-                    <button type="button" class="btn bg-mi-color  btn-lg">
-                        Criterios de la NIS2
-                    </button>
+                    <form method="POST" enctype="multipart/form-data" class="d-inline">
+                        <label for="archivo" class="btn bg-mi-color btn-lg">
+                            Subir archivo
+                        </label>
+                        <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+                    </form>
                 </div>
             </div>
             <div class="headertable">
                 <table class="table table-bordered border-secondary">
                     <thead>
-  <tr>
-    <th scope="col">#</th>
-    <th scope="col">Nombre del archivo</th>
-    <th scope="col">Fecha</th>
-    <th scope="col">Estado</th>
-  </tr>
-</thead>
-<tbody>
-<?php
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-session_start();
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre del archivo</th>
+                            <th>Fecha</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php
+                        error_reporting(E_ALL);
+                        ini_set('display_errors', 1);
 
-$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
+                        if (session_status() === PHP_SESSION_NONE) {
+                            session_start();
+                        }
 
-$correo = $_SESSION['correo'] ?? null;
+                        $correo = $_SESSION['correo'] ?? null;
 
-if ($correo) {
-    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $stmt->bind_result($usuario_id, $proveedor_id);
-    $stmt->fetch();
-    $stmt->close();
+                        if ($correo) {
+                            $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+                            $stmt->bind_param("s", $correo);
+                            $stmt->execute();
+                            $stmt->bind_result($usuario_id, $proveedor_id);
+                            $stmt->fetch();
+                            $stmt->close();
 
-    $stmt = $conexion->prepare("SELECT id, nombre_archivo, fecha_subida, revision_estado FROM archivos_subidos WHERE proveedor_id = ?");
-    $stmt->bind_param("i", $proveedor_id);
-    $stmt->execute();
-    $stmt->bind_result($id, $nombre, $fecha, $estado);
+                            $stmt = $conexion->prepare("SELECT id, nombre_archivo, fecha_subida, revision_estado FROM archivos_subidos WHERE proveedor_id = ?");
+                            $stmt->bind_param("i", $proveedor_id);
+                            $stmt->execute();
+                            $stmt->bind_result($id, $nombre, $fecha, $estado);
 
-    $i = 1;
-    while ($stmt->fetch()) {
-        $estado_icono = match($estado) {
-            'aprobado' => "<span class='text-success'>&#10004;</span>",
-            'rechazado' => "<span class='text-danger'>&#10006;</span>",
-            default => "<span class='text-muted'>Pendiente</span>",
-        };
+                            $i = 1;
+                            while ($stmt->fetch()) {
+                                $estado_icono = match($estado) {
+                                    'aprobado' => "<span class='text-success'>&#10004;</span>",
+                                    'rechazado' => "<span class='text-danger'>&#10006;</span>",
+                                    default => "<span class='text-muted'>Pendiente</span>",
+                                };
 
-        echo "<tr>
-                <th scope='row'>{$i}</th>
-                <td>" . htmlspecialchars($nombre) . "</td>
-                <td>{$fecha}</td>
-                <td class='text-center'>{$estado_icono}</td>
-              </tr>";
-        $i++;
-    }
+                                echo "<tr>
+                                        <th scope='row'>{$i}</th>
+                                        <td>" . htmlspecialchars($nombre) . "</td>
+                                        <td>{$fecha}</td>
+                                        <td class='text-center'>{$estado_icono}</td>
+                                      </tr>";
+                                $i++;
+                            }
 
-    $stmt->close();
-}
-$conexion->close();
-?>
-</tbody>
+                            $stmt->close();
+                        }
 
+                        $conexion->close();
+                        ?>
+                    </tbody>
                 </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
         </div>
-
     </main>
 </body>
 
