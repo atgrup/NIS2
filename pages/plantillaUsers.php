@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+// Verificación de sesión
 if (!isset($_SESSION['rol'])) {
     header("Location: ../api/auth/login.php");
     exit;
@@ -8,28 +9,36 @@ if (!isset($_SESSION['rol'])) {
 
 $rol = strtolower($_SESSION['rol']);
 
+// Obtener el correo para saludo o nombre de carpeta
+$correo = isset($_SESSION['correo']) ? $_SESSION['correo'] : null;
+$nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
+
+// Conexión a la base de datos
 $conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
 if ($conexion->connect_error) {
     die("Error de conexión: " . $conexion->connect_error);
 }
 
-// SUBIR ARCHIVO ORDENADO POR USUARIO
+// SUBIDA DE ARCHIVO
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     $archivo = $_FILES['archivo'];
     $nombre_original = basename($archivo['name']);
     $nombre_archivo = time() . "_" . $nombre_original;
 
-    $correo = $_SESSION['correo'];
-
-    // Obtener ID del proveedor
-    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+    // Obtener ID del proveedor a partir del correo
+    $stmt = $conexion->prepare("
+        SELECT u.id_usuarios, p.id 
+        FROM usuarios u 
+        JOIN proveedores p ON u.id_usuarios = p.usuario_id 
+        WHERE u.correo = ?
+    ");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
     $stmt->bind_result($usuario_id, $proveedor_id);
     $stmt->fetch();
     $stmt->close();
 
-    // Crear carpeta personalizada por correo
+    // Crear carpeta personalizada por correo si no existe
     $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
     $carpeta_url = '../documentos_subidos/' . $correo;
 
@@ -41,7 +50,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
 
     if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+        // Insertar registro del archivo
+        $stmt = $conexion->prepare("
+            INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) 
+            VALUES (?, ?, ?, 'pendiente')
+        ");
         $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
         $stmt->execute();
         $stmt->close();
@@ -52,7 +65,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
