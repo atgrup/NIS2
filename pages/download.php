@@ -10,20 +10,16 @@ if (!isset($_GET['archivo']) || empty($_GET['archivo'])) {
     die("No se especificó archivo para descargar.");
 }
 
-$baseDir = realpath(__DIR__ . '/../documentos_subidos');
-if ($baseDir === false) {
-    die("Error en la ruta base de documentos.");
-}
-
 $archivo_relativo = $_GET['archivo'];
+$baseDir = realpath(__DIR__ . '/../documentos_subidos');
 
 if (strpos($archivo_relativo, '..') !== false) {
     die("Ruta no válida.");
 }
 
-$ruta_archivo = $baseDir . DIRECTORY_SEPARATOR . $archivo_relativo;
+$ruta_archivo = realpath(__DIR__ . '/../' . $archivo_relativo);
 
-if (!file_exists($ruta_archivo)) {
+if ($ruta_archivo === false || !file_exists($ruta_archivo)) {
     die("Archivo no encontrado.");
 }
 
