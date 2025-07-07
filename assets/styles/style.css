@@ -6,8 +6,8 @@ body, html {
   font-family: 'Roboto', sans-serif;
 }
 
-/* Caja de login */
-.login-box {
+/* Caja de auth */
+.auth-box {
   background-color: #002f86;
   padding: 2.5rem;
   border-radius: 0.5rem;
@@ -15,24 +15,9 @@ body, html {
   max-width: 350px;
 }
 
-.login-box h3 {
+.auth-box h3 {
   color: white;
   font-weight: bold;
-}
-
-/* Caja de registro */
-.register-box {
-  background-color: #002f86;
-  padding: 2rem;
-  border-radius: 1rem;
-  width: 100%;
-  max-width: 350px;
-}
-
-.register-box h3 {
-  color: white;
-  font-weight: bold;
-  margin-bottom: 2rem;
 }
 
 /* Formulario */
@@ -89,7 +74,6 @@ body, html {
   flex-direction: column;
   align-items: flex-end;
 }
-
 
 .info-text h3 {
   font-weight: bold;
@@ -162,7 +146,6 @@ body, html {
     font-style: normal;
     font-weight: 700;
     line-height: normal;
-
 }
 
 .indexNav {
@@ -170,9 +153,7 @@ body, html {
     flex-direction: row;
     align-items: center;
     gap: 370px;
-
     margin-left: 70px;
-
 }
 
 .registerButn {
