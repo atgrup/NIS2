@@ -32,7 +32,7 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
   <div class="main-container container-fluid">
     <div class="row w-100 justify-content-center align-items-center">
       <div class="col-md-5">
-        <div class="register-box text-center shadow">
+        <div class="auth-box text-center shadow">
             <h3 class="mb-4">NIS2</h3>
 
             <?php if (!empty($mensaje)): ?>
