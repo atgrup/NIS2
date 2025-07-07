@@ -245,9 +245,11 @@ h4{
   bottom: 40px;
   left: 4%;
 }
+
 .footerNaV form{
   padding: 20px;
 }
+
 .tituloNIS {
     color: #FFF;
     font-family: "Instrument Sans";
@@ -265,13 +267,14 @@ h4{
     display: flex;
     flex-direction: column;
 }
+
 .headertable{
     margin-top:100px;
 }
+
 .imgEmpresa{
     position: absolute;
     bottom: 50px;
     border-radius: 120px;
     width: 60px;
-    height: auto;
 }
