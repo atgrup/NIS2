@@ -80,14 +80,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400..700;1,400..700&display=swap"
         rel="stylesheet">
+    <script src="./assets/js/script.js"></script>
 </head>
 
 <style>
-.bg-mi-color {
-    background-color: #072989;
-    color: white;
-    border-radius: 40px;
-}
+    .bg-mi-color {
+        background-color: #072989;
+        color: white;
+        border-radius: 40px;
+    }
 </style>
 
 <body class="stencilBody">
@@ -98,8 +99,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
                     <div class="cajaArchivos"><button class="textoStencil" data-section="usuarios">USUARIOS</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil" data-section="consultores">CONSULTORES</button></div>
-                    <div class="cajaArchivos"><button class="textoStencil" data-section="proveedores">PROVEEDORES</button></div>
+                    <div class="cajaArchivos"><button class="textoStencil" data-section="consultores">CONSULTORES</button>
+                    </div>
+                    <div class="cajaArchivos"><button class="textoStencil" data-section="proveedores">PROVEEDORES</button>
+                    </div>
                     <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
                     <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
                 <?php elseif ($rol === 'consultor'): ?>
@@ -110,19 +113,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                     <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
                     <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
                 <?php endif; ?>
-            <div class="footerNaV">
-                <form action="../api/auth/logout.php" method="post">
-                    <button type="submit">Cerrar sesión</button>
-                </form>
+                <div class="footerNaV">
+                    <form action="../api/auth/logout.php" method="post">
+                        <button type="submit">Cerrar sesión</button>
+                    </form>
 
-                <p>Política de cookies</p><br>
-                <p>Terminos y condiciones</p>
-            </div>
+                    <p>Política de cookies</p><br>
+                    <p>Terminos y condiciones</p>
+                </div>
         </nav>
         <div class="contenedorTablaStencil">
             <div class="btns">
                 <button type="button" class="btn bg-mi-color  btn-lg">
-                    <img src="../assets/img/Arrow 1.png">
+                    <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
                 </button>
                 <div class="col-sm">
                     <button type="button" class="btn bg-mi-color  btn-lg">
@@ -132,7 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                         <label for="archivo" class="btn bg-mi-color btn-lg">
                             Subir archivo
                         </label>
-                        <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+                        <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
+                            required>
                     </form>
                 </div>
             </div>
@@ -172,7 +176,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 
                             $i = 1;
                             while ($stmt->fetch()) {
-                                $estado_icono = match($estado) {
+                                $estado_icono = match ($estado) {
                                     'aprobado' => "<span class='text-success'>&#10004;</span>",
                                     'rechazado' => "<span class='text-danger'>&#10006;</span>",
                                     default => "<span class='text-muted'>Pendiente</span>",
@@ -196,6 +200,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
             </div>
+            <div class="d-flex justify-content-end mb-3">
+                <div class="input-group" style="width: 300px; position:absolute; bottom:60px; right:100px;">
+                    <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
+                    <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
+                </div>
+            </div>
+
         </div>
     </main>
 </body>
