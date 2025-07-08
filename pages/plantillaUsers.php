@@ -92,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         color: white;
         border-radius: 40px;
     }
-    button{
+    .btnUser{
         background:none;
         color: white;
         border:none;
@@ -149,15 +149,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         </nav>
         <div class="contenedorTablaStencil">
             <div class="btnsnav justify-content-end">
-                <button type="button" class="btn bg-mi-color  btn-md align-items-center">
+                <button type="button" class="btn bg-mi-color  btn-md align-items-center btnUser">
                     <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
                 </button>
                 <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color  btn-lg text-center">
+                    <button type="button" class="btn bg-mi-color  btn-lg text-center btnUser " >
                         Normativas
                     </button>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg text-center">
+                        <label for="archivo" class="btn bg-mi-color btn-lg text-center btnUser">
                             Subir archivo <img src="../assets/img/descarga.png">
                         </label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"

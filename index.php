@@ -17,7 +17,7 @@
 <body>
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
-        <div class="btnsnav">
+        <div class="btnsNav">
             <a href="pages/registro.php" class="registerButn">REGISTRARSE</a>
             <a href="pages/login.php" class="registerButn">INICIAR SESIÓN</a>
         </div>
