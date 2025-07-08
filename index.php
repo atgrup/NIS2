@@ -18,14 +18,14 @@
     <nav class="indexNav">
         <h1 class="tituloIndice">Bienvenido/a</h1>
         <div class="btnsNav">
-            <a href="pages/registro.php" class="registerButn">REGISTRARSE</a>
-            <a href="pages/login.php" class="registerButn">INICIAR SESIÓN</a>
+            <a href="pages/registro.php" class="auth-btn">REGISTRARSE</a>
+            <a href="pages/login.php" class="auth-btn">INICIAR SESIÓN</a>
         </div>
     </nav>
 
     <main class="homeIndex">
         <section class="introIndex">
-            <div class="titulo"> Nuevas restricciones de la NIS2</div>
+            <div class="subtitulo-index"> Nuevas restricciones de la NIS2</div>
             Las empresas afectadas deberán cumplir con estrictas obligaciones de gestión de riesgos, notificación de
             incidentes de seguridad en plazos cortos y adoptar medidas técnicas y organizativas adecuadas.
             Para los proveedores, esto implica mayores responsabilidades contractuales y técnicas, ya que las empresas
