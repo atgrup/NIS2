@@ -71,13 +71,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         <div class="menuNav">
             <?php if ($rol === 'administrador'): ?>
                 <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="#">USUARIOS</a>
+                    <a class="btn btn-outline-light w-100" href="?vista=usuarios">USUARIOS</a>
                 </div>
                 <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="#">CONSULTORES</a>
+                    <a class="btn btn-outline-light w-100" href="?vista=consultores">CONSULTORES</a>
                 </div>
                 <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
+                    <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
                 </div>
             <?php endif; ?>
 
@@ -128,11 +128,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         <div class="headertable">
             <?php
             $vista = $_GET['vista'] ?? 'archivos';
-            if ($vista === 'plantillas') {
-                include 'vista_plantillas.php';
-            } else {
-                include 'vista_archivos.php';
+            switch ($vista) {
+                case 'plantillas':
+                    include 'vista_plantillas.php';
+                    break;
+                case 'usuarios':
+                    include 'vista_usuarios.php';
+                    break;
+                case 'consultores':
+                    include 'vista_consultores.php';
+                    break;
+                case 'proveedores':
+                    include 'vista_proveedores.php';
+                    break;
+                default:
+                    include 'vista_archivos.php';
+                    break;
             }
+
             ?>
             <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
         </div>
