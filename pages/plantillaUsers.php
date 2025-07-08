@@ -61,13 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <link rel="stylesheet" href="../assets/styles/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        .bg-mi-color {
-            background-color: #072989;
-            color: white;
-            border-radius: 40px;
-        }
-    </style>
 </head>
 <body class="stencilBody">
 <main class="stencil">
@@ -107,6 +100,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                     <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
                 </form>
             </div>
+            
+            <div class="d-flex justify-content-end mb-3">
+                <div class="input-group" style="width: 300px; position:absolute; bottom:60px; right:100px;">
+                    <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
+                    <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
+                <div id="contenido-dinamico"></div>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -137,5 +138,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         </div>
     </div>
 </main>
+    <script src="../assets/js/script.js"></script>
 </body>
 </html>
+
