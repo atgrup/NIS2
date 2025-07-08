@@ -23,7 +23,6 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
       <div class="col-md-5">
         <div class="auth-box text-center shadow">
             <h3 class="mb-4">NIS2</h3>
-
             <?php if (!empty($mensaje)): ?>
               <div class="alert alert-<?php echo (str_starts_with($mensaje, '✅')) ? 'success' : 'danger'; ?>">
                   <?php echo htmlspecialchars($mensaje); ?>

@@ -86,24 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
   const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
 </script>
 
-<style>
-    .bg-mi-color {
-        background-color: #072989;
-        color: white;
-        border-radius: 40px;
-    }
-    .btnUser{
-        background:none;
-        color: white;
-        border:none;
-        
-    }
-    .logout{
-        border: 1px solid white;
-        border-radius:10px;
-        padding: 3px 10px;
-    }
-</style>
 
 <body class="stencilBody">
     <main class="stencil">
@@ -113,30 +95,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="usuarios">USUARIOS</button>
+                        <a class="textoStencil" data-section="usuarios">USUARIOS</a>
                     </div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="consultores">CONSULTORES</button>
+                        <a class="textoStencil" data-section="consultores">CONSULTORES</a>
                     </div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="proveedores">PROVEEDORES</button>
+                        <a class="textoStencil" data-section="proveedores">PROVEEDORES</a>
                     </div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                        <a class="textoStencil">PLANTILLAS</a></div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
+                        <a class="textoStencil">ARCHIVOS</a></div>
                 <?php elseif ($rol === 'consultor'): ?>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                        <a class="textoStencil">PLANTILLAS</a></div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
+                        <a class="textoStencil">ARCHIVOS</a></div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PROVEEDORES</button></div>
+                        <a class="textoStencil">PROVEEDORES</a></div>
                 <?php else: ?>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button></div>
+                        <a class="textoStencil">PLANTILLAS</a></div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button></div>
+                        <a class="textoStencil">ARCHIVOS</a></div>
                 <?php endif; ?>
                 <div class="footerNaV">
                     <form action="../api/auth/logout.php" method="post">
