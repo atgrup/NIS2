@@ -14,11 +14,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Login NIS2</title>
   <link rel="stylesheet" href="../assets/styles/style.css">
-
-  <!-- Google Fonts: Roboto -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-
-  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="d-flex align-items-center justify-content-center">
@@ -27,9 +23,13 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
       <div class="col-md-5">
         <div class="auth-box text-center shadow">
             <h3 class="mb-4">NIS2</h3>
+
             <?php if (!empty($mensaje)): ?>
-              <div class="alert alert-info"><?php echo $mensaje; ?></div>
+              <div class="alert alert-<?php echo (str_starts_with($mensaje, '✅')) ? 'success' : 'danger'; ?>">
+                  <?php echo htmlspecialchars($mensaje); ?>
+              </div>
             <?php endif; ?>
+
             <form method="POST" action="../api/auth/procesar_login.php">
               <div class="form-group text-start mb-3">
                 <label for="email" class="form-label">Email</label>
@@ -56,7 +56,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
     </div>
   </main>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

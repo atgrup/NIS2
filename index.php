@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width= initial-scale=1.0">
-    <title>Document</title>
+    <title>NIS2</title>
     <link rel="stylesheet" href="assets/styles/style.css">
     <!--google fonts-->
     <link rel="preconnect" href="https://fonts.googleapis.com">
