@@ -52,4 +52,14 @@ class UsuarioModel {
         $stmt = $this->db->prepare("DELETE FROM usuarios WHERE id = ?");
         return $stmt->execute([$id]);
     }
+    public function findByRoles(array $roles) {
+    // Construimos placeholders para la consulta
+    $placeholders = implode(',', array_fill(0, count($roles), '?'));
+
+    $sql = "SELECT * FROM usuarios WHERE tipo_usuario IN ($placeholders)";
+    $stmt = $this->db->prepare($sql);
+    $stmt->execute($roles);
+    return $stmt->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+}
+
 }
