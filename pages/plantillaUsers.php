@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Verificación de sesión
 if (!isset($_SESSION['rol'])) {
     header("Location: ../api/auth/login.php");
     exit;
@@ -17,13 +16,12 @@ if ($conexion->connect_error) {
     die("Error de conexión: " . $conexion->connect_error);
 }
 
-// SUBIDA DE ARCHIVO
+// SUBIR ARCHIVO
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     $archivo = $_FILES['archivo'];
     $nombre_original = basename($archivo['name']);
     $nombre_archivo = time() . "_" . $nombre_original;
 
-    // Obtener ID proveedor
     $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
@@ -46,8 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
         $stmt->execute();
         $stmt->close();
-
-        header("Location: PlantillaUsers.php");
+        header("Location: plantillaUsers.php?vista=archivos");
         exit;
     } else {
         echo "<script>alert('❌ Error al subir el archivo');</script>";
@@ -57,10 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Documentos</title>
     <link rel="stylesheet" href="../assets/styles/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -73,33 +69,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         }
     </style>
 </head>
-
 <body class="stencilBody">
 <main class="stencil">
     <nav class="indexStencil">
         <h1 class="tituloNIS">NIS2</h1>
         <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+
         <div class="menuNav">
             <?php if ($rol === 'administrador'): ?>
-                <div class="cajaArchivos"><button class="textoStencil">USUARIOS</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">CONSULTORES</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">PROVEEDORES</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
-            <?php elseif ($rol === 'consultor'): ?>
-                <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">PROVEEDORES</button></div>
-            <?php else: ?>
-                <div class="cajaArchivos"><button class="textoStencil">PLANTILLAS</button></div>
-                <div class="cajaArchivos"><button class="textoStencil">ARCHIVOS</button></div>
+                <div class="cajaArchivos mb-2">
+                    <a class="btn btn-outline-light w-100" href="#">USUARIOS</a>
+                </div>
+                <div class="cajaArchivos mb-2">
+                    <a class="btn btn-outline-light w-100" href="#">CONSULTORES</a>
+                </div>
+                <div class="cajaArchivos mb-2">
+                    <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
+                </div>
             <?php endif; ?>
-            <div class="footerNaV">
-                <form action="../api/auth/logout.php" method="post">
-                    <button type="submit">Cerrar sesión</button>
+
+            <!-- Botones comunes -->
+            <div class="cajaArchivos mb-2">
+                <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
+            </div>
+            <div class="cajaArchivos mb-2">
+                <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
+            </div>
+
+            <?php if ($rol === 'consultor'): ?>
+                <div class="cajaArchivos mb-2">
+                    <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
+                </div>
+            <?php endif; ?>
+
+            <div class="footerNaV mt-3">
+                <form action="../api/auth/logout.php" method="post" class="mb-2">
+                    <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
                 </form>
-                <p>Política de cookies</p>
-                <p>Términos y condiciones</p>
             </div>
         </div>
     </nav>
@@ -107,7 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <div class="contenedorTablaStencil">
         <div class="btns">
             <button type="button" class="btn bg-mi-color btn-lg">
-                <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
+                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
             </button>
             <div class="col-sm">
                 <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
@@ -119,52 +125,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         </div>
 
         <div class="headertable">
-            <table class="table table-bordered border-secondary">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Nombre del archivo</th>
-                        <th>Fecha</th>
-                        <th>Estado</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    if ($correo) {
-                        $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
-                        $stmt->bind_param("s", $correo);
-                        $stmt->execute();
-                        $stmt->bind_result($usuario_id, $proveedor_id);
-                        $stmt->fetch();
-                        $stmt->close();
-
-                        $stmt = $conexion->prepare("SELECT id, nombre_archivo, fecha_subida, revision_estado, archivo_url FROM archivos_subidos WHERE proveedor_id = ?");
-                        $stmt->bind_param("i", $proveedor_id);
-                        $stmt->execute();
-                        $stmt->bind_result($id, $nombre, $fecha, $estado, $archivo_url);
-
-                        $i = 1;
-                        while ($stmt->fetch()) {
-                            $ruta_fisica = realpath(__DIR__ . '/../' . $archivo_url);
-                            if (file_exists($ruta_fisica)) {
-                                echo "<tr>
-                                    <th scope='row'>{$i}</th>
-                                    <td><a href='download.php?archivo=" . urlencode($archivo_url) . "' style='color: inherit; text-decoration: underline;'>" . htmlspecialchars($nombre) . "</a></td>
-                                    <td>{$fecha}</td>
-                                    <td class='text-center'>{$estado}</td>
-                                </tr>";
-                                $i++;
-                            } else {
-                                // El archivo no existe físicamente, se puede eliminar de la base si se desea
-                            }
-                        }
-                        $stmt->close();
-                    }
-                    $conexion->close();
-                    ?>
-                </tbody>
-            </table>
-            <img src="../assets/img/banderita.png" class="imgEmpresa">
+            <?php
+            $vista = $_GET['vista'] ?? 'archivos';
+            if ($vista === 'plantillas') {
+                include 'vista_plantillas.php';
+            } else {
+                include 'vista_archivos.php';
+            }
+            ?>
+            <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
         </div>
     </div>
 </main>
