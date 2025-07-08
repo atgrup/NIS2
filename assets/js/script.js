@@ -12,8 +12,18 @@ botones.forEach(btn => {
 
     switch (section) {
       case 'usuarios':
-        cargarUsuarios();
+        if (userRol !== 'administrador') {
+          alert("⚠️ No tienes permisos para acceder a la sección de usuarios.");
+          contenedor.innerHTML = `
+      <div class="alert alert-danger mt-4" role="alert">
+        Acceso denegado. Esta sección solo está disponible para administradores.
+      </div>
+    `;
+        } else {
+          cargarUsuarios();
+        }
         break;
+
       case 'archivos':
         cargarArchivos();
         break;
@@ -31,8 +41,10 @@ botones.forEach(btn => {
 
 // Carga usuarios en tabla
 function cargarUsuarios() {
+  // Ponemos la tabla vacía en el contenedor
   contenedor.innerHTML = `
-    <table class="table table-bordered border-secondary mt-3" id="tabla-usuarios">
+    <p>Cargando usuarios...</p>
+    <table class="table table-bordered border-secondary mt-3" id="tabla-usuarios" style="display:none;">
       <thead>
         <tr>
           <th>ID</th>
@@ -48,23 +60,15 @@ function cargarUsuarios() {
   cargarDatosUsuarios();
 }
 
-// Simula carga de datos de usuarios (puedes reemplazar con tu fetch real)
-function cargarDatosUsuarios(filtro = 'todos') {
-  fetch('api/usuarios.php')
+function cargarDatosUsuarios() {
+  fetch('http://localhost/NIS2/api/models/Usuario.php')
     .then(response => response.json())
     .then(data => {
-      let usuarios = data;
+      const usuarios = data;
 
-      // Excluir superadmin
-      usuarios = usuarios.filter(user => user.id_usuarios != 1);
-
-      // Si es consultor, filtrar por rol proveedor
-      if (typeof userRol !== 'undefined' && userRol === 'consultor') {
-        usuarios = usuarios.filter(user => user.rol.toLowerCase() === 'proveedor');
-      }
-
-      const tbody = document.querySelector('#tabla-usuarios tbody');
-      tbody.innerHTML = '';
+      const tabla = document.getElementById('tabla-usuarios');
+      const tbody = tabla.querySelector('tbody');
+      tbody.innerHTML = ''; // limpio filas anteriores
 
       usuarios.forEach(user => {
         tbody.innerHTML += `
@@ -76,12 +80,19 @@ function cargarDatosUsuarios(filtro = 'todos') {
           </tr>
         `;
       });
+
+      // Quitamos mensaje y mostramos tabla
+      contenedor.querySelector('p').remove();
+      tabla.style.display = 'table';
     })
     .catch(error => {
       alert('Error al cargar usuarios');
       console.error(error);
+      contenedor.innerHTML = `<div class="alert alert-danger mt-4">Error cargando usuarios.</div>`;
     });
 }
+
+
 
 // Carga tabla de archivos
 function cargarArchivos() {
@@ -116,23 +127,21 @@ function cargarArchivos() {
 }
 
 // Buscador GLOBAL contextual (usuarios, archivos, etc.)
-document.getElementById('buscadorUsuarios').addEventListener('input', function () {
-  const texto = this.value.toLowerCase();
+document.addEventListener('DOMContentLoaded', function () {
+  const buscador = document.getElementById('buscadorUsuarios');
 
-  switch (seccionActual) {
-    case 'usuarios':
-      document.querySelectorAll('#tabla-usuarios tbody tr').forEach(fila => {
-        fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
-      });
-      break;
+  buscador.addEventListener('keyup', function () {
+    const filtro = buscador.value.toLowerCase();
 
-    case 'archivos':
-      document.querySelectorAll('#tabla-archivos tbody tr').forEach(fila => {
-        fila.style.display = fila.textContent.toLowerCase().includes(texto) ? '' : 'none';
-      });
-      break;
+    const tabla = document.querySelector('table');
+    if (!tabla) return;
 
-    // Puedes agregar más casos aquí si agregas más tablas
-  }
+    const filas = tabla.querySelectorAll('tbody tr');
+
+    filas.forEach(function (fila) {
+      const texto = fila.textContent.toLowerCase();
+      fila.style.display = texto.includes(filtro) ? '' : 'none';
+    });
+  });
 });
 
