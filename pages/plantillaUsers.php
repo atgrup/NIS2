@@ -194,7 +194,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                             required>
                     </form>
                 </div>
+
             </div>
+
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
 
@@ -218,6 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
                 <div id="contenido-dinamico" style="margin-top: 100px;"></div>
             </div>
+
             <div class="headertable">
                 <?php
                 $vista = $_GET['vista'] ?? 'archivos';
@@ -244,6 +247,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             </div>
         </div>
     </main>
+
     <script src="../assets/js/script.js"></script>
 </body>
 
