@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Documentos</title>
-    <link rel="stylesheet" href="../assets/styles/style.css">
+    <link rel="stylesheet" href="../assets/styles/style.css?v=<?php echo time(); ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -210,6 +210,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <div class="cajaArchivos mb-2">
                     <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
                 </div>
+                   <?php elseif ($rol === 'consultor'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
+                    </div>
+                <?php else: ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
             <?php endif; ?>
 
             <!-- Botones comunes -->
@@ -217,6 +234,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
             </div>
 
+
+    </nav>
+
+    <div class="contenedorTablaStencil">
+        <div class="btns">
+            <button type="button" class="btn bg-mi-color btn-lg">
+                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
+            </button>
+            <div class="col-sm">
+                <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
+                <form method="POST" enctype="multipart/form-data" class="d-inline">
+                    <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
+                    <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+                </form>
+            </div>
+        </div>
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <table class="table table-bordered border-secondary">
                     <!--esto es para definiar la f var del tipousuari no borrar sino 
@@ -374,22 +407,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
             </div>
         </div>
-    </nav>
-
-    <div class="contenedorTablaStencil">
-        <div class="btns">
-            <button type="button" class="btn bg-mi-color btn-lg">
-                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
-            </button>
-            <div class="col-sm">
-                <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
-                <form method="POST" enctype="multipart/form-data" class="d-inline">
-                    <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
-                    <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
-                </form>
-            </div>
-        </div>
-
         <div class="headertable">
             <?php
             $vista = $_GET['vista'] ?? 'archivos';
