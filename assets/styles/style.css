@@ -1,12 +1,9 @@
-/* Estilos globales */
+/* --- Estilos globales --- */
 body, html {
   height: 100%;
-  background-color: #E9E8E8!important;
+  margin: 0;
+  background-color: #E9E8E8;
   font-family: 'Roboto', sans-serif;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
 }
 
 h4{
@@ -36,7 +33,6 @@ h4{
   color: white;
   font-weight: bold;
 }
-
 .tituloNIS {
   color: #FFF;
   font-family: "Instrument Sans";
@@ -114,89 +110,62 @@ h4{
   width: 70px;
 }
 
-/*INDEX.PHP*/
-.homeIndex {
-  border-radius: 10px;
-  background: #072989;
-  width: 1000px;
-  height: 610px;
-  flex-shrink: 0;
-  margin-left: 70px;
-  padding: 30px;
-}
-
-.subtitulo-index{
-  color: #FFF;
-  font-size: 20px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-}
-
-.introIndex {
-  display: flex;
-  flex-direction: column;
-  align-items: left;
-  flex-wrap: wrap;
-  color: #FFF;
-  font-family: "Instrument Sans";
-  font-size: 16px;
-  gap: 40px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: normal;
-  width: 843px;
+/* --- Navegación --- */
+.indexNav {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .tituloIndice {
   color: #5E5E5E;
-  font-size: 60px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-}
-
-.indexNav {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 370px;
-  margin-left: 70px;
-}
-
-.auth-btn {
-  display: inline-block;
-  text-decoration: none;
-  color: #002f86;
-  border: 2px solid #002f86;
-  border-radius: 10px;
-  padding: 10px 20px;
   font-family: "Instrument Sans", sans-serif;
   font-weight: 700;
-  text-transform: uppercase;
+  font-size: clamp(1.5rem, 5vw, 3.75rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin: 0;
+  max-width: 60vw;
 }
 
-.auth-btn:hover {
-  background: #002f86;
-  color: white;
+/* --- Botones personalizados (auth-btn) --- */
+.auth-btn {
+  border: 2px solid #002f86 !important;
+  color: #002f86 !important;
+  border-radius: 10px !important;
+  padding: 10px 20px !important;
+  font-family: "Instrument Sans", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  text-decoration: none !important;
+  background: transparent !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  white-space: nowrap;
 }
 
+.auth-btn:hover, .auth-btn:focus {
+  background-color: #002f86 !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+/* --- Contenido principal --- */
 .candadito {
-  width: 200px;
+  width: 100%;
+  max-width: 120px;
   height: auto;
 }
 
-.btnsNav{
-  display: flex;
-  justify-content:end;
-  gap:20px;
-  margin-right:50px;
-}
-
-.funcionesIndex{
+.funcionesIndex {
   border: 0.5px solid white;
   border-radius: 20px;
   padding: 20px;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.section-fondo {
+  background-color: #002f86; /* mismo color que el botón */
 }
 
 /* PLANTILLAUSERS.PHP */
@@ -247,17 +216,6 @@ h4{
 
 .footerNaV form{
   padding: 20px;
-}
-
-.tituloNIS {
-  color: #FFF;
-  font-family: "Instrument Sans";
-  font-size: 36px;
-  font-style: normal;
-  font-weight: 700;
-  line-height: normal;
-  margin-top: 70px;
-  text-align: center;
 }
 
 .menuNav {
