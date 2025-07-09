@@ -126,6 +126,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 <script>
     const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
 </script>
+<!-- <body class="stencilBody">
+    <main class="stencil">
+        <nav class="indexStencil">
+            <h1 class="tituloNIS">NIS2</h1>
+            <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+            <div class="menuNav">
+                <?php if ($rol === 'administrador'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="usuarios">USUARIOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="consultores">CONSULTORES</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro" data-section="proveedores">PROVEEDORES</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
+                <?php elseif ($rol === 'consultor'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
+                    </div>
+                <?php else: ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
+                <?php endif; ?>
+                <div class="footerNaV">
+                    <form action="../api/auth/logout.php" method="post">
+                        <button class="logout" type="submit">Cerrar sesión</button>
+                    </form>
+
+                    <p>Política de cookies</p><br>
+                    <p>Terminos y condiciones</p>
+                </div>
+        </nav>
+        <div class="contenedorTablaStencil" id="contenido-dinamico">
+            <div class="btnsnav justify-content-end">
+                <button type="button" class="btn bg-mi-color  btn-md align-items-center ">
+                    <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
+                </button>
+                <div class="col-sm">
+                    <button type="button" class="btn bg-mi-color  btn-lg text-center ">
+                        Normativas
+                    </button>
+                    <form method="POST" enctype="multipart/form-data" class="d-inline">
+                        <label for="archivo" class="btn bg-mi-color btn-lg text-center ">
+                            Subir archivo <img src="../assets/img/descarga.png">
+                        </label>
+                        <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
+                            required>
+                    </form> -->
 
 <body class="stencilBody">
 <main class="stencil">
