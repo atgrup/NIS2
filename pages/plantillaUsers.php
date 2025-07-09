@@ -194,7 +194,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                             required>
                     </form>
                 </div>
+
             </div>
+n
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
 
@@ -243,7 +245,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
             </div>
         </div>
+
     </main>
+
     <script src="../assets/js/script.js"></script>
 </body>
 

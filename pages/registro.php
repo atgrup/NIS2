@@ -28,7 +28,7 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
-<body>
+<body >
   <div class="main-container container-fluid">
     <div class="row w-100 justify-content-center align-items-center">
       <div class="col-md-5">
