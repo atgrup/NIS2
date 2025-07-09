@@ -113,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -126,313 +127,128 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 <script>
     const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
 </script>
-<!-- <body class="stencilBody">
+
+<body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
             <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+
             <div class="menuNav">
                 <?php if ($rol === 'administrador'): ?>
+                    <div class="cajaArchivos mb-2">
+                        <a class="btn btn-outline-light w-100" href="?vista=usuarios" data-section="usuarios">USUARIOS</a>
+                    </div>
+                    <div class="cajaArchivos mb-2">
+                        <a class="btn btn-outline-light w-100" href="?vista=consultores"
+                            data-section="consultores">CONSULTORES</a>
+
+                    </div>
+                    <div class="cajaArchivos mb-2">
+                        <a class="btn btn-outline-light w-100" href="?vista=proveedores"
+                            data-section="proveedores">PROVEEDORES</a>
+                    </div>
+                <?php elseif ($rol === 'consultor'): ?>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="usuarios">USUARIOS</button>
+                        <button class="textoStencil btnFiltro" data-section="plantillas">PLANTILLAS</button>
                     </div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="consultores">CONSULTORES</button>
+                        <button class="textoStencil btnFiltro" data-section="archivos">ARCHIVOS</button>
                     </div>
                     <div class="cajaArchivos">
                         <button class="textoStencil btnFiltro" data-section="proveedores">PROVEEDORES</button>
                     </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                <?php elseif ($rol === 'consultor'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
-                    </div>
                 <?php else: ?>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                        <button class="textoStencil btnFiltro" data-section="plantillas">PLANTILLAS</button>
                     </div>
                     <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                        <button class="textoStencil btnFiltro" data-section="archivos">ARCHIVOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <form action="../api/auth/logout.php" method="post" class="mb-2">
+                            <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
+                        </form>
+
                     </div>
                 <?php endif; ?>
-                <div class="footerNaV">
-                    <form action="../api/auth/logout.php" method="post">
-                        <button class="logout" type="submit">Cerrar sesión</button>
-                    </form>
 
-                    <p>Política de cookies</p><br>
-                    <p>Terminos y condiciones</p>
+                <!-- Botones comunes -->
+                <div class="cajaArchivos mb-2">
+                    <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
                 </div>
+
+
         </nav>
-        <div class="contenedorTablaStencil" id="contenido-dinamico">
-            <div class="btnsnav justify-content-end">
-                <button type="button" class="btn bg-mi-color  btn-md align-items-center ">
-                    <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
+
+        <div class="contenedorTablaStencil">
+            <div class="btns">
+                <button type="button" class="btn bg-mi-color btn-lg">
+                    <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
                 </button>
                 <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color  btn-lg text-center ">
-                        Normativas
-                    </button>
+                    <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg text-center ">
-                            Subir archivo <img src="../assets/img/descarga.png">
-                        </label>
+                        <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
                             required>
-                    </form> -->
-
-<body class="stencilBody">
-<main class="stencil">
-    <nav class="indexStencil">
-        <h1 class="tituloNIS">NIS2</h1>
-        <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
-
-        <div class="menuNav">
-            <?php if ($rol === 'administrador'): ?>
-                <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="?vista=usuarios">USUARIOS</a>
+                    </form>
                 </div>
-                <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="?vista=consultores">CONSULTORES</a>
 
-                </div>
-                <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
-                </div>
-                   <?php elseif ($rol === 'consultor'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
-                    </div>
-                <?php else: ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-            <?php endif; ?>
-
-            <!-- Botones comunes -->
-            <div class="cajaArchivos mb-2">
-                <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
             </div>
 
-
-    </nav>
-
-    <div class="contenedorTablaStencil">
-        <div class="btns">
-            <button type="button" class="btn bg-mi-color btn-lg">
-                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
-            </button>
-            <div class="col-sm">
-                <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
-                <form method="POST" enctype="multipart/form-data" class="d-inline">
-                    <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
-                    <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
-                </form>
-            </div>
-        </div>
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
-                <table class="table table-bordered border-secondary">
-                    <!--esto es para definiar la f var del tipousuari no borrar sino 
-                   no saldran los cambios del header del admin-->
-                    <?php
-                    // Asegurarse de definir tipo_usuario_id antes del <thead>
-                    if (!isset($tipo_usuario_id)) {
-                        if (isset($_SESSION['correo'])) {
-                            $correo = $_SESSION['correo'];
-                            $stmt = $conexion->prepare("SELECT tipo_usuario_id FROM usuarios WHERE correo = ?");
-                            $stmt->bind_param("s", $correo);
-                            $stmt->execute();
-                            $stmt->bind_result($tipo_usuario_id_result);
-                            if ($stmt->fetch()) {
-                                $tipo_usuario_id = $tipo_usuario_id_result;
-                            }
-                            $stmt->close();
-                        } else {
-                            $tipo_usuario_id = null;
-                        }
-                    }
-                    ?>
-
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Nombre del archivo</th>
-                            <th>Fecha</th>
-                            <?php if ($tipo_usuario_id == 1): // Solo admins ?>
-                                <th>ID Usuario</th>
-                                <th>Nombre Usuario</th>
-                            <?php endif; ?>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-
-                    <tbody id="tabla-body">
-                        <?php
-                        //...
-                        
-                        if ($correo) {
-                            // Inicializar variables para evitar undefined
-                            $tipo_usuario_id = null;
-                            $usuario_id = null;
-
-                            $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
-                            if (!$stmt) {
-                                die("Error en la consulta: " . $conexion->error);
-                            }
-                            $stmt->bind_param("s", $correo);
-                            $stmt->execute();
-                            $stmt->bind_result($usuario_id_result, $tipo_usuario_id_result);
-                            if ($stmt->fetch()) {
-                                $usuario_id = $usuario_id_result;
-                                $tipo_usuario_id = $tipo_usuario_id_result;
-                            }
-                            $stmt->close();
-
-                             if ($tipo_usuario_id == 2 && $usuario_id !== null) {
-                                // Proveedor: solo sus archivos
-                                $stmt = $conexion->prepare("
-            SELECT id, nombre_archivo, fecha_subida, revision_estado 
-            FROM archivos_subidos 
-            WHERE proveedor_id = (
-                SELECT id FROM proveedores WHERE usuario_id = ?
-            )
-        ");
-                                if (!$stmt) {
-                                    die("Error en la consulta: " . $conexion->error);
-                                }
-                                $stmt->bind_param("i", $usuario_id);
-                            } else if ($tipo_usuario_id == 1) {
-                                // Admin: ver todos los archivos con usuario que los subió
-                                $stmt = $conexion->prepare("
-            SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, u.id_usuarios, u.correo
-            FROM archivos_subidos a
-            LEFT JOIN proveedores p ON a.proveedor_id = p.id
-            LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios
-        ");
-                                if (!$stmt) {
-                                    die("Error en la consulta: " . $conexion->error);
-                                }
-                            } else {
-                                // Consultor: ver todos los archivos (sin info de usuario)
-                                $stmt = $conexion->prepare("
-            SELECT id, nombre_archivo, fecha_subida, revision_estado 
-            FROM archivos_subidos
-        ");
-                                if (!$stmt) {
-                                    die("Error en la consulta: " . $conexion->error);
-                                }
-                            }
-
-                            $stmt->execute();
-
-                            if ($tipo_usuario_id == 1) {
-                                $stmt->bind_result($id, $nombre_archivo, $fecha, $estado, $id_usuario_subio, $nombre_usuario_subio);
-                            } else {
-                                $stmt->bind_result($id, $nombre_archivo, $fecha, $estado);
-                            }
-
-                            $i = 1;
-                            while ($stmt->fetch()) {
-                                $estado_icono = match ($estado) {
-                                    'aprobado' => "<span class='text-success'>&#10004;</span>",
-                                    'rechazado' => "<span class='text-danger'>&#10006;</span>",
-                                    default => "<span class='text-muted'>Pendiente</span>",
-                                };
-
-                                echo "<tr>
-            <th scope='row'>{$i}</th>
-            <td>" . htmlspecialchars($nombre_archivo) . "</td>
-            <td>{$fecha}</td>";
-
-                                if ($tipo_usuario_id == 1) {
-                                    echo "<td>{$id_usuario_subio}</td>
-                  <td>" . htmlspecialchars($nombre_usuario_subio) . "</td>";
-                                }
-
-                                echo "<td class='text-center'>{$estado_icono}</td>
-        </tr>";
-                                $i++;
-                            }
-
-                            $stmt->close();
-                        }
-                        ?>
-                    </tbody>
-
-                </table>
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
 
-            <div class="cajaArchivos mb-2">
-                <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
-            </div>
-
-            <?php if ($rol === 'consultor'): ?>
                 <div class="cajaArchivos mb-2">
-                    <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
+                    <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
                 </div>
-            <?php endif; ?>
 
-            <div class="footerNaV mt-3">
-                <form action="../api/auth/logout.php" method="post" class="mb-2">
-                    <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
-                </form>
+                <?php if ($rol === 'consultor'): ?>
+                    <div class="cajaArchivos mb-2">
+                        <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
+                    </div>
+                <?php endif; ?>
 
+
+
+                <div class="d-flex justify-content-end mb-3">
+                    <div class="input-group" style="width: 300px; position:absolute; top:80px; right:100px;">
+                        <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
+                        <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
+                    </div>
+                </div>
+                <div id="contenido-dinamico" style="margin-top: 100px;"></div>
             </div>
 
-            <div class="d-flex justify-content-end mb-3">
-                <div class="input-group" style="width: 300px; position:absolute; bottom:60px; right:100px;">
-                    <span class="input-group-text"><img src="../assets/img/search.png"></img></span>
-                    <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
-                    <div id="contenido-dinamico"></div>
-                </div>
+            <div class="headertable">
+                <?php
+                $vista = $_GET['vista'] ?? 'archivos';
+                switch ($vista) {
+                    case 'plantillas':
+                        include 'vista_plantillas.php';
+                        break;
+                    case 'usuarios':
+                        include 'vista_usuarios.php';
+                        break;
+                    case 'consultores':
+                        include 'vista_consultores.php';
+                        break;
+                    case 'proveedores':
+                        include 'vista_proveedores.php';
+                        break;
+                    default:
+                        include 'vista_archivos.php';
+                        break;
+                }
+
+                ?>
+                <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
             </div>
         </div>
-        <div class="headertable">
-            <?php
-            $vista = $_GET['vista'] ?? 'archivos';
-            switch ($vista) {
-                case 'plantillas':
-                    include 'vista_plantillas.php';
-                    break;
-                case 'usuarios':
-                    include 'vista_usuarios.php';
-                    break;
-                case 'consultores':
-                    include 'vista_consultores.php';
-                    break;
-                case 'proveedores':
-                    include 'vista_proveedores.php';
-                    break;
-                default:
-                    include 'vista_archivos.php';
-                    break;
-            }
+    </main>
 
-            ?>
-            <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
-        </div>
-    </div>
-</main>
     <script src="../assets/js/script.js"></script>
 </body>
+
 </html>

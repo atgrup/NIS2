@@ -1,4 +1,3 @@
-
 /* --- Estilos globales --- */
 body, html {
   height: 100%;
@@ -7,13 +6,13 @@ body, html {
   font-family: 'Roboto', sans-serif;
 }
 
-h4{
-  color: #FFFFFF!important;
+h4 {
+  color: #FFFFFF !important;
   text-align: center;
   padding: 20px;
 }
 
-.btnsNav{
+.btnsNav {
   display: flex;
   justify-content: end;
   gap: 20px;
@@ -34,6 +33,7 @@ h4{
   color: white;
   font-weight: bold;
 }
+
 .tituloNIS {
   color: #FFF;
   font-family: "Instrument Sans";
@@ -61,8 +61,9 @@ h4{
 .btn-outline-light {
   border: 1px solid white;
   color: white;
-  font-weight: bold!important; 
+  font-weight: bold !important;
 }
+
 .btn-outline-light:hover {
   background-color: white;
   color: #002f86;
@@ -107,7 +108,8 @@ h4{
   width: 100%;
   margin-top: 2rem;
 }
-.europe-icon{
+
+.europe-icon {
   width: 70px;
 }
 
@@ -215,7 +217,7 @@ h4{
   bottom: 40px;
 }
 
-.footerNaV form{
+.footerNaV form {
   padding: 20px;
 }
 
@@ -228,7 +230,7 @@ h4{
   justify-content: center;
 }
 
-.imgEmpresa{
+.imgEmpresa {
   position: absolute;
   bottom: 50px;
   border-radius: 120px;
@@ -241,14 +243,14 @@ h4{
   border-radius: 40px;
 }
 
-.btnUser{
-  background:none;
+.btnUser {
+  background: none;
   color: white;
-  border:none;
+  border: none;
 }
 
-.logout{
+.logout {
   border: 1px solid white;
-  border-radius:10px;
+  border-radius: 10px;
   padding: 3px 10px;
 }
