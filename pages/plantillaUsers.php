@@ -148,6 +148,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                         <a class="btn btn-outline-light w-100" href="?vista=proveedores"
                             data-section="proveedores">PROVEEDORES</a>
                     </div>
+                    <div class="cajaArchivos mb-2">
+                        <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
+                    </div>
                 <?php elseif ($rol === 'consultor'): ?>
                     <div class="cajaArchivos">
                         <button class="textoStencil btnFiltro" data-section="plantillas">PLANTILLAS</button>
@@ -165,19 +168,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                     <div class="cajaArchivos">
                         <button class="textoStencil btnFiltro" data-section="archivos">ARCHIVOS</button>
                     </div>
-                    <div class="cajaArchivos">
-                        <form action="../api/auth/logout.php" method="post" class="mb-2">
-                            <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
-                        </form>
 
-                    </div>
                 <?php endif; ?>
 
                 <!-- Botones comunes -->
                 <div class="cajaArchivos mb-2">
                     <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
                 </div>
+                <div class="cajaArchivos">
+                    <form action="../api/auth/logout.php" method="post" class="mb-2">
+                        <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
+                    </form>
 
+                </div>
 
         </nav>
 
@@ -196,13 +199,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
 
             </div>
-n
+
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <img src="../assets/img/banderita.png" class="imgEmpresa">
 
-                <div class="cajaArchivos mb-2">
-                    <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
-                </div>
+
 
                 <?php if ($rol === 'consultor'): ?>
                     <div class="cajaArchivos mb-2">
