@@ -126,7 +126,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 <script>
     const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
 </script>
-<body class="stencilBody">
+<!-- <body class="stencilBody">
     <main class="stencil">
         <nav class="indexStencil">
             <h1 class="tituloNIS">NIS2</h1>
@@ -190,7 +190,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                         </label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
                             required>
-                    </form>
+                    </form> -->
 
 <body class="stencilBody">
 <main class="stencil">
