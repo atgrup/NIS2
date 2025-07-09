@@ -111,15 +111,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 }
 ?>
 
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Documentos</title>
-    <link rel="stylesheet" href="../assets/styles/style.css">
+    <link rel="stylesheet" href="../assets/styles/style.css?v=<?php echo time(); ?>">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
@@ -128,71 +126,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 <script>
     const userRol = "<?php echo strtolower($_SESSION['rol']); ?>";
 </script>
-<body class="stencilBody">
-    <main class="stencil">
-        <nav class="indexStencil">
-            <h1 class="tituloNIS">NIS2</h1>
-            <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
-            <div class="menuNav">
-                <?php if ($rol === 'administrador'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="usuarios">USUARIOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="consultores">CONSULTORES</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro" data-section="proveedores">PROVEEDORES</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                <?php elseif ($rol === 'consultor'): ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
-                    </div>
-                <?php else: ?>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
-                    </div>
-                    <div class="cajaArchivos">
-                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
-                    </div>
-                <?php endif; ?>
-                <div class="footerNaV">
-                    <form action="../api/auth/logout.php" method="post">
-                        <button class="logout" type="submit">Cerrar sesión</button>
-                    </form>
-
-                    <p>Política de cookies</p><br>
-                    <p>Terminos y condiciones</p>
-                </div>
-        </nav>
-        <div class="contenedorTablaStencil" id="contenido-dinamico">
-            <div class="btnsnav justify-content-end">
-                <button type="button" class="btn bg-mi-color  btn-md align-items-center ">
-                    <a href="./index.php"> <img src="../assets/img/Arrow 1.png"></a>
-                </button>
-                <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color  btn-lg text-center ">
-                        Normativas
-                    </button>
-                    <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg text-center ">
-                            Subir archivo <img src="../assets/img/descarga.png">
-                        </label>
-                        <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()"
-                            required>
-                    </form>
 
 <body class="stencilBody">
 <main class="stencil">
@@ -212,6 +145,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <div class="cajaArchivos mb-2">
                     <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
                 </div>
+                   <?php elseif ($rol === 'consultor'): ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PROVEEDORES</button>
+                    </div>
+                <?php else: ?>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">PLANTILLAS</button>
+                    </div>
+                    <div class="cajaArchivos">
+                        <button class="textoStencil btnFiltro">ARCHIVOS</button>
+                    </div>
             <?php endif; ?>
 
             <!-- Botones comunes -->
@@ -219,6 +169,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
             </div>
 
+
+    </nav>
+
+    <div class="contenedorTablaStencil">
+        <div class="btns">
+            <button type="button" class="btn bg-mi-color btn-lg">
+                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
+            </button>
+            <div class="col-sm">
+                <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
+                <form method="POST" enctype="multipart/form-data" class="d-inline">
+                    <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
+                    <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+                </form>
+            </div>
+        </div>
             <div class="table-responsive" style="max-height: 80%; overflow-y: auto; margin-top: 15px;">
                 <table class="table table-bordered border-secondary">
                     <!--esto es para definiar la f var del tipousuari no borrar sino 
@@ -277,7 +243,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                             }
                             $stmt->close();
 
-                            if ($tipo_usuario_id == 2 && $usuario_id !== null) {
+                             if ($tipo_usuario_id == 2 && $usuario_id !== null) {
                                 // Proveedor: solo sus archivos
                                 $stmt = $conexion->prepare("
             SELECT id, nombre_archivo, fecha_subida, revision_estado 
@@ -376,22 +342,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 </div>
             </div>
         </div>
-    </nav>
-
-    <div class="contenedorTablaStencil">
-        <div class="btns">
-            <button type="button" class="btn bg-mi-color btn-lg">
-                <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
-            </button>
-            <div class="col-sm">
-                <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
-                <form method="POST" enctype="multipart/form-data" class="d-inline">
-                    <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
-                    <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
-                </form>
-            </div>
-        </div>
-
         <div class="headertable">
             <?php
             $vista = $_GET['vista'] ?? 'archivos';
