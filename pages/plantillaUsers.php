@@ -277,7 +277,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                             }
                             $stmt->close();
 
-                            if ($tipo_usuario_id == 2 && $usuario_id !== null) {
+                             if ($tipo_usuario_id == 2 && $usuario_id !== null) {
                                 // Proveedor: solo sus archivos
                                 $stmt = $conexion->prepare("
             SELECT id, nombre_archivo, fecha_subida, revision_estado 
