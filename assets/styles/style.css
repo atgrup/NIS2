@@ -234,7 +234,7 @@ h4 {
 
 .imgEmpresa {
   position: absolute;
-  bottom: 50px;
+  top: 120%;
   border-radius: 120px;
   width: 60px;
 }

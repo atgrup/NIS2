@@ -241,9 +241,9 @@ $stmt->close();
                         break;
                 }
 
-                ?>
+                ?>-->
                 <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
-            </div> -->
+            </div> 
         </div>
   </main>
 
