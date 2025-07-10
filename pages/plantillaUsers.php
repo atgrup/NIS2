@@ -181,9 +181,7 @@ $vista = $_GET['vista'] ?? 'archivos';
                 <?php endif; ?>
                 <?php if ($rol === 'administrador'): ?>
                 <div class="d-flex flex-wrap gap-2 px-3 mt-2">
-                    <?php if ($vista === 'usuarios'): ?>
-                    <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Usuario</button>
-                    <?php elseif ($vista === 'consultores'): ?>
+                    <?php if ($vista === 'consultores'): ?>
                     <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear Consultor</button>
                     <?php elseif ($vista === 'proveedores'): ?>
                     <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
@@ -222,37 +220,6 @@ $vista = $_GET['vista'] ?? 'archivos';
         </div>
     </div>
 </main>
-<!-- Modal Crear Usuario -->
-<div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="POST" action="crear_usuario.php" onsubmit="return validarContrasenas('usuario')">
-      <div class="modal-content">
-        <div class="modal-header bg-mi-color text-white">
-          <h5 class="modal-title" id="crearUsuarioLabel">Crear Usuario</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="correoUsuario" class="form-label-popup">Correo</label>
-            <input type="email" class="form-control" id="correoUsuario" name="correo" required>
-          </div>
-          <div class="mb-3">
-            <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
-            <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
-          </div>
-          <div class="mb-3">
-            <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
-            <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
-          </div>
-          <div id="errorUsuario" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Crear Usuario</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- Modal Crear Consultor -->
 <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
@@ -324,42 +291,50 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 <!-- JS para validar contraseñas -->
 <script>
-  <script>
-document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
-  e.preventDefault(); // evitar que recargue la página
 
-  // Validar contraseñas igual que ya tienes
-  if (!validarContrasenas('proveedor')) return;
+document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const pass1 = document.getElementById('contrasenaProveedor').value;
+  const pass2 = document.getElementById('contrasenaProveedor2').value;
+  const errorDiv = document.getElementById('errorProveedor');
+
+  if (pass1 !== pass2) {
+    errorDiv.innerText = 'Las contraseñas no coinciden';
+    errorDiv.style.display = 'block';
+    return;
+  }
+
+  errorDiv.style.display = 'none';
 
   const formData = new FormData(this);
 
-  fetch('../pages/crear_proveedor.php', {
+  fetch('crear_proveedor.php', {
     method: 'POST',
     body: formData
   })
-  .then(response => response.json())
+  .then(res => res.json())
   .then(data => {
     if (data.success) {
-      // Cerrar popup (suponiendo que usas Bootstrap modal)
-      const modal = bootstrap.Modal.getInstance(document.getElementById('idModalProveedor'));
+      // Cierra el modal
+      const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearProveedor'));
       modal.hide();
 
-      // Aquí actualizar la tabla
-      // Opción 1: recargar toda la página para que la tabla se actualice
-      // location.reload();
-
-      // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
-      // actualizarTablaProveedores();
-
+      // Redirige a vista=proveedores
+      window.location.href = "plantillasUsers.php?vista=proveedores";
     } else {
-      alert('Error: ' + data.message);
+      errorDiv.innerText = data.message || 'Error al crear proveedor';
+      errorDiv.style.display = 'block';
     }
   })
-  .catch(error => {
-    console.error('Error:', error);
+  .catch(err => {
+    console.error('Error al enviar el formulario:', err);
+    errorDiv.innerText = 'Error en el servidor';
+    errorDiv.style.display = 'block';
   });
 });
 </script>
+
 
 
 
