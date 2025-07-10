@@ -1,4 +1,4 @@
-<div style="max-height: 0%; overflow-y: auto;">
+<div style="max-height: 90%; overflow-y: auto;">
     <table class="table table-bordered border-secondary">
         <thead>
             <tr>

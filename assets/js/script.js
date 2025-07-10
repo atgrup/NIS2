@@ -123,37 +123,37 @@ function cargarUsuarios() {
 
 // Similar para cargarArchivos(), cargarConsultores(), cargarProveedores(), cargarPlantillas()
 
-// Ejemplo para archivos:
-function cargarArchivos() {
-  contenedor.innerHTML = `
-    <table class="table table-bordered mt-3" id="tabla-archivos">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Nombre del Archivo</th>
-          <th>Subido por</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>documento_final.pdf</td>
-          <td>admin@correo.com</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>reporte_anual.xlsx</td>
-          <td>consultor@correo.com</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>informe_seguridad.docx</td>
-          <td>proveedor@correo.com</td>
-        </tr>
-      </tbody>
-    </table>
-  `;
-}
+// // Ejemplo para archivos:
+// function cargarArchivos() {
+//   contenedor.innerHTML = `
+//     <table class="table table-bordered mt-3" id="tabla-archivos">
+//       <thead>
+//         <tr>
+//           <th>ID</th>
+//           <th>Nombre del Archivo</th>
+//           <th>Subido por</th>
+//         </tr>
+//       </thead>
+//       <tbody>
+//         <tr>
+//           <td>1</td>
+//           <td>documento_final.pdf</td>
+//           <td>admin@correo.com</td>
+//         </tr>
+//         <tr>
+//           <td>2</td>
+//           <td>reporte_anual.xlsx</td>
+//           <td>consultor@correo.com</td>
+//         </tr>
+//         <tr>
+//           <td>3</td>
+//           <td>informe_seguridad.docx</td>
+//           <td>proveedor@correo.com</td>
+//         </tr>
+//       </tbody>
+//     </table>
+//   `;
+// }
 
 // Ejemplo función vacía para plantillas, crea según tu lógica
 function cargarPlantillas() {
