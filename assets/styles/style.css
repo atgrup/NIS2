@@ -264,3 +264,7 @@ h4 {
   border-radius: 10px;
   padding: 3px 10px;
 }
+/*MODAL  ESTILOS*/
+.form-label-modal{
+  color:gray;
+}

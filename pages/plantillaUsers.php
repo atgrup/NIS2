@@ -17,6 +17,7 @@ if ($conexion->connect_error) {
 }
 
 // SUBIR ARCHIVO
+// SUBIR ARCHIVO
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['archivo'])) {
         $archivo = $_FILES['archivo'];
@@ -42,37 +43,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
             $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-            $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+            if ($proveedor_id) {
+                $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+            } else {
+                $null = null;
+                $stmt->bind_param("iss", $null, $ruta_para_bd, $nombre_original);
+            }
             $stmt->execute();
             $stmt->close();
-            header("Location: plantillaUsers.php?vista=archivos");
+
+            echo "<script>alert('✅ Archivo subido correctamente'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
             exit;
         } else {
-            echo "<script>alert('❌ Error al subir el archivo');</script>";
+            echo "<script>alert('❌ Error al mover el archivo');</script>";
         }
-    }
-
-    if (isset($_FILES['plantilla']) && ($rol === 'administrador' || $rol === 'consultor')) {
-        $archivo = $_FILES['plantilla'];
-        $nombre_original = basename($archivo['name']);
-        $nombre_archivo = time() . "_" . $nombre_original;
-
-        $carpeta_plantillas = __DIR__ . '/../plantillas_disponibles/';
-
-        if (!is_dir($carpeta_plantillas)) {
-            mkdir($carpeta_plantillas, 0775, true);
-        }
-
-        $ruta_fisica = $carpeta_plantillas . $nombre_archivo;
-
-        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-            header("Location: plantillaUsers.php?vista=plantillas");
-            exit;
-        } else {
-            echo "<script>alert('❌ Error al subir la plantilla');</script>";
-        }
+    } else {
+        echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
     }
 }
+
 
 $vista = $_GET['vista'] ?? 'archivos';
 ?>
@@ -86,6 +75,8 @@ $vista = $_GET['vista'] ?? 'archivos';
     <link rel="stylesheet" href="../assets/styles/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
+</head>
+
 
     <style>
         .sin-scroll {
@@ -122,6 +113,7 @@ $vista = $_GET['vista'] ?? 'archivos';
             overflow-x: auto;
         }
     </style>
+
 </head>
 <body class="stencilBody sin-scroll">
 <main class="stencil container-fluid p-0 overflow-hidden">
@@ -173,12 +165,53 @@ $vista = $_GET['vista'] ?? 'archivos';
                         <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
                     </form>
+
+
+                    <!-- Botón para abrir modal -->
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearUsuario">
+  Crear Consultor
+</button>
+
+
+                    <!-- Modal de creación de consultor -->
+                   <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Crear Consultor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form id="formCrearUsuario">
+          <div class="mb-3">
+            <label for="correo" class="form-label-modal">Correo</label>
+            <input type="email" name="correo" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label-modal">Contraseña</label>
+            <input type="password" name="password" class="form-control" required minlength="6" />
+          </div>
+          <button type="submit" class="btn btn-primary">Crear Consultor</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
                 <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
                         <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
                         <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
                     </form>
-                <?php endif; ?>
+        <?php endif; ?>
                 <?php if ($rol === 'administrador'): ?>
                 <div class="d-flex flex-wrap gap-2 px-3 mt-2">
                     <?php if ($vista === 'consultores'): ?>
@@ -186,6 +219,7 @@ $vista = $_GET['vista'] ?? 'archivos';
                     <?php elseif ($vista === 'proveedores'): ?>
                     <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
                     <?php endif; ?>
+
                 </div>
                 <?php endif; ?>
             </div>
@@ -289,9 +323,39 @@ $vista = $_GET['vista'] ?? 'archivos';
   </div>
 </div>
 
-<!-- JS para validar contraseñas -->
-<script>
+            <!-- <div class="headertable">
+                <?php
+                $vista = $_GET['vista'] ?? 'archivos';
+                switch ($vista) {
+                    case 'plantillas':
+                        include 'vista_plantillas.php';
+                        break;
+                    case 'usuarios':
+                        include 'vista_usuarios.php';
+                        break;
+                    case 'consultores':
+                        include 'vista_consultores.php';
+                        break;
+                    case 'proveedores':
+                        include 'vista_proveedores.php';
+                        break;
+                    default:
+                        include 'vista_archivos.php';
+                        break;
+                }
 
+                ?>-->
+                <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
+            </div> 
+        </div>
+ </main>
+<!-- JS para validar contraseñas -->
+ 
+<script src="../assets/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
 document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
   e.preventDefault();
 
@@ -320,6 +384,7 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
       const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearProveedor'));
       modal.hide();
 
+
       // Redirige a vista=proveedores
       window.location.href = "plantillasUsers.php?vista=proveedores";
     } else {
@@ -333,15 +398,16 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
     errorDiv.style.display = 'block';
   });
 });
+ // Aquí actualizar la tabla
+      // Opción 1: recargar toda la página para que la tabla se actualice
+      // location.reload();
+
+      // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
+      // actualizarTablaProveedores();
+
 </script>
-
-
-
-
-<!-- JS -->
-<script src="../assets/js/script.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
-
+    
 </body>
+
+
 </html>

@@ -193,3 +193,47 @@ window.addEventListener('load', () => {
       contenedor.innerHTML = `<p>Sección desconocida</p>`;
   }
 });
+//creacion de consultor en el panel de administrador
+document.getElementById('formCrearUsuario').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+  formData.append('accion', 'crear_usuario');
+  formData.append('tipo_usuario_id', 3); // ID para consultor
+
+ try {
+  const response = await fetch('http://localhost/NIS2/api/models/Usuario.php', {
+    method: 'POST',
+    body: formData
+  });
+
+  const text = await response.text(); // lee como texto
+
+  console.log('Respuesta del servidor:', text);
+
+  // Intenta parsear JSON solo si no está vacío
+  if (text.trim().length === 0) {
+    alert('Respuesta vacía del servidor');
+    return;
+  }
+
+  const result = JSON.parse(text); // parsea JSON
+
+  if (result.success) {
+    alert('✅ Usuario consultor creado correctamente');
+    form.reset();
+    const modalEl = document.getElementById('modalCrearUsuario');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    cargarConsultores();
+  } else {
+    alert('❌ Error: ' + (result.message || 'Error desconocido'));
+  }
+} catch (error) {
+  console.error('Error al procesar respuesta:', error);
+  alert('❌ Error al enviar formulario o respuesta inválida');
+  form.reset();
+}
+
+});
