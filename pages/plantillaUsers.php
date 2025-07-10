@@ -179,6 +179,17 @@ $vista = $_GET['vista'] ?? 'archivos';
                         <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
                     </form>
                 <?php endif; ?>
+                <?php if ($rol === 'administrador'): ?>
+                <div class="d-flex flex-wrap gap-2 px-3 mt-2">
+                    <?php if ($vista === 'usuarios'): ?>
+                    <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Usuario</button>
+                    <?php elseif ($vista === 'consultores'): ?>
+                    <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear Consultor</button>
+                    <?php elseif ($vista === 'proveedores'): ?>
+                    <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
 
             <div class="input-group" style="max-width: 300px;">
@@ -211,9 +222,151 @@ $vista = $_GET['vista'] ?? 'archivos';
         </div>
     </div>
 </main>
+<!-- Modal Crear Usuario -->
+<div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="crear_usuario.php" onsubmit="return validarContrasenas('usuario')">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="crearUsuarioLabel">Crear Usuario</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="correoUsuario" class="form-label-popup">Correo</label>
+            <input type="email" class="form-control" id="correoUsuario" name="correo" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
+          </div>
+          <div id="errorUsuario" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Crear Usuario</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Crear Consultor -->
+<div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="correoConsultor" class="form-label-popup">Correo</label>
+            <input type="email" class="form-control" id="correoConsultor" name="correo" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaConsultor2" class="form-label-popup">Repetir Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaConsultor2" name="contrasena2" required>
+          </div>
+          <div id="errorConsultor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Crear Consultor</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Crear Proveedor -->
+<div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="crear_proveedor.php" id="formCrearProveedor" onsubmit="return validarContrasenas('proveedor')">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="crearProveedorLabel">Crear Proveedor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="correoProveedor" class="form-label-popup">Correo</label>
+            <input type="email" class="form-control" id="correoProveedor" name="email" required>
+          </div>
+          <div class="mb-3">
+            <label for="nombreEmpresa" class="form-label-popup">Nombre de Empresa</label>
+            <input type="text" class="form-control" id="nombreEmpresa" name="nombre_empresa" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaProveedor" class="form-label-popup">Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaProveedor" name="password" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaProveedor2" class="form-label-popup">Repetir Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaProveedor2" name="repeat-password" required>
+          </div>
+          <div id="errorProveedor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Crear Proveedor</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- JS para validar contraseñas -->
+<script>
+  <script>
+document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
+  e.preventDefault(); // evitar que recargue la página
+
+  // Validar contraseñas igual que ya tienes
+  if (!validarContrasenas('proveedor')) return;
+
+  const formData = new FormData(this);
+
+  fetch('../pages/crear_proveedor.php', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      // Cerrar popup (suponiendo que usas Bootstrap modal)
+      const modal = bootstrap.Modal.getInstance(document.getElementById('idModalProveedor'));
+      modal.hide();
+
+      // Aquí actualizar la tabla
+      // Opción 1: recargar toda la página para que la tabla se actualice
+      // location.reload();
+
+      // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
+      // actualizarTablaProveedores();
+
+    } else {
+      alert('Error: ' + data.message);
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+});
+</script>
+
+
 
 <!-- JS -->
 <script src="../assets/js/script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
 
 </body>
 </html>
