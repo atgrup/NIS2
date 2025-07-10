@@ -113,10 +113,12 @@ h4 {
   width: 70px;
 }
 
+
 /* --- Navegación --- */
 .indexNav {
   padding-left: 0;
   padding-right: 0;
+
 }
 
 .tituloIndice {
@@ -232,7 +234,7 @@ h4 {
 
 .imgEmpresa {
   position: absolute;
-  bottom: 50px;
+  top: 120%;
   border-radius: 120px;
   width: 60px;
 }
