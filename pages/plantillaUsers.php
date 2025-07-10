@@ -188,11 +188,11 @@ $vista = $_GET['vista'] ?? 'archivos';
       <div class="modal-body">
         <form id="formCrearUsuario">
           <div class="mb-3">
-            <label for="correo" class="form-label">Correo</label>
+            <label for="correo" class="form-label-modal">Correo</label>
             <input type="email" name="correo" class="form-control" required />
           </div>
           <div class="mb-3">
-            <label for="password" class="form-label">Contraseña</label>
+            <label for="password" class="form-label-modal">Contraseña</label>
             <input type="password" name="password" class="form-control" required minlength="6" />
           </div>
           <button type="submit" class="btn btn-primary">Crear Consultor</button>
