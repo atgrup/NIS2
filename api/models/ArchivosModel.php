@@ -25,6 +25,10 @@ class ArchivoModel {
         $stmt->execute([$usuario_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+public function obtenerTodosLosArchivos() {
+    $stmt = $this->pdo->query("SELECT * FROM archivos_subidos ORDER BY fecha_subida DESC");
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
     // Obtener archivo por ID
     public function obtenerArchivoPorId($id) {
