@@ -1,3 +1,4 @@
+<div style="max-height: 90%; overflow-y: auto;">
 <?php
 // Suponiendo que ya tienes conexión en $conexion
 $sql = "SELECT u.correo, p.nombre_empresa
@@ -30,3 +31,4 @@ $result = $conexion->query($sql);
         ?>
     </tbody>
 </table>
+</div>
