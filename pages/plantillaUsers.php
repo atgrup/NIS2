@@ -71,6 +71,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             echo "<script>alert('❌ Error al subir la plantilla');</script>";
         }
+
+        $stmt->execute();
+        $stmt->close();
+        echo "<script>alert('✅ Archivo subido correctamesnte');</script>";
+
+        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+        $stmt->execute();
+        $stmt->close();
+
+
+    } else {
+        echo "<script>alert('❌ Error al subir el archivo');</script>";
+
+
     }
 }
 
@@ -86,6 +101,9 @@ $vista = $_GET['vista'] ?? 'archivos';
     <link rel="stylesheet" href="../assets/styles/style.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
+
+</head>
+
 
     <style>
         .sin-scroll {
@@ -173,6 +191,47 @@ $vista = $_GET['vista'] ?? 'archivos';
                         <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
                     </form>
+
+
+                    <!-- Botón para abrir modal -->
+<button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalCrearUsuario">
+  Crear Consultor
+</button>
+
+
+                    <!-- Modal de creación de consultor -->
+                   <div class="modal fade" id="modalCrearUsuario" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalLabel">Crear Consultor</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body">
+        <form id="formCrearUsuario">
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo</label>
+            <input type="email" name="correo" class="form-control" required />
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Contraseña</label>
+            <input type="password" name="password" class="form-control" required minlength="6" />
+          </div>
+          <button type="submit" class="btn btn-primary">Crear Consultor</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+
+
                 <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
                         <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
@@ -188,6 +247,7 @@ $vista = $_GET['vista'] ?? 'archivos';
                     <?php elseif ($vista === 'proveedores'): ?>
                     <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
                     <?php endif; ?>
+
                 </div>
                 <?php endif; ?>
             </div>
@@ -351,6 +411,34 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
       // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
       // actualizarTablaProveedores();
 
+
+            <!-- <div class="headertable">
+                <?php
+                $vista = $_GET['vista'] ?? 'archivos';
+                switch ($vista) {
+                    case 'plantillas':
+                        include 'vista_plantillas.php';
+                        break;
+                    case 'usuarios':
+                        include 'vista_usuarios.php';
+                        break;
+                    case 'consultores':
+                        include 'vista_consultores.php';
+                        break;
+                    case 'proveedores':
+                        include 'vista_proveedores.php';
+                        break;
+                    default:
+                        include 'vista_archivos.php';
+                        break;
+                }
+
+                ?>-->
+            <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
+        </div>
+        </div>
+    </main>
+
     } else {
       alert('Error: ' + data.message);
     }
@@ -360,6 +448,7 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
   });
 });
 </script>
+
 
 
 

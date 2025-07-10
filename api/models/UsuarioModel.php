@@ -60,6 +60,31 @@ class UsuarioModel {
     $stmt = $this->db->prepare($sql);
     $stmt->execute($roles);
     return $stmt->fetchAll(PDO::FETCH_CLASS, 'Usuario');
+    }
+
+    public function crearUsuario($correo, $password, $tipo_usuario_id) {
+        // Validar si correo existe
+        $stmt = $this->conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ?");
+        $stmt->bind_param('s', $correo);
+        $stmt->execute();
+        $stmt->store_result();
+        if ($stmt->num_rows > 0) {
+            return ['success' => false, 'message' => 'Correo ya registrado'];
+        }
+        $stmt->close();
+
+        // Insertar usuario
+        $password_hash = password_hash($password, PASSWORD_DEFAULT);
+        $stmt = $this->conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id, verificado) VALUES (?, ?, ?, 0)");
+        $stmt->bind_param('ssi', $correo, $password_hash, $tipo_usuario_id);
+        if (!$stmt->execute()) {
+            return ['success' => false, 'message' => 'Error al crear usuario'];
+        }
+        $usuario_id = $stmt->insert_id;
+        $stmt->close();
+
+        return ['success' => true, 'usuario_id' => $usuario_id];
+    }
 }
 
-}
+
