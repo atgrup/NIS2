@@ -93,17 +93,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
             }
             $stmt->bind_param("ss", $ruta_para_bd, $nombre_original);
         }
+$stmt->execute();
+$stmt->close();
+echo "<script>alert('✅ Archivo subido correctamesnte');</script>";
 
-        $stmt->execute();
-        $stmt->close();
-        echo "<script>alert('✅ Archivo subido correctamente');</script>";
+$stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+$stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+$stmt->execute();
+$stmt->close();
 
-        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-        $stmt->execute();
-        $stmt->close();
-        header("Location: plantillaUsers.php?vista=archivos");
-        exit;
 
     } else {
         echo "<script>alert('❌ Error al subir el archivo');</script>";
@@ -222,7 +220,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                 <div id="contenido-dinamico" style="margin-top: 100px;"></div>
             </div>
 
-            <div class="headertable">
+            <!-- <div class="headertable">
                 <?php
                 $vista = $_GET['vista'] ?? 'archivos';
                 switch ($vista) {
@@ -243,9 +241,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
                         break;
                 }
 
-                ?>
+                ?>-->
                 <img src="../assets/img/banderita.png" class="imgEmpresa" alt="bandera">
-            </div>
+            </div> 
         </div>
   </main>
 
