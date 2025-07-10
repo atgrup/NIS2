@@ -17,39 +17,64 @@ if ($conexion->connect_error) {
 }
 
 // SUBIR ARCHIVO
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
-    $archivo = $_FILES['archivo'];
-    $nombre_original = basename($archivo['name']);
-    $nombre_archivo = time() . "_" . $nombre_original;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (isset($_FILES['archivo'])) {
+        $archivo = $_FILES['archivo'];
+        $nombre_original = basename($archivo['name']);
+        $nombre_archivo = time() . "_" . $nombre_original;
 
-    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $stmt->bind_result($usuario_id, $proveedor_id);
-    $stmt->fetch();
-    $stmt->close();
+        $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+        $stmt->bind_param("s", $correo);
+        $stmt->execute();
+        $stmt->bind_result($usuario_id, $proveedor_id);
+        $stmt->fetch();
+        $stmt->close();
 
-    $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
-    $carpeta_url = 'documentos_subidos/' . $correo;
+        $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
+        $carpeta_url = 'documentos_subidos/' . $correo;
 
-    if (!is_dir($carpeta_usuario)) {
-        mkdir($carpeta_usuario, 0775, true);
+        if (!is_dir($carpeta_usuario)) {
+            mkdir($carpeta_usuario, 0775, true);
+        }
+
+        $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
+        $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+            $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+            $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+            $stmt->execute();
+            $stmt->close();
+            header("Location: plantillaUsers.php?vista=archivos");
+            exit;
+        } else {
+            echo "<script>alert('❌ Error al subir el archivo');</script>";
+        }
     }
 
-    $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
-    $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+    if (isset($_FILES['plantilla']) && ($rol === 'administrador' || $rol === 'consultor')) {
+        $archivo = $_FILES['plantilla'];
+        $nombre_original = basename($archivo['name']);
+        $nombre_archivo = time() . "_" . $nombre_original;
 
-    if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-        $stmt->execute();
-        $stmt->close();
-        header("Location: plantillaUsers.php?vista=archivos");
-        exit;
-    } else {
-        echo "<script>alert('❌ Error al subir el archivo');</script>";
+        $carpeta_plantillas = __DIR__ . '/../plantillas_disponibles/';
+
+        if (!is_dir($carpeta_plantillas)) {
+            mkdir($carpeta_plantillas, 0775, true);
+        }
+
+        $ruta_fisica = $carpeta_plantillas . $nombre_archivo;
+
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+            header("Location: plantillaUsers.php?vista=plantillas");
+            exit;
+        } else {
+            echo "<script>alert('❌ Error al subir la plantilla');</script>";
+        }
     }
 }
+
+$vista = $_GET['vista'] ?? 'archivos';
 ?>
 
 <!DOCTYPE html>
@@ -62,7 +87,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- ✅ ESTILOS EXTRA PARA RESPONSIVIDAD -->
     <style>
         .sin-scroll {
             overflow-y: auto;
@@ -140,20 +164,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
         </div>
     </nav>
 
-    <div class="contenedorTablaStencil">  
+    <div class="contenedorTablaStencil">
         <!-- Buscador en línea con los botones -->
         <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3">
             <div class="btns me-auto d-flex flex-wrap gap-2">
-                <button type="button" class="btn bg-mi-color btn-lg">
-                    <a href="./index.php"><img src="../assets/img/Arrow 1.png" alt="Volver"></a>
-                </button>
-                <div class="col-sm">
-                    <button type="button" class="btn bg-mi-color btn-lg">Normativas</button>
+                <?php if ($vista === 'archivos'): ?>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
-                        <label for="archivo" class="btn bg-mi-color btn-lg">Subir archivo</label>
+                        <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
                         <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
                     </form>
-                </div>
+                <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
+                    <form method="POST" enctype="multipart/form-data" class="d-inline">
+                        <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
+                        <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
+                    </form>
+                <?php endif; ?>
             </div>
 
             <div class="input-group" style="max-width: 300px;">
@@ -165,7 +190,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 
         <div class="headertable">
             <?php
-            $vista = $_GET['vista'] ?? 'archivos';
             switch ($vista) {
                 case 'plantillas':
                     include 'vista_plantillas.php';
@@ -191,41 +215,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['archivo'])) {
 <!-- JS -->
 <script src="../assets/js/script.js"></script>
 
-<!-- ✅ ESTILOS RESPONSIVE -->
-<style>
-  html, body {
-    overflow-x: hidden;
-    margin: 0;
-    padding: 0;
-    max-width: 100%;
-  }
-
-  .sin-scroll {
-    overflow-y: auto;
-    height: 100vh;
-  }
-
-  .menuNav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: start;
-  }
-
-  .menuNav .cajaArchivos {
-    flex: 1 1 45%;
-    min-width: 140px;
-  }
-
-  .contenedorTablaStencil {
-    overflow-x: auto;
-  }
-
-  @media (max-width: 768px) {
-    .menuNav .cajaArchivos {
-      flex: 1 1 100%;
-    }
-  }
-</style>
 </body>
 </html>
