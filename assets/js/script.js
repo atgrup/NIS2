@@ -67,11 +67,12 @@ buscador.addEventListener('keyup', function () {
   filas.forEach(fila => {
     // Supongamos que columna 0 = ID, columna 2 = Nombre (ajusta según tabla)
     const celdas = fila.querySelectorAll('td');
-    const id = celdas[0]?.textContent.toLowerCase() || '';
-    const nombre = celdas[2]?.textContent.toLowerCase() || '';
+const id = celdas[0]?.textContent.toLowerCase() || '';
+const correo = celdas[1]?.textContent.toLowerCase() || '';
+const nombre = celdas[2]?.textContent.toLowerCase() || '';
 
-    fila.style.display = (id.includes(filtro) || nombre.includes(filtro)) ? '' : 'none';
-  });
+fila.style.display = (id.includes(filtro) || nombre.includes(filtro) || correo.includes(filtro)) ? '' : 'none';
+ });
 });
 
 
@@ -126,34 +127,50 @@ function cargarUsuarios() {
 // Ejemplo para archivos:
 function cargarArchivos() {
   contenedor.innerHTML = `
-    <table class="table table-bordered mt-3" id="tabla-archivos">
+    <p>Cargando archivos...</p>
+    <table class="table table-bordered mt-3" id="tabla-archivos" style="display: none;">
       <thead>
         <tr>
           <th>ID</th>
           <th>Nombre del Archivo</th>
-          <th>Subido por</th>
+          <th>Fecha de Subida</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>documento_final.pdf</td>
-          <td>admin@correo.com</td>
-        </tr>
-        <tr>
-          <td>2</td>
-          <td>reporte_anual.xlsx</td>
-          <td>consultor@correo.com</td>
-        </tr>
-        <tr>
-          <td>3</td>
-          <td>informe_seguridad.docx</td>
-          <td>proveedor@correo.com</td>
-        </tr>
-      </tbody>
+      <tbody></tbody>
     </table>
   `;
+
+  fetch('http://localhost/NIS2/api/models/get_archivos.php')
+    .then(response => response.json())
+    .then(data => {
+      const tabla = document.getElementById('tabla-archivos');
+      const tbody = tabla.querySelector('tbody');
+      tbody.innerHTML = '';
+
+      if (data.length === 0) {
+        contenedor.innerHTML = `<div class="alert alert-info mt-4">No hay archivos subidos.</div>`;
+        return;
+      }
+
+      data.forEach(archivo => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${archivo.id}</td>
+            <td>${archivo.nombre_archivo}</td>
+            <td>${archivo.fecha_subida}</td>
+          </tr>
+        `;
+      });
+
+      contenedor.querySelector('p')?.remove();
+      tabla.style.display = 'table';
+    })
+    .catch(error => {
+      console.error(error);
+      contenedor.innerHTML = `<div class="alert alert-danger mt-4">Error cargando archivos.</div>`;
+    });
 }
+
 
 // Ejemplo función vacía para plantillas, crea según tu lógica
 function cargarPlantillas() {
