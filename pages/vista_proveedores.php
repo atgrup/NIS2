@@ -1,3 +1,4 @@
+<div style="max-height: 90%; overflow-y: auto;">
 <?php
 // Suponiendo que ya tienes conexión en $conexion
 $sql = "SELECT u.correo, p.nombre_empresa
@@ -31,6 +32,7 @@ $result = $conexion->query($sql);
         ?>
     </tbody>
 </table>
+
     </div><div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,3 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
   crearPaginacion();
 });
 </script>
+
+</div>
+
