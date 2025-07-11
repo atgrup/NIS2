@@ -1,8 +1,8 @@
-<div style="max-height: 90%; overflow-y: auto;">
+<div style="max-height: 90%; overflow-y: none;">
 <table class="table table-bordered border-secondary">
     <thead>
         <tr>
-            <th>#</th>
+            
             <th>Nombre del archivo</th>
             <?php if ($rol === 'administrador') echo "<th>Proveedor</th>"; ?>
             <th>Fecha</th>

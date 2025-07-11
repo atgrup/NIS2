@@ -1,8 +1,7 @@
-<div style="max-height: 90%; overflow-y: auto;">
+<div style="max-height: 90%; overflow-y: none;">
     <table class="table table-bordered border-secondary">
         <thead>
             <tr>
-                <th>#</th>
                 <th>Nombre de la plantilla</th>
                 <th>Tipo</th>
             </tr>

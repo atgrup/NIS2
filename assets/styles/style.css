@@ -191,11 +191,14 @@ h4 {
   padding: 30px;
   width: 73%;
   height: 850px;
+  overflow: hidden;
   display: flex;
   align-self: center;
   flex-direction: column;
   margin-left: 20px;
+  
 }
+
 
 .stencilBody {
   background-color: #E6E6E6;
