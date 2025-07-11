@@ -110,10 +110,191 @@ $vista = $_GET['vista'] ?? 'archivos';
     }
   }
 
-  .contenedorTablaStencil {
-    overflow-x: auto;
+  #paginacion {
+    color: gray;
   }
 </style>
+<script>
+  let seccionActual = null;
+  let usuariosData = [];
+  let usuariosPorPagina = 10;
+  let paginaActual = 1;
+
+  const botones = document.querySelectorAll('.cajaArchivos button[data-section], .cajaArchivos a[data-section]');
+  const buscador = document.getElementById('buscadorUsuarios');
+  const contenedor = document.getElementById('contenido-dinamico');
+
+  const placeholders = {
+    usuarios: "Buscar usuario...",
+    archivos: "Buscar archivo...",
+    consultores: "Buscar consultor...",
+    proveedores: "Buscar proveedor...",
+    plantillas: "Buscar plantilla...",
+    default: "Buscar..."
+  };
+
+  // 🔁 Cambiar placeholder dinámicamente
+  function actualizarPlaceholder(seccion) {
+    buscador.placeholder = placeholders[seccion] || placeholders.default;
+  }
+
+  // 🔍 Evento buscador dinámico
+  buscador?.addEventListener("keyup", function () {
+    const texto = buscador.value.trim().toLowerCase();
+
+    if (seccionActual === "usuarios") {
+      const filtrados = usuariosData.filter(user =>
+        user.nombre.toLowerCase().includes(texto) ||
+        user.correo.toLowerCase().includes(texto) ||
+        user.rol.toLowerCase().includes(texto)
+      );
+      renderizarUsuarios(filtrados);
+    }
+    // Aquí puedes agregar filtros para otras secciones si las tienes cargadas
+  });
+
+  // 📦 Cargar secciones
+  botones.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const section = btn.getAttribute('data-section');
+      seccionActual = section;
+      actualizarPlaceholder(section);
+
+      switch (section) {
+        case 'usuarios':
+          if (userRol !== 'administrador') {
+            contenedor.innerHTML = `<div class="alert alert-danger">No tienes permisos para ver usuarios.</div>`;
+          } else {
+            cargarUsuarios();
+          }
+          break;
+        case 'archivos':
+          cargarArchivos(); break;
+        case 'consultores':
+          cargarConsultores(); break;
+        case 'proveedores':
+          cargarProveedores(); break;
+        case 'plantillas':
+          cargarPlantillas(); break;
+        default:
+          contenedor.innerHTML = `<p>Sección desconocida</p>`;
+      }
+    });
+  });
+
+  // 👥 Cargar usuarios (con paginación y filtrado)
+  function cargarUsuarios() {
+    contenedor.innerHTML = `<p>Cargando usuarios...</p>`;
+
+    fetch('http://localhost/NIS2/api/models/Usuario.php')
+      .then(res => res.json())
+      .then(data => {
+        usuariosData = data;
+        paginaActual = 1;
+        renderizarUsuarios(usuariosData);
+      })
+      .catch(err => {
+        console.error(err);
+        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar usuarios.</div>`;
+      });
+  }
+
+  function renderizarUsuarios(data = []) {
+    const inicio = (paginaActual - 1) * usuariosPorPagina;
+    const fin = inicio + usuariosPorPagina;
+    const usuariosPagina = data.slice(inicio, fin);
+
+    let tabla = `
+    <table class="table table-bordered mt-3">
+      <thead>
+        <tr><th>Correo</th><th>Nombre</th><th>Rol</th></tr>
+      </thead>
+      <tbody>
+        ${usuariosPagina.map(u => `
+          <tr>
+            <td>${u.correo}</td>
+            <td>${u.nombre}</td>
+            <td>${u.rol}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+  `;
+
+    contenedor.innerHTML = tabla;
+    renderizarPaginacion(data);
+  }
+
+  function renderizarPaginacion(data) {
+    const totalPaginas = Math.ceil(data.length / usuariosPorPagina);
+    const pagDiv = document.getElementById("paginacion");
+    pagDiv.innerHTML = '';
+
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.classList.add('btn', i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+      btn.addEventListener('click', () => {
+        paginaActual = i;
+        renderizarUsuarios(data);
+      });
+      pagDiv.appendChild(btn);
+    }
+  }
+
+  // 🚀 Cargar vista inicial según la URL
+  window.addEventListener('load', () => {
+    const vista = new URLSearchParams(window.location.search).get('vista') || 'archivos';
+    seccionActual = vista;
+    actualizarPlaceholder(vista);
+
+    switch (vista) {
+      case 'usuarios': cargarUsuarios(); break;
+      case 'archivos': cargarArchivos(); break;
+      case 'consultores': cargarConsultores(); break;
+      case 'proveedores': cargarProveedores(); break;
+      case 'plantillas': cargarPlantillas(); break;
+      default: contenedor.innerHTML = `<p>Vista desconocida</p>`;
+    }
+  });
+
+  document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
+    e.preventDefault(); // evitar que recargue la página
+
+    // Validar contraseñas igual que ya tienes
+    if (!validarContrasenas('proveedor')) return;
+
+    const formData = new FormData(this);
+
+    fetch('../pages/crear_proveedor.php', {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Cerrar popup (suponiendo que usas Bootstrap modal)
+          const modal = bootstrap.Modal.getInstance(document.getElementById('crearProveedorModal'));
+          modal.hide();
+
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+  });
+  // Aquí actualizar la tabla
+  // Opción 1: recargar toda la página para que la tabla se actualice
+  // location.reload();
+
+  // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
+  // actualizarTablaProveedores();
+
+
+</script>
 
 </head>
 
@@ -306,11 +487,18 @@ $vista = $_GET['vista'] ?? 'archivos';
           <?php endif; ?>
         </div>
 
+
+        <!-- 🔍 Buscador fuera -->
         <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text"><img src="../assets/img/search.png" alt="Buscar"></span>
-          <input type="text" class="form-control" placeholder="Buscar usuario..." id="buscadorUsuarios">
-          <div id="contenido-dinamico"></div>
+          <span class="input-group-text">
+            <img src="../assets/img/search.png" alt="Buscar">
+          </span>
+          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
         </div>
+
+        <!-- 📦 Contenido dinámico -->
+        <div id="contenido-dinamico" class="mt-4"></div>
+
       </div>
 
       <div class="headertable">
@@ -335,6 +523,7 @@ $vista = $_GET['vista'] ?? 'archivos';
         ?>
 
       </div>
+
     </div>
   </main>
 
@@ -345,52 +534,65 @@ $vista = $_GET['vista'] ?? 'archivos';
 
   <script src="../assets/js/script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
-
-
-  <script>
-
-    document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
-      e.preventDefault(); // evitar que recargue la página
-
-      // Validar contraseñas igual que ya tienes
-      if (!validarContrasenas('proveedor')) return;
-
-      const formData = new FormData(this);
-
-      fetch('../pages/crear_proveedor.php', {
-        method: 'POST',
-        body: formData
-      })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            // Cerrar popup (suponiendo que usas Bootstrap modal)
-            const modal = bootstrap.Modal.getInstance(document.getElementById('idModalProveedor'));
-            modal.hide();
-          } else {
-            alert('Error: ' + data.message);
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-        });
-    });
-    // Aquí actualizar la tabla
-    // Opción 1: recargar toda la página para que la tabla se actualice
-    // location.reload();
-
-    // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
-    // actualizarTablaProveedores();
-
-  </script>
-
-
-
-
-
-
-
 </body>
 
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const filasPorPagina = 10;
+    let paginaActual = 1;
+    const tabla = document.getElementById('tablaUsuarios');
+    const tbody = tabla.querySelector('tbody');
+    const filas = Array.from(tbody.querySelectorAll('tr'));
+    const pagDiv = document.getElementById('paginacion');
+    const buscador = document.getElementById('buscadorUsuarios');
+
+    function mostrarPagina(pagina, datosFiltrados) {
+      const inicio = (pagina - 1) * filasPorPagina;
+      const fin = inicio + filasPorPagina;
+
+      filas.forEach(fila => fila.style.display = 'none'); // ocultar todo
+
+      datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
+
+      // Actualizar numeración visible
+      datosFiltrados.forEach((fila, i) => {
+        fila.children[0].textContent = i + 1;
+      });
+    }
+
+    function crearPaginacion(datosFiltrados) {
+      pagDiv.innerHTML = '';
+      const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
+      for (let i = 1; i <= totalPaginas; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+        btn.addEventListener('click', () => {
+          paginaActual = i;
+          mostrarPagina(paginaActual, datosFiltrados);
+          crearPaginacion(datosFiltrados);
+        });
+        pagDiv.appendChild(btn);
+      }
+    }
+
+    function filtrarTabla() {
+      const texto = buscador.value.toLowerCase();
+      const filasFiltradas = filas.filter(fila => {
+        return Array.from(fila.cells).some(celda =>
+          celda.textContent.toLowerCase().includes(texto)
+        );
+      });
+      paginaActual = 1;
+      mostrarPagina(paginaActual, filasFiltradas);
+      crearPaginacion(filasFiltradas);
+    }
+
+    buscador.addEventListener('input', filtrarTabla);
+
+    // Inicialización
+    filtrarTabla();
+  });
+</script>
 
 </html>
