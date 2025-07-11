@@ -84,7 +84,6 @@ function cargarUsuarios() {
     <table class="table table-bordered border-secondary mt-3" id="tabla-usuarios" style="display:none;">
       <thead>
         <tr>
-          <th>ID</th>
           <th>Correo</th>
           <th>Nombre</th>
           <th>Rol</th>
