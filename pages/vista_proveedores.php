@@ -63,6 +63,19 @@ document.addEventListener('DOMContentLoaded', () => {
     pagDiv.innerHTML = '';
     const totalPaginas = Math.ceil(filas.length / filasPorPagina);
 
+    // Botón "Primera página"
+    const btnPrimera = document.createElement('button');
+    btnPrimera.innerHTML = '⏮️'; // icono doble flecha izquierda
+    btnPrimera.className = 'btn btn-outline-primary';
+    btnPrimera.disabled = paginaActual === 1;
+    btnPrimera.addEventListener('click', () => {
+      paginaActual = 1;
+      mostrarPagina(paginaActual);
+      crearPaginacion();
+    });
+    pagDiv.appendChild(btnPrimera);
+
+    // Botones numéricos de página
     for (let i = 1; i <= totalPaginas; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
@@ -74,6 +87,18 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       pagDiv.appendChild(btn);
     }
+
+    // Botón "Última página"
+    const btnUltima = document.createElement('button');
+    btnUltima.innerHTML = '⏭️'; // icono doble flecha derecha
+    btnUltima.className = 'btn btn-outline-primary';
+    btnUltima.disabled = paginaActual === totalPaginas;
+    btnUltima.addEventListener('click', () => {
+      paginaActual = totalPaginas;
+      mostrarPagina(paginaActual);
+      crearPaginacion();
+    });
+    pagDiv.appendChild(btnUltima);
   }
 
   mostrarPagina(paginaActual);

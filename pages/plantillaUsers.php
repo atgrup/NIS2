@@ -455,7 +455,6 @@ $vista = $_GET['vista'] ?? 'archivos';
               </div>
             </div>
 
-
                 <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
                     <form method="POST" enctype="multipart/form-data" class="d-inline">
                         <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
@@ -481,6 +480,7 @@ $vista = $_GET['vista'] ?? 'archivos';
               <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
             </form>
           <?php endif; ?>
+          <!-- ESTO SE CARGA DOS VECES LOL PERO SI LO QUITAS NI VAN BTN USUARIOS EN AMDIN  -->
           <?php if ($rol === 'administrador'): ?>
             <div class="d-flex flex-wrap gap-2 px-3 mt-2">
               <?php if ($vista === 'usuarios'): ?>
@@ -535,7 +535,7 @@ $vista = $_GET['vista'] ?? 'archivos';
 </main>
 
 <!-- Modal Crear Consultor -->
-<div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
       <div class="modal-content">
@@ -567,7 +567,7 @@ $vista = $_GET['vista'] ?? 'archivos';
 </div>
 
 <!-- Modal Crear Proveedor -->
-<div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form method="POST" action="crear_proveedor.php" id="formCrearProveedor" onsubmit="return validarContrasenas('proveedor')">
       <div class="modal-content">
@@ -604,7 +604,7 @@ $vista = $_GET['vista'] ?? 'archivos';
       </div>
 
 
-    </div>
+    </div> --> 
   </main>
 </body>
 <script>
@@ -653,8 +653,94 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
  // Aquí actualizar la tabla
       // Opción 1: recargar toda la página para que la tabla se actualice
       // location.reload();
+</script>
+<script>
+  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA USUARIO PROVEEDOR ESTA EN SU VISTAY LO Q SEA
+   
+  document.addEventListener('DOMContentLoaded', () => {
+  const filasPorPagina = 10;
+  let paginaActual = 1;
+  const tabla = document.getElementById('tablaUsuarios');
+  const tbody = tabla.querySelector('tbody');
+  const filas = Array.from(tbody.querySelectorAll('tr'));
+  const pagDiv = document.getElementById('paginacion');
+  const buscador = document.getElementById('buscadorUsuarios');
 
+  function mostrarPagina(pagina, datosFiltrados) {
+    const inicio = (pagina - 1) * filasPorPagina;
+    const fin = inicio + filasPorPagina;
 
+    filas.forEach(fila => fila.style.display = 'none'); // ocultar todo
+
+    datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
+
+    // Actualizar numeración visible
+    datosFiltrados.forEach((fila, i) => {
+      fila.children[0].textContent = i + 1;
+    });
+  }
+
+  function crearPaginacion(datosFiltrados) {
+    pagDiv.innerHTML = '';
+    const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
+
+    // Botón "Primera página"
+    const btnPrimera = document.createElement('button');
+    btnPrimera.innerHTML = '⏮️'; // Icono: doble flecha izquierda
+    btnPrimera.className = 'btn btn-outline-primary';
+    btnPrimera.disabled = paginaActual === 1; // deshabilitado si ya estás en la primera
+    btnPrimera.addEventListener('click', () => {
+      paginaActual = 1;
+      mostrarPagina(paginaActual, datosFiltrados);
+      crearPaginacion(datosFiltrados);
+    });
+    pagDiv.appendChild(btnPrimera);
+
+    // Botones de números de página
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+      btn.addEventListener('click', () => {
+        paginaActual = i;
+        mostrarPagina(paginaActual, datosFiltrados);
+        crearPaginacion(datosFiltrados);
+      });
+      pagDiv.appendChild(btn);
+    }
+
+    // Botón "Última página"
+    const btnUltima = document.createElement('button');
+    btnUltima.innerHTML = '⏭️'; // Icono: doble flecha derecha
+    btnUltima.className = 'btn btn-outline-primary';
+    btnUltima.disabled = paginaActual === totalPaginas; // deshabilitado si ya estás en la última
+    btnUltima.addEventListener('click', () => {
+      paginaActual = totalPaginas;
+      mostrarPagina(paginaActual, datosFiltrados);
+      crearPaginacion(datosFiltrados);
+    });
+    pagDiv.appendChild(btnUltima);
+  }
+
+  function filtrarTabla() {
+    const texto = buscador.value.toLowerCase();
+    const filasFiltradas = filas.filter(fila => {
+      return Array.from(fila.cells).some(celda =>
+        celda.textContent.toLowerCase().includes(texto)
+      );
+    });
+    paginaActual = 1;
+    mostrarPagina(paginaActual, filasFiltradas);
+    crearPaginacion(filasFiltradas);
+  }
+
+  buscador.addEventListener('input', filtrarTabla);
+
+  // Inicialización
+  filtrarTabla();
+});
+
+</script>
 
 
 
@@ -663,64 +749,5 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
 
 
 
-<script>
-  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA PROVEEDOR Y LO Q SEA 
-  document.addEventListener('DOMContentLoaded', () => {
-    const filasPorPagina = 10;
-    let paginaActual = 1;
-    const tabla = document.getElementById('tablaUsuarios');
-    const tbody = tabla.querySelector('tbody');
-    const filas = Array.from(tbody.querySelectorAll('tr'));
-    const pagDiv = document.getElementById('paginacion');
-    const buscador = document.getElementById('buscadorUsuarios');
 
-    function mostrarPagina(pagina, datosFiltrados) {
-      const inicio = (pagina - 1) * filasPorPagina;
-      const fin = inicio + filasPorPagina;
-
-      filas.forEach(fila => fila.style.display = 'none'); // ocultar todo
-
-      datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
-
-      // Actualizar numeración visible
-      datosFiltrados.forEach((fila, i) => {
-        fila.children[0].textContent = i + 1;
-      });
-    }
-
-    function crearPaginacion(datosFiltrados) {
-      pagDiv.innerHTML = '';
-      const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-        btn.addEventListener('click', () => {
-          paginaActual = i;
-          mostrarPagina(paginaActual, datosFiltrados);
-          crearPaginacion(datosFiltrados);
-        });
-        pagDiv.appendChild(btn);
-      }
-    }
-
-    function filtrarTabla() {
-      const texto = buscador.value.toLowerCase();
-      const filasFiltradas = filas.filter(fila => {
-        return Array.from(fila.cells).some(celda =>
-          celda.textContent.toLowerCase().includes(texto)
-        );
-      });
-      paginaActual = 1;
-      mostrarPagina(paginaActual, filasFiltradas);
-      crearPaginacion(filasFiltradas);
-    }
-
-    buscador.addEventListener('input', filtrarTabla);
-
-    // Inicialización
-    filtrarTabla();
-  });
-  
-</script>
 
