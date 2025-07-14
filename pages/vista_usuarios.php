@@ -1,8 +1,8 @@
 <div style="max-height: 100%; overflow-y: auto;">
-    <table id="tablaUsuarios" class="table table-bordered border-secondary">
+    <table id="tablaUsuarios" class="table table-bordered border-secondary w-100">
         <thead>
             <tr>
-                <th>#</th>
+                
                 <th>Correo</th>
                 <th>Tipo de usuario</th>
                 <th>Verificado</th>
@@ -21,7 +21,7 @@
             while ($row = $result->fetch_assoc()) {
                 $verificado = $row['verificado'] ? 'Sí' : 'No';
                 echo "<tr>
-                        <td>{$i}</td>
+                        
                         <td>" . htmlspecialchars($row['correo']) . "</td>
                         <td>" . htmlspecialchars($row['tipo_usuario']) . "</td>
                         <td class='text-center'>{$verificado}</td>

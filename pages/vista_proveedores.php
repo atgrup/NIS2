@@ -10,10 +10,9 @@ $result = $conexion->query($sql);
 
 <!-- CONTENEDOR DE LA TABLA CON SCROLL -->
 <div style="max-height: 90%; overflow-y: auto;">
-    <table class="table table-bordered border-secondary" id="tablaProveedores">
+    <table class="table table-bordered border-secondary w-100" id="tablaProveedores">
         <thead>
             <tr>
-                <th scope="row"></th>
                 <th>Correo</th>
                 <th>Nombre Empresa</th>
             </tr>
@@ -23,7 +22,6 @@ $result = $conexion->query($sql);
             $i = 1;
             while ($row = $result->fetch_assoc()) {
                 echo "<tr>
-                        <th scope='row'>{$i}</th>
                         <td>" . htmlspecialchars($row['correo']) . "</td>
                         <td>" . htmlspecialchars($row['nombre_empresa'] ?? '') . "</td>
                       </tr>";
@@ -50,14 +48,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const pagDiv = document.getElementById('paginacion');
 
   function mostrarPagina(pagina) {
-    const inicio = (pagina - 1) * filasPorPagina;
-    const fin = inicio + filasPorPagina;
+  const inicio = (pagina - 1) * filasPorPagina;
+  const fin = inicio + filasPorPagina;
 
-    filas.forEach((fila, i) => {
-      fila.style.display = i >= inicio && i < fin ? '' : 'none';
-      fila.querySelector('th').textContent = i + 1; // actualizar numeración
-    });
-  }
+  filas.forEach((fila, i) => {
+    fila.style.display = i >= inicio && i < fin ? '' : 'none';
+  });
+}
 
   function crearPaginacion() {
     pagDiv.innerHTML = '';
