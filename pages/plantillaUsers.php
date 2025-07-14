@@ -332,14 +332,16 @@ $vista = $_GET['vista'] ?? 'archivos';
     <div class="contenedorTablaStencil">
       <!-- Buscador en línea con los botones -->
       <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3 " style="padding-bottom: 1.5rem;a">
+
         <div class="input-group" style="max-width: 300px;">
+
           <span class="input-group-text">
             <img src="../assets/img/search.png" alt="Buscar">
           </span>
           <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-
-
-        </div>
+        
+    </div>
+    
 
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
@@ -490,6 +492,26 @@ $vista = $_GET['vista'] ?? 'archivos';
               <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear
                 Proveedor</button>
             <?php endif; ?>
+
+
+
+<!-- Modal Crear Consultor -->
+<!-- <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="correoConsultor" class="form-label-popup">Correo</label>
+            <input type="email" class="form-control" id="correoConsultor" name="correo" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
 
           </div>
         <?php endif; ?>
