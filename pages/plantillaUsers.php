@@ -61,14 +61,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
   }
 }
-
-
 $vista = $_GET['vista'] ?? 'archivos';
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -79,31 +76,342 @@ $vista = $_GET['vista'] ?? 'archivos';
 </head>
 
 
-<style>
-  .menuNav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    justify-content: start;
-  }
 
-  .menuNav .cajaArchivos {
-    flex: 1 1 45%;
-    min-width: 140px;
-  }
+</head>
 
-  @media (max-width: 768px) {
-    .menuNav .cajaArchivos {
-      flex: 1 1 100%;
+<body class="stencilBody sin-scroll">
+  <main class="stencil container-fluid p-0 overflow-hidden">
+    <nav class="indexStencil">
+      <h1 class="tituloNIS">NIS2</h1>
+      <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+
+      <div class="menuNav">
+        <?php if ($rol === 'administrador'): ?>
+          <div class="cajaArchivos mb-2">
+            <a class="btn btn-outline-light w-100" href="?vista=usuarios">USUARIOS</a>
+          </div>
+          <div class="cajaArchivos mb-2">
+            <a class="btn btn-outline-light w-100" href="?vista=consultores">CONSULTORES</a>
+          </div>
+          <div class="cajaArchivos mb-2">
+            <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
+          </div>
+        <?php endif; ?>
+
+        <!-- Botones comunes -->
+        <div class="cajaArchivos mb-2">
+          <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
+        </div>
+        <div class="cajaArchivos mb-2">
+          <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
+        </div>
+
+        <?php if ($rol === 'consultor'): ?>
+          <div class="cajaArchivos mb-2">
+            <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
+          </div>
+        <?php endif; ?>
+
+        <div class="footerNaV mt-3">
+          <form action="../api/auth/logout.php" method="post" class="mb-2">
+            <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="contenedorTablaStencil">
+      <!-- Buscador en línea con los botones -->
+      <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3" style="padding-bottom: 1.5rem;">
+        <div class="btns me-auto d-flex flex-wrap gap-2">
+          <?php if ($vista === 'archivos'): ?>
+            <form method="POST" enctype="multipart/form-data" class="d-inline">
+              <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
+              <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+            </form>
+          <?php endif; ?>
+          <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
+            <form method="POST" enctype="multipart/form-data" class="d-inline mb-3">
+              <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
+              <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
+            </form>
+          <?php endif; ?>
+          <?php if ($rol === 'administrador'): ?>
+            <div class="d-flex flex-wrap gap-2 px-3 mt-2">
+              <?php if ($vista === 'usuarios'): ?>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Usuario</button>
+              <?php elseif ($vista === 'consultores'): ?>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear Consultor</button>
+              <?php elseif ($vista === 'proveedores'): ?>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
+              <?php endif; ?>
+            </div>
+          <?php endif; ?>
+        </div>
+
+        <!-- Buscador -->
+        <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text">
+            <img src="../assets/img/search.png" alt="Buscar">
+          </span>
+          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
+        </div>
+      </div> <!-- Cierre d-flex align-items-center -->
+
+      <div class="headertable">
+        <?php
+          switch ($vista) {
+            case 'plantillas':
+              include 'vista_plantillas.php';
+              break;
+            case 'usuarios':
+              include 'vista_usuarios.php';
+              break;
+            case 'consultores':
+              include 'vista_consultores.php';
+              break;
+            case 'proveedores':
+              include 'vista_proveedores.php';
+              break;
+            default:
+              include 'vista_archivos.php';
+              break;
+          }
+        ?>
+      </div>
+    </div> <!-- Cierre contenedorTablaStencil -->
+
+  </main> <!-- Cierre main -->
+
+  <!-- Modal Crear admin -->
+  <div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="POST" action="crear_usuario.php" onsubmit="return validarContrasenas('usuario')">
+        <div class="modal-content">
+          <div class="modal-header bg-mi-color text-white">
+            <h5 class="modal-title" id="crearUsuarioLabel">Crear Administrador</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="correoUsuario" class="form-label-popup">Correo</label>
+              <input type="email" class="form-control" id="correoUsuario" name="correo" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
+            </div>
+            <div id="errorUsuario" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Crear Usuario</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Crear Consultor -->
+  <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
+        <div class="modal-content">
+          <div class="modal-header bg-mi-color text-white">
+            <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="correoConsultor" class="form-label-popup">Correo</label>
+              <input type="email" class="form-control" id="correoConsultor" name="correo" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaConsultor2" class="form-label-popup">Repetir Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaConsultor2" name="contrasena2" required>
+            </div>
+            <div id="errorConsultor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Crear Consultor</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Crear Proveedor -->
+  <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <form method="POST" action="crear_proveedor.php" id="formCrearProveedor" onsubmit="return validarContrasenas('proveedor')">
+        <div class="modal-content">
+          <div class="modal-header bg-mi-color text-white">
+            <h5 class="modal-title" id="crearProveedorLabel">Crear Proveedor</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="correoProveedor" class="form-label-popup">Correo</label>
+              <input type="email" class="form-control" id="correoProveedor" name="email" required>
+            </div>
+            <div class="mb-3">
+              <label for="nombreEmpresa" class="form-label-popup">Nombre de Empresa</label>
+              <input type="text" class="form-control" id="nombreEmpresa" name="nombre_empresa" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaProveedor" class="form-label-popup">Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaProveedor" name="password" required>
+            </div>
+            <div class="mb-3">
+              <label for="contrasenaProveedor2" class="form-label-popup">Repetir Contraseña</label>
+              <input type="password" class="form-control" id="contrasenaProveedor2" name="repeat-password" required>
+            </div>
+            <div id="errorProveedor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Crear Proveedor</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+</body>
+<script>
+  document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
+    e.preventDefault();
+
+    const pass1 = document.getElementById('contrasenaProveedor').value;
+    const pass2 = document.getElementById('contrasenaProveedor2').value;
+    const errorDiv = document.getElementById('errorProveedor');
+
+    if (pass1 !== pass2) {
+      errorDiv.innerText = 'Las contraseñas no coinciden';
+      errorDiv.style.display = 'block';
+      return;
     }
 
-    .input-group {
-      width: 100% !important;
-      position: static !important;
-      margin-top: 1rem;
+    errorDiv.style.display = 'none';
+
+    const formData = new FormData(this);
+
+    fetch('crear_proveedor.php', {
+      method: 'POST',
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          // Cierra el modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearProveedor'));
+          modal.hide();
+
+
+          // Redirige a vista=proveedores
+          window.location.href = "plantillasUsers.php?vista=proveedores";
+        } else {
+          errorDiv.innerText = data.message || 'Error al crear proveedor';
+          errorDiv.style.display = 'block';
+        }
+      })
+      .catch(err => {
+        console.error('Error al enviar el formulario:', err);
+        errorDiv.innerText = 'Error en el servidor';
+        errorDiv.style.display = 'block';
+      });
+  });
+  // Aquí actualizar la tabla
+  // Opción 1: recargar toda la página para que la tabla se actualice
+  // location.reload();
+</script>
+<script>
+  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA USUARIO PROVEEDOR ESTA EN SU VISTAY LO Q SEA
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const filasPorPagina = 10;
+    let paginaActual = 1;
+    const tabla = document.getElementById('tablaUsuarios');
+    const tbody = tabla.querySelector('tbody');
+    const filas = Array.from(tbody.querySelectorAll('tr'));
+    const pagDiv = document.getElementById('paginacion');
+    const buscador = document.getElementById('buscadorUsuarios');
+
+function mostrarPagina(pagina, datosFiltrados) {
+  const inicio = (pagina - 1) * filasPorPagina;
+  const fin = inicio + filasPorPagina;
+
+  filas.forEach(fila => fila.style.display = 'none'); // Ocultar todo
+  datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
+}
+
+    function crearPaginacion(datosFiltrados) {
+      pagDiv.innerHTML = '';
+      const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
+
+      // Botón "Primera página"
+      const btnPrimera = document.createElement('button');
+      btnPrimera.innerHTML = '⏮️'; // Icono: doble flecha izquierda
+      btnPrimera.className = 'btn btn-outline-primary';
+      btnPrimera.disabled = paginaActual === 1; // deshabilitado si ya estás en la primera
+      btnPrimera.addEventListener('click', () => {
+        paginaActual = 1;
+        mostrarPagina(paginaActual, datosFiltrados);
+        crearPaginacion(datosFiltrados);
+      });
+      pagDiv.appendChild(btnPrimera);
+
+      // Botones de números de página
+      for (let i = 1; i <= totalPaginas; i++) {
+        const btn = document.createElement('button');
+        btn.textContent = i;
+        btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+        btn.addEventListener('click', () => {
+          paginaActual = i;
+          mostrarPagina(paginaActual, datosFiltrados);
+          crearPaginacion(datosFiltrados);
+        });
+        pagDiv.appendChild(btn);
+      }
+
+      // Botón "Última página"
+      const btnUltima = document.createElement('button');
+      btnUltima.innerHTML = '⏭️'; // Icono: doble flecha derecha
+      btnUltima.className = 'btn btn-outline-primary';
+      btnUltima.disabled = paginaActual === totalPaginas; // deshabilitado si ya estás en la última
+      btnUltima.addEventListener('click', () => {
+        paginaActual = totalPaginas;
+        mostrarPagina(paginaActual, datosFiltrados);
+        crearPaginacion(datosFiltrados);
+      });
+      pagDiv.appendChild(btnUltima);
     }
-  }
-</style>
+
+    function filtrarTabla() {
+      const texto = buscador.value.toLowerCase();
+      const filasFiltradas = filas.filter(fila => {
+        return Array.from(fila.cells).some(celda =>
+          celda.textContent.toLowerCase().includes(texto)
+        );
+      });
+      paginaActual = 1;
+      mostrarPagina(paginaActual, filasFiltradas);
+      crearPaginacion(filasFiltradas);
+    }
+
+    buscador.addEventListener('input', filtrarTabla);
+
+    // Inicialización
+    filtrarTabla();
+  });
+
+</script>
 <script>
   let seccionActual = null;
   let usuariosData = [];
@@ -285,474 +593,6 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 
 </script>
-
-</head>
-
-<body class="stencilBody sin-scroll">
-  <main class="stencil container-fluid p-0 overflow-hidden">
-    <nav class="indexStencil">
-      <h1 class="tituloNIS">NIS2</h1>
-      <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
-
-      <div class="menuNav">
-        <?php if ($rol === 'administrador'): ?>
-          <div class="cajaArchivos mb-2">
-            <a class="btn btn-outline-light w-100" href="?vista=usuarios">USUARIOS</a>
-          </div>
-          <div class="cajaArchivos mb-2">
-            <a class="btn btn-outline-light w-100" href="?vista=consultores">CONSULTORES</a>
-          </div>
-          <div class="cajaArchivos mb-2">
-            <a class="btn btn-outline-light w-100" href="?vista=proveedores">PROVEEDORES</a>
-          </div>
-        <?php endif; ?>
-
-        <!-- Botones comunes -->
-        <div class="cajaArchivos mb-2">
-          <a href="?vista=plantillas" class="btn btn-outline-light w-100">PLANTILLAS</a>
-        </div>
-        <div class="cajaArchivos mb-2">
-          <a href="?vista=archivos" class="btn btn-outline-light w-100">ARCHIVOS</a>
-        </div>
-
-        <?php if ($rol === 'consultor'): ?>
-          <div class="cajaArchivos mb-2">
-            <a class="btn btn-outline-light w-100" href="#">PROVEEDORES</a>
-          </div>
-        <?php endif; ?>
-
-        <div class="footerNaV mt-3">
-          <form action="../api/auth/logout.php" method="post" class="mb-2">
-            <button type="submit" class="btn btn-outline-light w-100">Cerrar sesión</button>
-          </form>
-        </div>
-      </div>
-    </nav>
-
-    <div class="contenedorTablaStencil">
-      <!-- Buscador en línea con los botones -->
-      <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3 " style="padding-bottom: 1.5rem;a">
-
-        <div class="input-group" style="max-width: 300px;">
-
-          <span class="input-group-text">
-            <img src="../assets/img/search.png" alt="Buscar">
-          </span>
-          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-        
-    </div>
-    
-
-        <div class="btns me-auto d-flex flex-wrap gap-2">
-          <?php if ($vista === 'archivos'): ?>
-            <form method="POST" enctype="multipart/form-data" class="d-inline">
-              <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
-              <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
-            </form>
-
-
-
-
-            <!-- Modal Crear admin -->
-            <div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel"
-              aria-hidden="true">
-              <div class="modal-dialog">
-                <form method="POST" action="crear_usuario.php" onsubmit="return validarContrasenas('usuario')">
-                  <div class="modal-content">
-                    <div class="modal-header bg-mi-color text-white">
-                      <h5 class="modal-title" id="crearUsuarioLabel">Crear Administrador</h5>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label for="correoUsuario" class="form-label-popup">Correo</label>
-                        <input type="email" class="form-control" id="correoUsuario" name="correo" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
-                      </div>
-                      <div id="errorUsuario" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="submit" class="btn btn-primary">Crear Usuario</button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            <!-- Modal Crear Consultor -->
-            <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel"
-              aria-hidden="true">
-              <div class="modal-dialog">
-                <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
-                  <div class="modal-content">
-                    <div class="modal-header bg-mi-color text-white">
-                      <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label for="correoConsultor" class="form-label-popup">Correo</label>
-                        <input type="email" class="form-control" id="correoConsultor" name="correo" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaConsultor2" class="form-label-popup">Repetir Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaConsultor2" name="contrasena2" required>
-                      </div>
-                      <div id="errorConsultor" class="text-danger" style="display:none;">Las contraseñas no coinciden
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="submit" class="btn btn-primary">Crear Consultor</button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-            <!-- Modal Crear Proveedor -->
-            <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel"
-              aria-hidden="true">
-              <div class="modal-dialog">
-                <form method="POST" action="crear_proveedor.php" id="formCrearProveedor"
-                  onsubmit="return validarContrasenas('proveedor')">
-                  <div class="modal-content">
-                    <div class="modal-header bg-mi-color text-white">
-                      <h5 class="modal-title" id="crearProveedorLabel">Crear Proveedor</h5>
-                      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                        aria-label="Cerrar"></button>
-                    </div>
-                    <div class="modal-body">
-                      <div class="mb-3">
-                        <label for="correoProveedor" class="form-label-popup">Correo</label>
-                        <input type="email" class="form-control" id="correoProveedor" name="email" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="nombreEmpresa" class="form-label-popup">Nombre de Empresa</label>
-                        <input type="text" class="form-control" id="nombreEmpresa" name="nombre_empresa" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaProveedor" class="form-label-popup">Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaProveedor" name="password" required>
-                      </div>
-                      <div class="mb-3">
-                        <label for="contrasenaProveedor2" class="form-label-popup">Repetir Contraseña</label>
-                        <input type="password" class="form-control" id="contrasenaProveedor2" name="repeat-password"
-                          required>
-                      </div>
-                      <div id="errorProveedor" class="text-danger" style="display:none;">Las contraseñas no coinciden
-                      </div>
-                    </div>
-                    <div class="modal-footer">
-                      <button type="submit" class="btn btn-primary">Crear Proveedor</button>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-
-          <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
-            <form method="POST" enctype="multipart/form-data" class="d-inline">
-              <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
-              <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
-            </form>
-          <?php endif; ?>
-
-        </div>
-
-
-        <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
-          <form method="POST" enctype="multipart/form-data" class="d-inline">
-            <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
-            <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
-          </form>
-        <?php endif; ?>
-        <!-- ESTO SE CARGA DOS VECES LOL PERO SI LO QUITAS NI VAN BTN USUARIOS EN AMDIN  -->
-        <?php if ($rol === 'administrador'): ?>
-          <div class="d-flex flex-wrap gap-2 px-3 mt-2">
-            <?php if ($vista === 'usuarios'): ?>
-              <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear
-                Administrador</button>
-            <?php elseif ($vista === 'consultores'): ?>
-              <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear
-                Consultor</button>
-            <?php elseif ($vista === 'proveedores'): ?>
-              <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear
-                Proveedor</button>
-            <?php endif; ?>
-
-
-
-<!-- Modal Crear Consultor -->
-<!-- <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
-      <div class="modal-content">
-        <div class="modal-header bg-mi-color text-white">
-          <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="correoConsultor" class="form-label-popup">Correo</label>
-            <input type="email" class="form-control" id="correoConsultor" name="correo" required>
-          </div>
-          <div class="mb-3">
-            <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
-            <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
-
-          </div>
-        <?php endif; ?>
-      </div>
-
-
-
-     
-
-       NO BORRAR ES EL BUENO -->
-      <div class="headertable">
-        <?php
-        switch ($vista) {
-          case 'plantillas':
-            include 'vista_plantillas.php';
-            break;
-          case 'usuarios':
-            include 'vista_usuarios.php';
-            break;
-          case 'consultores':
-            include 'vista_consultores.php';
-            break;
-          case 'proveedores':
-            include 'vista_proveedores.php';
-            break;
-          default:
-            include 'vista_archivos.php';
-            break;
-        }
-        ?>
-      </div>
-      <div id="contenido-dinamico" class="mt-4"></div>
-      <!-- Modal Crear Consultor -->
-      <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-          <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
-            <div class="modal-content">
-              <div class="modal-header bg-mi-color text-white">
-                <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  aria-label="Cerrar"></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label for="correoConsultor" class="form-label-popup">Correo</label>
-                  <input type="email" class="form-control" id="correoConsultor" name="correo" required>
-                </div>
-                <div class="mb-3">
-                  <label for="contrasenaConsultor" class="form-label-popup">Contraseña</label>
-                  <input type="password" class="form-control" id="contrasenaConsultor" name="contrasena" required>
-                </div>
-                <div class="mb-3">
-                  <label for="contrasenaConsultor2" class="form-label-popup">Repetir Contraseña</label>
-                  <input type="password" class="form-control" id="contrasenaConsultor2" name="contrasena2" required>
-                </div>
-                <div id="errorConsultor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Crear Consultor</button>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <!-- Modal Crear Proveedor -->
-      <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-          <form method="POST" action="crear_proveedor.php" id="formCrearProveedor"
-            onsubmit="return validarContrasenas('proveedor')">
-            <div class="modal-content">
-              <div class="modal-header bg-mi-color text-white">
-                <h5 class="modal-title" id="crearProveedorLabel">Crear Proveedor</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                  aria-label="Cerrar"></button>
-              </div>
-              <div class="modal-body">
-                <div class="mb-3">
-                  <label for="correoProveedor" class="form-label-popup">Correo</label>
-                  <input type="email" class="form-control" id="correoProveedor" name="email" required>
-                </div>
-                <div class="mb-3">
-                  <label for="nombreEmpresa" class="form-label-popup">Nombre de Empresa</label>
-                  <input type="text" class="form-control" id="nombreEmpresa" name="nombre_empresa" required>
-                </div>
-                <div class="mb-3">
-                  <label for="contrasenaProveedor" class="form-label-popup">Contraseña</label>
-                  <input type="password" class="form-control" id="contrasenaProveedor" name="password" required>
-                </div>
-                <div class="mb-3">
-                  <label for="contrasenaProveedor2" class="form-label-popup">Repetir Contraseña</label>
-                  <input type="password" class="form-control" id="contrasenaProveedor2" name="repeat-password" required>
-                </div>
-                <div id="errorProveedor" class="text-danger" style="display:none;">Las contraseñas no coinciden</div>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-primary">Crear Proveedor</button>
-
-              </div>
-
-
-
-            </div>
-
-
-        </div>
-
-
-  </main>
-</body>
-<script>
-  document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const pass1 = document.getElementById('contrasenaProveedor').value;
-    const pass2 = document.getElementById('contrasenaProveedor2').value;
-    const errorDiv = document.getElementById('errorProveedor');
-
-    if (pass1 !== pass2) {
-      errorDiv.innerText = 'Las contraseñas no coinciden';
-      errorDiv.style.display = 'block';
-      return;
-    }
-
-    errorDiv.style.display = 'none';
-
-    const formData = new FormData(this);
-
-    fetch('crear_proveedor.php', {
-      method: 'POST',
-      body: formData
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          // Cierra el modal
-          const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearProveedor'));
-          modal.hide();
-
-
-          // Redirige a vista=proveedores
-          window.location.href = "plantillasUsers.php?vista=proveedores";
-        } else {
-          errorDiv.innerText = data.message || 'Error al crear proveedor';
-          errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        console.error('Error al enviar el formulario:', err);
-        errorDiv.innerText = 'Error en el servidor';
-        errorDiv.style.display = 'block';
-      });
-  });
-  // Aquí actualizar la tabla
-  // Opción 1: recargar toda la página para que la tabla se actualice
-  // location.reload();
-</script>
-<script>
-  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA USUARIO PROVEEDOR ESTA EN SU VISTAY LO Q SEA
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const filasPorPagina = 10;
-    let paginaActual = 1;
-    const tabla = document.getElementById('tablaUsuarios');
-    const tbody = tabla.querySelector('tbody');
-    const filas = Array.from(tbody.querySelectorAll('tr'));
-    const pagDiv = document.getElementById('paginacion');
-    const buscador = document.getElementById('buscadorUsuarios');
-
-function mostrarPagina(pagina, datosFiltrados) {
-  const inicio = (pagina - 1) * filasPorPagina;
-  const fin = inicio + filasPorPagina;
-
-  filas.forEach(fila => fila.style.display = 'none'); // Ocultar todo
-  datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
-}
-
-    function crearPaginacion(datosFiltrados) {
-      pagDiv.innerHTML = '';
-      const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
-
-      // Botón "Primera página"
-      const btnPrimera = document.createElement('button');
-      btnPrimera.innerHTML = '⏮️'; // Icono: doble flecha izquierda
-      btnPrimera.className = 'btn btn-outline-primary';
-      btnPrimera.disabled = paginaActual === 1; // deshabilitado si ya estás en la primera
-      btnPrimera.addEventListener('click', () => {
-        paginaActual = 1;
-        mostrarPagina(paginaActual, datosFiltrados);
-        crearPaginacion(datosFiltrados);
-      });
-      pagDiv.appendChild(btnPrimera);
-
-      // Botones de números de página
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-        btn.addEventListener('click', () => {
-          paginaActual = i;
-          mostrarPagina(paginaActual, datosFiltrados);
-          crearPaginacion(datosFiltrados);
-        });
-        pagDiv.appendChild(btn);
-      }
-
-      // Botón "Última página"
-      const btnUltima = document.createElement('button');
-      btnUltima.innerHTML = '⏭️'; // Icono: doble flecha derecha
-      btnUltima.className = 'btn btn-outline-primary';
-      btnUltima.disabled = paginaActual === totalPaginas; // deshabilitado si ya estás en la última
-      btnUltima.addEventListener('click', () => {
-        paginaActual = totalPaginas;
-        mostrarPagina(paginaActual, datosFiltrados);
-        crearPaginacion(datosFiltrados);
-      });
-      pagDiv.appendChild(btnUltima);
-    }
-
-    function filtrarTabla() {
-      const texto = buscador.value.toLowerCase();
-      const filasFiltradas = filas.filter(fila => {
-        return Array.from(fila.cells).some(celda =>
-          celda.textContent.toLowerCase().includes(texto)
-        );
-      });
-      paginaActual = 1;
-      mostrarPagina(paginaActual, filasFiltradas);
-      crearPaginacion(filasFiltradas);
-    }
-
-    buscador.addEventListener('input', filtrarTabla);
-
-    // Inicialización
-    filtrarTabla();
-  });
-
-</script>
-
 
 
 <script src="../assets/js/script.js"></script>
