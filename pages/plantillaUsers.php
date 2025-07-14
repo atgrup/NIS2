@@ -80,11 +80,7 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 
 <style>
-  .sin-scroll {
-    overflow-y: auto;
-    overflow-x: hidden;
-    height: 100vh;
-  }
+  
 
   .menuNav {
     display: flex;
@@ -110,9 +106,6 @@ $vista = $_GET['vista'] ?? 'archivos';
     }
   }
 
-  #paginacion {
-    color: gray;
-  }
 </style>
 <script>
   let seccionActual = null;
@@ -341,7 +334,7 @@ $vista = $_GET['vista'] ?? 'archivos';
 
     <div class="contenedorTablaStencil">
       <!-- Buscador en línea con los botones -->
-      <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3">
+      <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3 " style="padding-bottom: 1.5rem;a">
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline">
@@ -692,6 +685,7 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
 </body>
 
 <script>
+  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA PROVEEDOR Y LO Q SEA 
   document.addEventListener('DOMContentLoaded', () => {
     const filasPorPagina = 10;
     let paginaActual = 1;
@@ -748,6 +742,7 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
     // Inicialización
     filtrarTabla();
   });
+  
 </script>
 
 </html>

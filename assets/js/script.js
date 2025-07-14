@@ -88,20 +88,87 @@ function renderizarPaginacion() {
 }
 
 // Evento para buscar usuarios por nombre (simple filtro local)
-buscador?.addEventListener('keyup', e => {
-  const texto = e.target.value.trim().toLowerCase();
+buscador?.addEventListener("input", function () {
+  const texto = buscador.value.trim().toLowerCase();
 
-  if (texto.length === 0) {
-    cargarUsuarios(1);
-    return;
-  }
+  // Busca en cualquier tabla dentro de #contenido-dinamico
+  const tabla = contenedor.querySelector("table");
+  if (!tabla) return;
 
-  // Para paginación con búsqueda real, debes hacer backend con filtro SQL.
-  // Por ahora: mostrar mensaje o cargar normal
-  contenedor.innerHTML = '<p>Búsqueda no implementada aún.</p>';
+  const filas = tabla.querySelectorAll("tbody tr");
+
+  filas.forEach(fila => {
+    const visible = Array.from(fila.cells).some(celda =>
+      celda.textContent.toLowerCase().includes(texto)
+    );
+    fila.style.display = visible ? "" : "none";
+  });
 });
 
 // Carga inicial
 window.addEventListener('load', () => {
   cargarUsuarios();
+});
+
+  document.addEventListener('DOMContentLoaded', () => {
+    let seccionActual = new URLSearchParams(window.location.search).get('vista') || 'archivos';
+    const buscador = document.getElementById('buscadorUsuarios');
+
+    // Publica una función modular para filtrar tabla HTML
+    function filtrarTablaHTML() {
+      const texto = buscador.value.trim().toLowerCase();
+      const tabla = document.querySelector('table');
+      if (!tabla) return;
+      const filas = tabla.querySelectorAll('tbody tr');
+      let contador = 1;
+
+      filas.forEach(fila => {
+        const celdas = Array.from(fila.querySelectorAll('td'));
+        const coincide = celdas.some(td =>
+          td.textContent.toLowerCase().includes(texto)
+        );
+        fila.style.display = coincide ? '' : 'none';
+        if (coincide && fila.querySelector('th')) {
+          fila.querySelector('th').textContent = contador++;
+        }
+      });
+    }
+
+    buscador.addEventListener('input', () => {
+      if (seccionActual === 'usuarios' || seccionActual === 'proveedores' ||
+          seccionActual === 'consultores' || seccionActual === 'plantillas') {
+        filtrarTablaHTML();
+      }
+    });
+
+    // Inicializa filtrado después de cargar la vista
+    filtrarTablaHTML();
+  });
+btn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  const section = btn.getAttribute('data-section');
+  seccionActual = section;
+  actualizarPlaceholder(section);
+
+  switch (section) {
+    case 'usuarios':
+      if (userRol !== 'administrador') {
+        contenedor.innerHTML = `<div class="alert alert-danger">No tienes permisos para ver usuarios.</div>`;
+      } else {
+        await cargarUsuarios();
+        mostrarModal('crearUsuarioModal'); // 👈 Mostrar modal tras cargar
+      }
+      break;
+    case 'proveedores':
+      await cargarProveedores();
+      mostrarModal('crearProveedorModal'); // 👈 Mostrar modal tras cargar
+      break;
+    case 'plantillas':
+      await cargarPlantillas();
+      mostrarModal('crearPlantillaModal'); // 👈 Mostrar modal tras cargar
+      break;
+    // Añade más según tus secciones
+    default:
+      contenedor.innerHTML = `<p>Sección desconocida</p>`;
+  }
 });
