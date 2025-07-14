@@ -156,16 +156,16 @@ btn.addEventListener('click', async (e) => {
         contenedor.innerHTML = `<div class="alert alert-danger">No tienes permisos para ver usuarios.</div>`;
       } else {
         await cargarUsuarios();
-       // mostrarModal('crearUsuarioModal'); // 👈 Mostrar modal tras cargar
+       mostrarModal('crearUsuarioModal'); // 👈 Mostrar modal tras cargar
       }
       break;
     case 'proveedores':
       await cargarProveedores();
-     // mostrarModal('crearProveedorModal'); // 👈 Mostrar modal tras cargar
+     mostrarModal('crearProveedorModal'); // 👈 Mostrar modal tras cargar
       break;
     case 'plantillas':
       await cargarPlantillas();
-     // mostrarModal('crearPlantillaModal'); // 👈 Mostrar modal tras cargar
+      mostrarModal('crearPlantillaModal'); // 👈 Mostrar modal tras cargar
       break;
     // Añade más según tus secciones
     default:
