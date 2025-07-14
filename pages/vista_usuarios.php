@@ -1,5 +1,5 @@
 <div style="max-height: 100%; overflow-y: auto;">
-    <table id="tablaUsuarios" class="table table-bordered border-secondary">
+    <table id="tablaUsuarios" class="table table-bordered border-secondary w-100">
         <thead>
             <tr>
                 

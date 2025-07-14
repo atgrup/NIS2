@@ -1,5 +1,5 @@
 <div style="max-height: 90%; overflow-y: none;">
-    <table class="table table-bordered border-secondary">
+    <table class="table table-bordered border-secondary w-100">
         <thead>
             <tr>
                 <th scope="row"></th>

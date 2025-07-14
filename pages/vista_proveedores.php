@@ -10,7 +10,7 @@ $result = $conexion->query($sql);
 
 <!-- CONTENEDOR DE LA TABLA CON SCROLL -->
 <div style="max-height: 90%; overflow-y: auto;">
-    <table class="table table-bordered border-secondary" id="tablaProveedores">
+    <table class="table table-bordered border-secondary w-100" id="tablaProveedores">
         <thead>
             <tr>
                 <th>Correo</th>

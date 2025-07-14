@@ -519,9 +519,9 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 
 
-      <!-- 🔍 Buscador fuera -->
+     
 
-      <!-- NO BORRAR ES EL BUENO -->
+       NO BORRAR ES EL BUENO -->
       <div class="headertable">
         <?php
         switch ($vista) {
