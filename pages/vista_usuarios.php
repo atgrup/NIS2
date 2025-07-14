@@ -2,7 +2,7 @@
     <table id="tablaUsuarios" class="table table-bordered border-secondary">
         <thead>
             <tr>
-                <th>#</th>
+                
                 <th>Correo</th>
                 <th>Tipo de usuario</th>
                 <th>Verificado</th>
@@ -21,7 +21,7 @@
             while ($row = $result->fetch_assoc()) {
                 $verificado = $row['verificado'] ? 'Sí' : 'No';
                 echo "<tr>
-                        <td>{$i}</td>
+                        
                         <td>" . htmlspecialchars($row['correo']) . "</td>
                         <td>" . htmlspecialchars($row['tipo_usuario']) . "</td>
                         <td class='text-center'>{$verificado}</td>

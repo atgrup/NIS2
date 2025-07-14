@@ -661,19 +661,13 @@ $vista = $_GET['vista'] ?? 'archivos';
     const pagDiv = document.getElementById('paginacion');
     const buscador = document.getElementById('buscadorUsuarios');
 
-    function mostrarPagina(pagina, datosFiltrados) {
-      const inicio = (pagina - 1) * filasPorPagina;
-      const fin = inicio + filasPorPagina;
+function mostrarPagina(pagina, datosFiltrados) {
+  const inicio = (pagina - 1) * filasPorPagina;
+  const fin = inicio + filasPorPagina;
 
-      filas.forEach(fila => fila.style.display = 'none'); // ocultar todo
-
-      datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
-
-      // Actualizar numeración visible
-      datosFiltrados.forEach((fila, i) => {
-        fila.children[0].textContent = i + 1;
-      });
-    }
+  filas.forEach(fila => fila.style.display = 'none'); // Ocultar todo
+  datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
+}
 
     function crearPaginacion(datosFiltrados) {
       pagDiv.innerHTML = '';
