@@ -509,6 +509,8 @@ $vista = $_GET['vista'] ?? 'archivos';
 
         
     </div>
+    
+<!-- NO BORRAR ES EL BUENO -->
     <div class="headertable">
             <?php
             switch ($vista) {
@@ -597,38 +599,14 @@ $vista = $_GET['vista'] ?? 'archivos';
 
         </div>
 
-        <!-- 📦 Contenido dinámico -->
-        <div id="contenido-dinamico" class="mt-4"></div>
+        <div id="contenido-dinamico" class="mt-4"></div> 
 
       </div>
 
-      <div class="headertable">
-        <?php
-        switch ($vista) {
-          case 'plantillas':
-            include 'vista_plantillas.php';
-            break;
-          case 'usuarios':
-            include 'vista_usuarios.php';
-            break;
-          case 'consultores':
-            include 'vista_consultores.php';
-            break;
-          case 'proveedores':
-            include 'vista_proveedores.php';
-            break;
-          default:
-            include 'vista_archivos.php';
-            break;
-        }
-        ?>
-
-
-      </div>
 
     </div>
   </main>
-
+</body>
 <script>
 document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -683,7 +661,7 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
   <script src="../assets/js/script.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
-</body>
+
 
 <script>
   //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA PROVEEDOR Y LO Q SEA 
@@ -746,4 +724,3 @@ document.getElementById('formCrearProveedor').addEventListener('submit', functio
   
 </script>
 
-</html>
