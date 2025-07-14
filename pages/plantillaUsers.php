@@ -475,7 +475,7 @@ $vista = $_GET['vista'] ?? 'archivos';
             </div>
 
 
-          <?php elseif ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
+          <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline">
               <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
               <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
@@ -507,7 +507,9 @@ $vista = $_GET['vista'] ?? 'archivos';
           </span>
           <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
 
-        <div class="headertable">
+        
+    </div>
+    <div class="headertable">
             <?php
             switch ($vista) {
                 case 'plantillas':
@@ -528,7 +530,6 @@ $vista = $_GET['vista'] ?? 'archivos';
             }
             ?>
         </div>
-    </div>
 </main>
 
 <!-- Modal Crear Consultor -->
