@@ -9,7 +9,7 @@ $sql = "SELECT u.correo, c.nombre
 $result = $conexion->query($sql);
 ?>
 
-<table class="table table-bordered border-secondary">
+<table class="table table-bordered border-secondary w-100">
     <thead>
         <tr>
             <th>#</th>

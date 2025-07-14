@@ -1,4 +1,3 @@
-<div style="max-height: 90%; overflow-y: auto;">
 <?php
 // Suponiendo que ya tienes conexión en $conexion
 $sql = "SELECT u.correo, p.nombre_empresa
@@ -8,32 +7,35 @@ $sql = "SELECT u.correo, p.nombre_empresa
 
 $result = $conexion->query($sql);
 ?>
+
+<!-- CONTENEDOR DE LA TABLA CON SCROLL -->
 <div style="max-height: 90%; overflow-y: auto;">
+    <table class="table table-bordered border-secondary w-100" id="tablaProveedores">
+        <thead>
+            <tr>
+                <th>Correo</th>
+                <th>Nombre Empresa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $i = 1;
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <td>" . htmlspecialchars($row['correo']) . "</td>
+                        <td>" . htmlspecialchars($row['nombre_empresa'] ?? '') . "</td>
+                      </tr>";
+                $i++;
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
-<table class="table table-bordered border-secondary"  id="tablaProveedores">
-    <thead>
-        <tr>
-            <th scope="row"></th>
-            <th>Correo</th>
-            <th>Nombre Empresa</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $i = 1;
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>
-                    <th scope='row'>{$i}</th>
-                    <td>" . htmlspecialchars($row['correo']) . "</td>
-                    <td>" . htmlspecialchars($row['nombre_empresa'] ?? '') . "</td>
-                  </tr>";
-            $i++;
-        }
-        ?>
-    </tbody>
-</table>
+<!-- CONTENEDOR DE LA PAGINACIÓN FUERA DEL SCROLL -->
+<div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
 
-    </div><div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<!-- SCRIPT DE PAGINACIÓN -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const tabla = document.getElementById('tablaProveedores');
@@ -46,19 +48,31 @@ document.addEventListener('DOMContentLoaded', () => {
   const pagDiv = document.getElementById('paginacion');
 
   function mostrarPagina(pagina) {
-    const inicio = (pagina - 1) * filasPorPagina;
-    const fin = inicio + filasPorPagina;
+  const inicio = (pagina - 1) * filasPorPagina;
+  const fin = inicio + filasPorPagina;
 
-    filas.forEach((fila, i) => {
-      fila.style.display = i >= inicio && i < fin ? '' : 'none';
-      fila.querySelector('th').textContent = i + 1; // actualizar numeración
-    });
-  }
+  filas.forEach((fila, i) => {
+    fila.style.display = i >= inicio && i < fin ? '' : 'none';
+  });
+}
 
   function crearPaginacion() {
     pagDiv.innerHTML = '';
     const totalPaginas = Math.ceil(filas.length / filasPorPagina);
 
+    // Botón "Primera página"
+    const btnPrimera = document.createElement('button');
+    btnPrimera.innerHTML = '⏮️'; // icono doble flecha izquierda
+    btnPrimera.className = 'btn btn-outline-primary';
+    btnPrimera.disabled = paginaActual === 1;
+    btnPrimera.addEventListener('click', () => {
+      paginaActual = 1;
+      mostrarPagina(paginaActual);
+      crearPaginacion();
+    });
+    pagDiv.appendChild(btnPrimera);
+
+    // Botones numéricos de página
     for (let i = 1; i <= totalPaginas; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
@@ -70,12 +84,21 @@ document.addEventListener('DOMContentLoaded', () => {
       });
       pagDiv.appendChild(btn);
     }
+
+    // Botón "Última página"
+    const btnUltima = document.createElement('button');
+    btnUltima.innerHTML = '⏭️'; // icono doble flecha derecha
+    btnUltima.className = 'btn btn-outline-primary';
+    btnUltima.disabled = paginaActual === totalPaginas;
+    btnUltima.addEventListener('click', () => {
+      paginaActual = totalPaginas;
+      mostrarPagina(paginaActual);
+      crearPaginacion();
+    });
+    pagDiv.appendChild(btnUltima);
   }
 
   mostrarPagina(paginaActual);
   crearPaginacion();
 });
 </script>
-
-</div>
-
