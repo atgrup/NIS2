@@ -2,6 +2,7 @@
     <table class="table table-bordered border-secondary">
         <thead>
             <tr>
+                <th scope="row"></th>
                 <th>Nombre de la plantilla</th>
                 <th>Tipo</th>
             </tr>

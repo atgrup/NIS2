@@ -7,12 +7,12 @@ $sql = "SELECT u.correo, p.nombre_empresa
 
 $result = $conexion->query($sql);
 ?>
-<div style="max-height: 80%; overflow-y: auto;">
+<div style="max-height: 90%; overflow-y: auto;">
 
 <table class="table table-bordered border-secondary"  id="tablaProveedores">
     <thead>
         <tr>
-            
+            <th scope="row"></th>
             <th>Correo</th>
             <th>Nombre Empresa</th>
         </tr>
