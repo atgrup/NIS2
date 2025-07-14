@@ -335,6 +335,15 @@ $vista = $_GET['vista'] ?? 'archivos';
     <div class="contenedorTablaStencil">
       <!-- Buscador en línea con los botones -->
       <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3 " style="padding-bottom: 1.5rem;a">
+             <div class="input-group" style="max-width: 300px;">
+          <span class="input-group-text">
+            <img src="../assets/img/search.png" alt="Buscar">
+          </span>
+          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+
+        
+    </div>
+    
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline">
@@ -501,15 +510,7 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 
         <!-- 🔍 Buscador fuera -->
-        <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text">
-            <img src="../assets/img/search.png" alt="Buscar">
-          </span>
-          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-
-        
-    </div>
-    
+   
 <!-- NO BORRAR ES EL BUENO -->
     <div class="headertable">
             <?php
