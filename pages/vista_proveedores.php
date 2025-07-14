@@ -1,4 +1,3 @@
-<div style="max-height: 90%; overflow-y: auto;">
 <?php
 // Suponiendo que ya tienes conexión en $conexion
 $sql = "SELECT u.correo, p.nombre_empresa
@@ -8,32 +7,37 @@ $sql = "SELECT u.correo, p.nombre_empresa
 
 $result = $conexion->query($sql);
 ?>
+
+<!-- CONTENEDOR DE LA TABLA CON SCROLL -->
 <div style="max-height: 90%; overflow-y: auto;">
+    <table class="table table-bordered border-secondary" id="tablaProveedores">
+        <thead>
+            <tr>
+                <th scope="row"></th>
+                <th>Correo</th>
+                <th>Nombre Empresa</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php
+            $i = 1;
+            while ($row = $result->fetch_assoc()) {
+                echo "<tr>
+                        <th scope='row'>{$i}</th>
+                        <td>" . htmlspecialchars($row['correo']) . "</td>
+                        <td>" . htmlspecialchars($row['nombre_empresa'] ?? '') . "</td>
+                      </tr>";
+                $i++;
+            }
+            ?>
+        </tbody>
+    </table>
+</div>
 
-<table class="table table-bordered border-secondary"  id="tablaProveedores">
-    <thead>
-        <tr>
-            <th scope="row"></th>
-            <th>Correo</th>
-            <th>Nombre Empresa</th>
-        </tr>
-    </thead>
-    <tbody>
-        <?php
-        $i = 1;
-        while ($row = $result->fetch_assoc()) {
-            echo "<tr>
-                    <th scope='row'>{$i}</th>
-                    <td>" . htmlspecialchars($row['correo']) . "</td>
-                    <td>" . htmlspecialchars($row['nombre_empresa'] ?? '') . "</td>
-                  </tr>";
-            $i++;
-        }
-        ?>
-    </tbody>
-</table>
+<!-- CONTENEDOR DE LA PAGINACIÓN FUERA DEL SCROLL -->
+<div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
 
-    </div><div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<!-- SCRIPT DE PAGINACIÓN -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const tabla = document.getElementById('tablaProveedores');
@@ -76,6 +80,3 @@ document.addEventListener('DOMContentLoaded', () => {
   crearPaginacion();
 });
 </script>
-
-</div>
-
