@@ -1,5 +1,38 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+include '../api/includes/conexion.php';
+
+$rol = $_SESSION['rol'] ?? '';
+$isAdmin = ($rol === 'administrador');
+
+// Eliminar consultor (solo si eres admin)
+if ($isAdmin && isset($_GET['eliminar'])) {
+    $consultor_id = intval($_GET['eliminar']);
+
+    // Obtener usuario_id relacionado
+    $stmt = $conexion->prepare("SELECT usuario_id FROM consultores WHERE id = ?");
+    $stmt->bind_param("i", $consultor_id);
+    $stmt->execute();
+    $stmt->bind_result($usuario_id);
+    $stmt->fetch();
+    $stmt->close();
+
+    if ($usuario_id) {
+        $conexion->query("DELETE FROM consultores WHERE id = $consultor_id");
+        $conexion->query("DELETE FROM usuarios WHERE id_usuarios = $usuario_id");
+        $_SESSION['mensaje'] = "Consultor eliminado correctamente";
+    } else {
+        $_SESSION['error'] = "No se pudo encontrar el usuario del consultor";
+    }
+
+    header("Location: vistaconsultores.php");
+    exit;
+}
+?>
+
 <style>
-  /* Oculta la primera columna (la de numeración) */
   table.consultores-table th:first-child,
   table.consultores-table td:first-child {
     display: none;
@@ -10,25 +43,38 @@
   <table class="table table-bordered border-secondary w-100 consultores-table">
     <thead>
       <tr>
-        <th>#</th> <!-- Esta columna la ocultamos -->
+        <th>#</th>
         <th>Correo</th>
         <th>Nombre Consultor</th>
+        <?php if ($isAdmin): ?>
+          <th>Acciones</th>
+        <?php endif; ?>
       </tr>
     </thead>
     <tbody>
       <?php
-      $sql = "SELECT u.correo, c.nombre
-              FROM consultores c
-              JOIN usuarios u ON c.usuario_id = u.id_usuarios
-              ORDER BY c.id";
+      $sql = "SELECT c.id, u.correo FROM consultores c JOIN usuarios u ON c.usuario_id = u.id_usuarios ORDER BY c.id";
       $result = $conexion->query($sql);
       $i = 1;
+
       while ($row = $result->fetch_assoc()) {
+          $correo = htmlspecialchars($row['correo']);
+          $nombre = strstr($correo, '@', true);
+          $consultor_id = $row['id'];
+
           echo "<tr>
                   <th scope='row'>{$i}</th>
-                  <td>" . htmlspecialchars($row['correo']) . "</td>
-                  <td>" . htmlspecialchars($row['nombre'] ?? '') . "</td>
-                </tr>";
+                  <td>{$correo}</td>
+                  <td>" . htmlspecialchars($nombre) . "</td>";
+
+          if ($isAdmin) {
+              echo "<td>
+                      <a href='editar_consultor.php?id={$consultor_id}' class='btn btn-sm btn-primary'>Editar</a>
+                      <a href='vistaconsultores.php?eliminar={$consultor_id}' class='btn btn-sm btn-danger' onclick='return confirm(\"¿Eliminar este consultor?\")'>Eliminar</a>
+                    </td>";
+          }
+
+          echo "</tr>";
           $i++;
       }
       ?>
@@ -42,7 +88,6 @@
 document.addEventListener('DOMContentLoaded', () => {
   const filasPorPagina = 10;
   let paginaActual = 1;
-
   const tabla = document.querySelector('table.consultores-table');
   const tbody = tabla.querySelector('tbody');
   const filas = Array.from(tbody.querySelectorAll('tr'));
@@ -61,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
     pagDiv.innerHTML = '';
     const totalPaginas = Math.ceil(filas.length / filasPorPagina);
 
-    // Botón "Primera página"
     const btnPrimera = document.createElement('button');
     btnPrimera.innerHTML = '⏮️';
     btnPrimera.className = 'btn btn-outline-primary';
@@ -73,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     pagDiv.appendChild(btnPrimera);
 
-    // Botones numéricos
     for (let i = 1; i <= totalPaginas; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
@@ -86,7 +129,6 @@ document.addEventListener('DOMContentLoaded', () => {
       pagDiv.appendChild(btn);
     }
 
-    // Botón "Última página"
     const btnUltima = document.createElement('button');
     btnUltima.innerHTML = '⏭️';
     btnUltima.className = 'btn btn-outline-primary';
