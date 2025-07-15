@@ -24,9 +24,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->close();
             $hash = password_hash($contrasena, PASSWORD_DEFAULT);
 
-            // Insert en usuarios
-            $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, rol) VALUES (?, ?, 'consultor')");
-            $stmt->bind_param('ss', $correo, $hash);
+            // Obtener id_tipo_usuario para consultor
+            $stmt = $conexion->prepare("SELECT id_tipo_usuario FROM tipo_usuario WHERE nombre = ?");
+            $tipo_nombre = 'consultor';
+            $stmt->bind_param('s', $tipo_nombre);
+            $stmt->execute();
+            $stmt->bind_result($tipo_usuario_id);
+            $stmt->fetch();
+            $stmt->close();
+
+            if (!$tipo_usuario_id) {
+                $_SESSION['error'] = "Tipo de usuario consultor no encontrado en la base de datos.";
+                header('Location: plantillasUsers.php?vista=consultores');
+                exit;
+            }
+
+            // Insertar usuario
+            $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, ?)");
+            $stmt->bind_param('ssi', $correo, $hash, $tipo_usuario_id);
+
             if ($stmt->execute()) {
                 $usuario_id = $stmt->insert_id;
                 $stmt->close();
@@ -34,6 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Insert en consultores
                 $stmt2 = $conexion->prepare("INSERT INTO consultores (usuario_id) VALUES (?)");
                 $stmt2->bind_param('i', $usuario_id);
+
                 if ($stmt2->execute()) {
                     $_SESSION['mensaje'] = "Consultor creado correctamente";
                 } else {
@@ -49,3 +66,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 header('Location: plantillasUsers.php?vista=consultores');
 exit;
+
+?>
