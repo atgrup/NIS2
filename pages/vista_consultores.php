@@ -39,7 +39,7 @@ if ($isAdmin && isset($_GET['eliminar'])) {
         $_SESSION['error'] = "No se pudo encontrar el usuario del consultor";
     }
 
-    header("Location: vista_consultores.php");
+header('Location: plantillaUsers.php?vista=consultores');
     exit;
 }
 
@@ -72,7 +72,7 @@ if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_co
         $_SESSION['error'] = "Correo inválido";
     }
 
-    header("Location: vista_consultores.php");
+header("Location: plantillaUsers.php?vista=consultores");
     exit;
 }
 
@@ -184,6 +184,20 @@ if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_co
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+  // Lógica para abrir el modal de edición y rellenar campos
+document.querySelectorAll('.btnEditar').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const consultorId = btn.getAttribute('data-id');
+    const correo = btn.getAttribute('data-correo');
+
+    document.getElementById('consultor_id').value = consultorId;
+    document.getElementById('correo').value = correo;
+
+    const modal = new bootstrap.Modal(document.getElementById('editarConsultorModal'));
+    modal.show();
+  });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   // Paginación
   const filasPorPagina = 10;

@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if (!$tipo_usuario_id) {
                 $_SESSION['error'] = "Tipo de usuario consultor no encontrado en la base de datos.";
-                header('Location: plantillasUsers.php?vista=consultores');
+header('Location: plantillaUsers.php?vista=consultores');
                 exit;
             }
 
