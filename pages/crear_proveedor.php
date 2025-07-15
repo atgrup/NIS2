@@ -1,50 +1,31 @@
 <?php
-session_start();
 include '../api/includes/conexion.php'; // Asegúrate de que la ruta es correcta
 
-header('Content-Type: application/json');
+if (!isset($conexion)) {
+    die(json_encode(['success' => false, 'error' => 'Error de conexión a la base de datos']));
+}
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $correo = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $repeat = $_POST['repeat-password'] ?? '';
-    $nombre_empresa = $_POST['nombre_empresa'] ?? '';
-
-    $tipo_usuario_id = 2; // ID tipo proveedor
-
-    if (empty($correo) || empty($password) || empty($repeat) || empty($nombre_empresa)) {
-        echo json_encode(['success' => false, 'message' => 'Todos los campos son obligatorios']);
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    if (empty($_POST['correo']) || empty($_POST['password'])) {
+        echo json_encode(['success' => false, 'error' => 'Correo o contraseña vacíos']);
         exit;
     }
 
-    if ($password !== $repeat) {
-        echo json_encode(['success' => false, 'message' => 'Las contraseñas no coinciden']);
+    $correo = $_POST['correo'];
+    $password = password_hash($_POST['password'], PASSWORD_BCRYPT);
+
+    $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, 1)");
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => $conexion->error]);
         exit;
     }
 
-    $hash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Insertar usuario
-    $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssi", $correo, $hash, $tipo_usuario_id);
-
+    $stmt->bind_param("ss", $correo, $password);
     if ($stmt->execute()) {
-        $usuario_id = $conexion->insert_id;
-
-        $stmt2 = $conexion->prepare("INSERT INTO proveedores (usuario_id, nombre_empresa) VALUES (?, ?)");
-        $stmt2->bind_param("is", $usuario_id, $nombre_empresa);
-        if ($stmt2->execute()) {
-            echo json_encode(['success' => true]);
-            exit;
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Error al crear proveedor']);
-            exit;
-        }
+        echo json_encode(['success' => true]);
     } else {
-        echo json_encode(['success' => false, 'message' => 'Error al crear usuario']);
-        exit;
+        echo json_encode(['success' => false, 'error' => $stmt->error]);
     }
 }
-echo json_encode(['success' => false, 'message' => 'Petición no válida']);
-exit;
+?>
 
