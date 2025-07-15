@@ -64,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-header('Location: plantillasUsers.php?vista=consultores');
+header('Location: plantillaUsers.php?vista=consultores');
 exit;
 
 ?>
