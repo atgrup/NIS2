@@ -30,7 +30,7 @@
                 echo '<td class="text-center">' . $verificado . '</td>';
                 echo '<td class="text-center">';
                 echo '<button class="btn btn-sm btn-warning me-1" data-bs-toggle="modal" data-bs-target="#modalEditarUsuario" data-id="' . $usuarioId . '" data-correo="' . $correo . '" data-tipo="' . $tipoUsuario . '"><i class="bi bi-pencil"></i></button>';
-                echo '<button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarUsuario(' . $usuarioId . ', \'' . $correo . '\')"><i class="bi bi-trash"></i></button>';
+                echo '<button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarUsuario(' . $usuarioId . ', \'' . $correo . '\', \'' . $tipoUsuario . '\')"><i class="bi bi-trash"></i></button>';
                 echo '</td>';
                 echo '</tr>';
                 $i++;
@@ -118,17 +118,46 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
-// Modal de confirmación de eliminación
+// Modal de confirmación de eliminación y alerta Bootstrap
 let usuarioEliminarId = null;
-function mostrarModalEliminarUsuario(id, correo) {
+let tipoUsuarioEliminar = null;
+function mostrarModalEliminarUsuario(id, correo, tipoUsuario) {
   usuarioEliminarId = id;
-  document.getElementById('eliminarUsuarioTexto').textContent = '¿Seguro que quieres eliminar el usuario ' + correo + '?';
-  var modal = new bootstrap.Modal(document.getElementById('modalEliminarUsuario'));
-  modal.show();
+  tipoUsuarioEliminar = tipoUsuario;
+  if (tipoUsuario.toLowerCase() === 'administrador') {
+    document.getElementById('eliminarUsuarioTexto').textContent = '¿Seguro que quieres eliminar el usuario ' + correo + '?';
+    var modal = new bootstrap.Modal(document.getElementById('modalEliminarUsuario'));
+    modal.show();
+  } else {
+    // Mostrar alerta Bootstrap personalizada
+    let alertMsg = '';
+    if (tipoUsuario.toLowerCase() === 'consultor') {
+      alertMsg = 'Solo puedes eliminar un usuario consultor desde la sección de Consultores.';
+    } else if (tipoUsuario.toLowerCase() === 'proveedor') {
+      alertMsg = 'Solo puedes eliminar un usuario proveedor desde la sección de Proveedores.';
+    } else {
+      alertMsg = 'No tienes permisos para eliminar este usuario.';
+    }
+    mostrarAlertaBootstrap(alertMsg, 'danger');
+  }
 }
 document.getElementById('btnConfirmarEliminar').onclick = function() {
-  if (usuarioEliminarId) {
+  if (usuarioEliminarId && tipoUsuarioEliminar && tipoUsuarioEliminar.toLowerCase() === 'administrador') {
     window.location.href = 'eliminar_usuario.php?id=' + usuarioEliminarId;
   }
+}
+
+// Función para mostrar alertas de Bootstrap
+function mostrarAlertaBootstrap(mensaje, tipo = 'info') {
+  let alertDiv = document.createElement('div');
+  alertDiv.className = 'alert alert-' + tipo + ' alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3';
+  alertDiv.setAttribute('role', 'alert');
+  alertDiv.style.zIndex = 2000;
+  alertDiv.innerHTML = mensaje + '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>';
+  document.body.appendChild(alertDiv);
+  setTimeout(() => {
+    if (alertDiv) alertDiv.classList.remove('show');
+    setTimeout(() => { if (alertDiv && alertDiv.parentNode) alertDiv.parentNode.removeChild(alertDiv); }, 500);
+  }, 4000);
 }
 </script>
