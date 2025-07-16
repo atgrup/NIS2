@@ -402,42 +402,45 @@ $vista = $_GET['vista'] ?? 'archivos';
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog">
     <form method="POST" action="subir_archivo_rellenado.php" enctype="multipart/form-data">
-      <div class="modal-content">
-        <div class="modal-header bg-mi-color text-white">
-          <h5 class="modal-title" id="modalSubirArchivoLabel">Subir archivo con plantilla</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
+  <div class="modal-body">
+    <div class="mb-3">
+      <label for="archivo" class="form-label">Selecciona el archivo:</label>
+      <input type="file" name="archivo" id="archivo" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="plantilla_id" class="form-label">Plantilla asociada:</label>
+      <select name="plantilla_id" id="plantilla_id" class="form-select" required>
+        <option value="">-- Elige una plantilla --</option>
+        <?php
+        $plantillas = $conexion->query("SELECT id, nombre FROM plantillas");
+        while ($p = $plantillas->fetch_assoc()) {
+            echo "<option value='{$p['id']}'>{$p['nombre']}</option>";
+        }
+        ?>
+      </select>
+    </div>
 
-          <!-- Archivo -->
-          <div class="mb-3">
-            <label for="archivo" class="form-label">Selecciona el archivo:</label>
-            <input type="file" name="archivo" id="archivo" class="form-control" required>
-          </div>
+    <?php if (strtolower($_SESSION['rol']) === 'administrador'): ?>
+    <div class="mb-3">
+      <label for="proveedor_id" class="form-label">Proveedor:</label>
+      <select name="proveedor_id" id="proveedor_id" class="form-select" required>
+        <option value="">-- Selecciona un proveedor --</option>
+        <?php
+        $proveedores = $conexion->query("SELECT id, nombre_empresa FROM proveedores");
+        while ($prov = $proveedores->fetch_assoc()) {
+            echo "<option value='{$prov['id']}'>{$prov['nombre_empresa']}</option>";
+        }
+        ?>
+      </select>
+    </div>
+    <?php endif; ?>
+  </div>
 
-          <!-- Plantilla asociada -->
-          <div class="mb-3">
-            <label for="plantilla_id" class="form-label">Selecciona plantilla asociada:</label>
-            <select name="plantilla_id" id="plantilla_id" class="form-select" required>
-              <option value="">-- Elige una plantilla --</option>
-              <?php
-              // Asegúrate de que $conexion esté definido antes
-              $plantillas = $conexion->query("SELECT id, nombre FROM plantillas");
-              while ($plantilla = $plantillas->fetch_assoc()) {
-                echo "<option value='{$plantilla['id']}'>{$plantilla['nombre']}</option>";
-              }
-              ?>
-            </select>
-          </div>
+  <div class="modal-footer">
+    <button type="submit" class="btn btn-primary">Subir archivo</button>
+  </div>
+</form>
 
-       
-        </div>
-        <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Subir archivo</button>
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        </div>
-      </div>
-    </form>
   </div>
 </div>
 

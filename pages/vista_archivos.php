@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 include '../api/includes/conexion.php';
 
@@ -16,29 +19,32 @@ $correo = $_SESSION['correo'] ?? '';
 </head>
 <body class="p-4">
 
-
 <div style="max-height: 90vh; overflow-y: auto;">
   <table class="table table-bordered border-secondary w-100">
     <thead>
       <tr>
         <th>Nombre del archivo</th>
-        <?php if (strtolower($rol)==='administrador'): ?>
-          <th>UUID</th><th>Proveedor</th>
+        <?php if (strtolower($rol) === 'administrador'): ?>
+          <th>Correo del proveedor</th>
         <?php endif; ?>
-        <th>Fecha</th><th>Estado</th>
+        <th>Fecha</th>
+        <th>Estado</th>
+        <th>Plantilla Asociada</th>
       </tr>
     </thead>
     <tbody>
       <?php
       if (strtolower($rol) === 'administrador') {
         $stmt = $conexion->prepare("
-          SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, a.archivo_url, a.uuid_plantilla, u.correo
+          SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, a.archivo_url, pl.nombre as plantilla_nombre, u.correo
           FROM archivos_subidos a
+          LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
           LEFT JOIN proveedores p ON a.proveedor_id = p.id
           LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios
           ORDER BY a.fecha_subida DESC
         ");
       } else {
+        // Obtener el ID del proveedor a partir del correo
         $stmt = $conexion->prepare("
           SELECT p.id
           FROM usuarios u
@@ -48,42 +54,44 @@ $correo = $_SESSION['correo'] ?? '';
         $stmt->bind_param("s", $correo);
         $stmt->execute();
         $stmt->bind_result($prov_id);
-        $stmt->fetch(); $stmt->close();
+        $stmt->fetch();
+        $stmt->close();
+
         $stmt = $conexion->prepare("
-          SELECT id, nombre_archivo, fecha_subida, revision_estado, archivo_url 
-          FROM archivos_subidos 
-          WHERE proveedor_id = ?
-          ORDER BY fecha_subida DESC
+          SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, a.archivo_url, pl.nombre as plantilla_nombre
+          FROM archivos_subidos a
+          LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
+          WHERE a.proveedor_id = ?
+          ORDER BY a.fecha_subida DESC
         ");
         $stmt->bind_param("i", $prov_id);
       }
 
       $stmt->execute();
+
       if (strtolower($rol) === 'administrador') {
-        $stmt->bind_result($id, $nombre, $fecha, $estado, $url, $uuid, $correo_prov);
+        $stmt->bind_result($id, $nombre, $fecha, $estado, $url, $plantilla_nombre, $correo_prov);
       } else {
-        $stmt->bind_result($id, $nombre, $fecha, $estado, $url);
+        $stmt->bind_result($id, $nombre, $fecha, $estado, $url, $plantilla_nombre);
       }
 
       while ($stmt->fetch()):
-        $path = realpath(__DIR__.'/../'.$url);
+        $path = realpath(__DIR__ . '/../' . $url);
         if (!file_exists($path)) continue;
       ?>
         <tr>
-          <td><a href="download.php?archivo=<?=urlencode($url)?>"><?=htmlspecialchars($nombre)?></a></td>
-          <?php if (strtolower($rol)==='administrador'): ?>
-            <td><?=htmlspecialchars($uuid)?></td>
-            <td><?=htmlspecialchars($correo_prov ?: 'Desconocido')?></td>
+          <td><a href="download.php?archivo=<?= urlencode($url) ?>"><?= htmlspecialchars($nombre) ?></a></td>
+          <?php if (strtolower($rol) === 'administrador'): ?>
+            <td><?= htmlspecialchars($correo_prov ?: 'Desconocido') ?></td>
           <?php endif; ?>
-          <td><?=htmlspecialchars($fecha)?></td>
-          <td class="text-center"><?=htmlspecialchars($estado)?></td>
+          <td><?= htmlspecialchars($fecha) ?></td>
+          <td class="text-center"><?= htmlspecialchars($estado) ?></td>
+          <td><?= htmlspecialchars($plantilla_nombre ?: 'Sin plantilla') ?></td>
         </tr>
       <?php endwhile; $stmt->close(); ?>
     </tbody>
   </table>
 </div>
-
-
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
