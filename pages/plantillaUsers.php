@@ -1,3 +1,78 @@
+<script>
+  // Paginación clásica SOLO para la tabla de usuarios
+  document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('tablaUsuarios')) {
+      const filasPorPagina = 10;
+      let paginaActual = 1;
+      const tabla = document.getElementById('tablaUsuarios');
+      const tbody = tabla.querySelector('tbody');
+      const filas = Array.from(tbody.querySelectorAll('tr'));
+      const pagDiv = document.getElementById('paginacion');
+      const buscador = document.getElementById('buscadorUsuarios');
+
+      function mostrarPagina(pagina, datosFiltrados) {
+        const inicio = (pagina - 1) * filasPorPagina;
+        const fin = inicio + filasPorPagina;
+        filas.forEach(fila => fila.style.display = 'none');
+        datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
+      }
+
+      function crearPaginacion(datosFiltrados) {
+        pagDiv.innerHTML = '';
+        const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
+        // Botón "Primera página"
+        const btnPrimera = document.createElement('button');
+        btnPrimera.innerHTML = '⏮️';
+        btnPrimera.className = 'btn btn-outline-primary';
+        btnPrimera.disabled = paginaActual === 1;
+        btnPrimera.addEventListener('click', () => {
+          paginaActual = 1;
+          mostrarPagina(paginaActual, datosFiltrados);
+          crearPaginacion(datosFiltrados);
+        });
+        pagDiv.appendChild(btnPrimera);
+        // Botones de números de página
+        for (let i = 1; i <= totalPaginas; i++) {
+          const btn = document.createElement('button');
+          btn.textContent = i;
+          btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+          btn.addEventListener('click', () => {
+            paginaActual = i;
+            mostrarPagina(paginaActual, datosFiltrados);
+            crearPaginacion(datosFiltrados);
+          });
+          pagDiv.appendChild(btn);
+        }
+        // Botón "Última página"
+        const btnUltima = document.createElement('button');
+        btnUltima.innerHTML = '⏭️';
+        btnUltima.className = 'btn btn-outline-primary';
+        btnUltima.disabled = paginaActual === totalPaginas;
+        btnUltima.addEventListener('click', () => {
+          paginaActual = totalPaginas;
+          mostrarPagina(paginaActual, datosFiltrados);
+          crearPaginacion(datosFiltrados);
+        });
+        pagDiv.appendChild(btnUltima);
+      }
+
+      function filtrarTabla() {
+        const texto = buscador.value.toLowerCase();
+        const filasFiltradas = filas.filter(fila => {
+          return Array.from(fila.cells).some(celda =>
+            celda.textContent.toLowerCase().includes(texto)
+          );
+        });
+        paginaActual = 1;
+        mostrarPagina(paginaActual, filasFiltradas);
+        crearPaginacion(filasFiltradas);
+      }
+
+      buscador.addEventListener('input', filtrarTabla);
+      filtrarTabla();
+    }
+  });
+</script>
 <?php
 session_start();
 
@@ -356,95 +431,70 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 
 </script> -->
 <script>
-  //IMPORTANTE NO QUITAR Q ES LA PAGINACION DE CADA USUARIO PROVEEDOR ESTA EN SU VISTAY LO Q SEA
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const filasPorPagina = 10;
-    let paginaActual = 1;
-    const tabla = document.getElementById('tablaUsuarios');
-    const tbody = tabla.querySelector('tbody');
-    const filas = Array.from(tbody.querySelectorAll('tr'));
-    const pagDiv = document.getElementById('paginacion');
-    const buscador = document.getElementById('buscadorUsuarios');
-
-function mostrarPagina(pagina, datosFiltrados) {
-  const inicio = (pagina - 1) * filasPorPagina;
-  const fin = inicio + filasPorPagina;
-
-  filas.forEach(fila => fila.style.display = 'none'); // Ocultar todo
-  datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
-}
-
-    function crearPaginacion(datosFiltrados) {
-      pagDiv.innerHTML = '';
-      const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
-
-      // Botón "Primera página"
-      const btnPrimera = document.createElement('button');
-      btnPrimera.innerHTML = '⏮️'; // Icono: doble flecha izquierda
-      btnPrimera.className = 'btn btn-outline-primary';
-      btnPrimera.disabled = paginaActual === 1; // deshabilitado si ya estás en la primera
-      btnPrimera.addEventListener('click', () => {
-        paginaActual = 1;
-        mostrarPagina(paginaActual, datosFiltrados);
-        crearPaginacion(datosFiltrados);
-      });
-      pagDiv.appendChild(btnPrimera);
-
-      // Botones de números de página
-      for (let i = 1; i <= totalPaginas; i++) {
-        const btn = document.createElement('button');
-        btn.textContent = i;
-        btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-        btn.addEventListener('click', () => {
-          paginaActual = i;
-          mostrarPagina(paginaActual, datosFiltrados);
-          crearPaginacion(datosFiltrados);
-        });
-        pagDiv.appendChild(btn);
-      }
-
-      // Botón "Última página"
-      const btnUltima = document.createElement('button');
-      btnUltima.innerHTML = '⏭️'; // Icono: doble flecha derecha
-      btnUltima.className = 'btn btn-outline-primary';
-      btnUltima.disabled = paginaActual === totalPaginas; // deshabilitado si ya estás en la última
-      btnUltima.addEventListener('click', () => {
-        paginaActual = totalPaginas;
-        mostrarPagina(paginaActual, datosFiltrados);
-        crearPaginacion(datosFiltrados);
-      });
-      pagDiv.appendChild(btnUltima);
-    }
-
-    function filtrarTabla() {
-      const texto = buscador.value.toLowerCase();
-      const filasFiltradas = filas.filter(fila => {
-        return Array.from(fila.cells).some(celda =>
-          celda.textContent.toLowerCase().includes(texto)
-        );
-      });
-      paginaActual = 1;
-      mostrarPagina(paginaActual, filasFiltradas);
-      crearPaginacion(filasFiltradas);
-    }
-
-    buscador.addEventListener('input', filtrarTabla);
-
-    // Inicialización
-    filtrarTabla();
-  });
-
-</script>
-<script>
   let seccionActual = null;
   let usuariosData = [];
+  let consultoresData = [];
+  let proveedoresData = [];
+  let plantillasData = [];
+  let archivosData = [];
   let usuariosPorPagina = 10;
+  let consultoresPorPagina = 10;
+  let proveedoresPorPagina = 10;
+  let plantillasPorPagina = 10;
+  let archivosPorPagina = 10;
   let paginaActual = 1;
 
   const botones = document.querySelectorAll('.cajaArchivos button[data-section], .cajaArchivos a[data-section]');
-  const buscador = document.getElementById('buscadorUsuarios');
+  let buscador = document.getElementById('buscadorUsuarios');
   const contenedor = document.getElementById('contenido-dinamico');
+
+  // Reasignar el buscador tras renderizar cada tabla dinámica
+  function rebindBuscador() {
+    buscador = document.getElementById('buscadorUsuarios');
+    if (buscador) {
+      buscador.placeholder = placeholders[seccionActual] || placeholders.default;
+      buscador.onkeyup = function () {
+        const texto = buscador.value.trim().toLowerCase();
+        if (seccionActual === "usuarios") {
+          paginaActual = 1;
+          const filtrados = usuariosData.filter(user =>
+            (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
+            (user.correo && user.correo.toLowerCase().includes(texto)) ||
+            (user.rol && user.rol.toLowerCase().includes(texto))
+          );
+          renderizarUsuarios(filtrados);
+        } else if (seccionActual === "consultores") {
+          paginaActual = 1;
+          const filtrados = consultoresData.filter(c =>
+            (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
+            (c.correo && c.correo.toLowerCase().includes(texto)) ||
+            (c.rol && c.rol.toLowerCase().includes(texto))
+          );
+          renderizarConsultores(filtrados);
+        } else if (seccionActual === "proveedores") {
+          paginaActual = 1;
+          const filtrados = proveedoresData.filter(p =>
+            (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
+            (p.email && p.email.toLowerCase().includes(texto))
+          );
+          renderizarProveedores(filtrados);
+        } else if (seccionActual === "plantillas") {
+          paginaActual = 1;
+          const filtrados = plantillasData.filter(pl =>
+            (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
+          );
+          renderizarPlantillas(filtrados);
+        } else if (seccionActual === "archivos") {
+          paginaActual = 1;
+          const filtrados = archivosData.filter(a =>
+            (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
+            (a.archivo_url && a.archivo_url.toLowerCase().includes(texto))
+          );
+          renderizarArchivos(filtrados);
+        }
+      };
+    }
+  }
 
   const placeholders = {
     usuarios: "Buscar usuario...",
@@ -455,27 +505,53 @@ function mostrarPagina(pagina, datosFiltrados) {
     default: "Buscar..."
   };
 
-  // 🔁 Cambiar placeholder dinámicamente
   function actualizarPlaceholder(seccion) {
-    buscador.placeholder = placeholders[seccion] || placeholders.default;
+    if (buscador) {
+      buscador.placeholder = placeholders[seccion] || placeholders.default;
+    }
   }
 
-  // 🔍 Evento buscador dinámico
   buscador?.addEventListener("keyup", function () {
     const texto = buscador.value.trim().toLowerCase();
-
     if (seccionActual === "usuarios") {
+      paginaActual = 1;
       const filtrados = usuariosData.filter(user =>
-        user.nombre.toLowerCase().includes(texto) ||
-        user.correo.toLowerCase().includes(texto) ||
-        user.rol.toLowerCase().includes(texto)
+        (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
+        (user.correo && user.correo.toLowerCase().includes(texto)) ||
+        (user.rol && user.rol.toLowerCase().includes(texto))
       );
       renderizarUsuarios(filtrados);
+    } else if (seccionActual === "consultores") {
+      paginaActual = 1;
+      const filtrados = consultoresData.filter(c =>
+        (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
+        (c.correo && c.correo.toLowerCase().includes(texto)) ||
+        (c.rol && c.rol.toLowerCase().includes(texto))
+      );
+      renderizarConsultores(filtrados);
+    } else if (seccionActual === "proveedores") {
+      paginaActual = 1;
+      const filtrados = proveedoresData.filter(p =>
+        (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
+        (p.email && p.email.toLowerCase().includes(texto))
+      );
+      renderizarProveedores(filtrados);
+    } else if (seccionActual === "plantillas") {
+      paginaActual = 1;
+      const filtrados = plantillasData.filter(pl =>
+        (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
+      );
+      renderizarPlantillas(filtrados);
+    } else if (seccionActual === "archivos") {
+      paginaActual = 1;
+      const filtrados = archivosData.filter(a =>
+        (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
+        (a.archivo_url && a.archivo_url.toLowerCase().includes(texto))
+      );
+      renderizarArchivos(filtrados);
     }
-    // Aquí puedes agregar filtros para otras secciones si las tienes cargadas
   });
 
-  // 📦 Cargar secciones
   botones.forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
@@ -505,10 +581,9 @@ function mostrarPagina(pagina, datosFiltrados) {
     });
   });
 
-  // 👥 Cargar usuarios (con paginación y filtrado)
+  // Usuarios
   function cargarUsuarios() {
     contenedor.innerHTML = `<p>Cargando usuarios...</p>`;
-
     fetch('http://localhost/NIS2/api/models/Usuario.php')
       .then(res => res.json())
       .then(data => {
@@ -521,19 +596,16 @@ function mostrarPagina(pagina, datosFiltrados) {
         contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar usuarios.</div>`;
       });
   }
-
   function renderizarUsuarios(data = []) {
     const inicio = (paginaActual - 1) * usuariosPorPagina;
     const fin = inicio + usuariosPorPagina;
-    const usuariosPagina = data.slice(inicio, fin);
-
     let tabla = `
-    <table class="table table-bordered mt-3">
+    <table class="table table-bordered mt-3" id="tablaUsuarios">
       <thead>
         <tr><th>Correo</th><th>Nombre</th><th>Rol</th></tr>
       </thead>
       <tbody>
-        ${usuariosPagina.map(u => `
+        ${data.slice(inicio, fin).map(u => `
           <tr>
             <td>${u.correo}</td>
             <td>${u.nombre}</td>
@@ -543,34 +615,229 @@ function mostrarPagina(pagina, datosFiltrados) {
     </table>
     <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
   `;
-
-    contenedor.innerHTML = tabla;
-    renderizarPaginacion(data);
+    contenedor.innerHTML = `
+      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
+        <span class="input-group-text">
+          <img src="../assets/img/search.png" alt="Buscar">
+        </span>
+        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+      </div>
+      ` + tabla;
+    renderizarPaginacion(data, renderizarUsuarios);
+    rebindBuscador();
   }
 
-  function renderizarPaginacion(data) {
-    const totalPaginas = Math.ceil(data.length / usuariosPorPagina);
+  // Consultores
+  function cargarConsultores() {
+    contenedor.innerHTML = `<p>Cargando consultores...</p>`;
+    fetch('http://localhost/NIS2/api/models/Consultor.php')
+      .then(res => res.json())
+      .then(data => {
+        consultoresData = data;
+        paginaActual = 1;
+        renderizarConsultores(consultoresData);
+      })
+      .catch(err => {
+        console.error(err);
+        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar consultores.</div>`;
+      });
+  }
+  function renderizarConsultores(data = []) {
+    const inicio = (paginaActual - 1) * consultoresPorPagina;
+    const fin = inicio + consultoresPorPagina;
+    const consultoresPagina = data.slice(inicio, fin);
+    let tabla = `
+    <table class="table table-bordered mt-3">
+      <thead>
+        <tr><th>Correo</th><th>Nombre</th><th>Rol</th></tr>
+      </thead>
+      <tbody>
+        ${consultoresPagina.map(c => `
+          <tr>
+            <td>${c.correo}</td>
+            <td>${c.nombre}</td>
+            <td>${c.rol}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+  `;
+    contenedor.innerHTML = `
+      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
+        <span class="input-group-text">
+          <img src="../assets/img/search.png" alt="Buscar">
+        </span>
+        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+      </div>
+      ` + tabla;
+    renderizarPaginacion(data, renderizarConsultores);
+    rebindBuscador();
+  }
+
+  // Proveedores
+  function cargarProveedores() {
+    contenedor.innerHTML = `<p>Cargando proveedores...</p>`;
+    fetch('http://localhost/NIS2/api/models/Proveedor.php')
+      .then(res => res.json())
+      .then(data => {
+        proveedoresData = data;
+        paginaActual = 1;
+        renderizarProveedores(proveedoresData);
+      })
+      .catch(err => {
+        console.error(err);
+        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar proveedores.</div>`;
+      });
+  }
+  function renderizarProveedores(data = []) {
+    const inicio = (paginaActual - 1) * proveedoresPorPagina;
+    const fin = inicio + proveedoresPorPagina;
+    const proveedoresPagina = data.slice(inicio, fin);
+    let tabla = `
+    <table class="table table-bordered mt-3">
+      <thead>
+        <tr><th>Email</th><th>Empresa</th></tr>
+      </thead>
+      <tbody>
+        ${proveedoresPagina.map(p => `
+          <tr>
+            <td>${p.email}</td>
+            <td>${p.nombre_empresa}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+  `;
+    contenedor.innerHTML = `
+      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
+        <span class="input-group-text">
+          <img src="../assets/img/search.png" alt="Buscar">
+        </span>
+        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+      </div>
+      ` + tabla;
+    renderizarPaginacion(data, renderizarProveedores);
+    rebindBuscador();
+  }
+
+  // Plantillas
+  function cargarPlantillas() {
+    contenedor.innerHTML = `<p>Cargando plantillas...</p>`;
+    fetch('http://localhost/NIS2/api/models/get_archivos.php?tipo=plantillas')
+      .then(res => res.json())
+      .then(data => {
+        plantillasData = data;
+        paginaActual = 1;
+        renderizarPlantillas(plantillasData);
+      })
+      .catch(err => {
+        console.error(err);
+        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar plantillas.</div>`;
+      });
+  }
+  function renderizarPlantillas(data = []) {
+    const inicio = (paginaActual - 1) * plantillasPorPagina;
+    const fin = inicio + plantillasPorPagina;
+    const plantillasPagina = data.slice(inicio, fin);
+    let tabla = `
+    <table class="table table-bordered mt-3">
+      <thead>
+        <tr><th>Nombre archivo</th></tr>
+      </thead>
+      <tbody>
+        ${plantillasPagina.map(pl => `
+          <tr>
+            <td>${pl.nombre_archivo}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+  `;
+    contenedor.innerHTML = `
+      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
+        <span class="input-group-text">
+          <img src="../assets/img/search.png" alt="Buscar">
+        </span>
+        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+      </div>
+      ` + tabla;
+    renderizarPaginacion(data, renderizarPlantillas);
+    rebindBuscador();
+  }
+
+  // Archivos
+  function cargarArchivos() {
+    contenedor.innerHTML = `<p>Cargando archivos...</p>`;
+    fetch('http://localhost/NIS2/api/models/get_archivos.php?tipo=archivos')
+      .then(res => res.json())
+      .then(data => {
+        archivosData = data;
+        paginaActual = 1;
+        renderizarArchivos(archivosData);
+      })
+      .catch(err => {
+        console.error(err);
+        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar archivos.</div>`;
+      });
+  }
+  function renderizarArchivos(data = []) {
+    const inicio = (paginaActual - 1) * archivosPorPagina;
+    const fin = inicio + archivosPorPagina;
+    const archivosPagina = data.slice(inicio, fin);
+    let tabla = `
+    <table class="table table-bordered mt-3">
+      <thead>
+        <tr><th>Nombre archivo</th><th>URL</th></tr>
+      </thead>
+      <tbody>
+        ${archivosPagina.map(a => `
+          <tr>
+            <td>${a.nombre_archivo}</td>
+            <td>${a.archivo_url}</td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+  `;
+    contenedor.innerHTML = `
+      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
+        <span class="input-group-text">
+          <img src="../assets/img/search.png" alt="Buscar">
+        </span>
+        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+      </div>
+      ` + tabla;
+    renderizarPaginacion(data, renderizarArchivos);
+    rebindBuscador();
+  }
+
+  function renderizarPaginacion(data, renderFunction) {
+    let porPagina = usuariosPorPagina;
+    if (renderFunction === renderizarUsuarios) porPagina = usuariosPorPagina;
+    else if (renderFunction === renderizarConsultores) porPagina = consultoresPorPagina;
+    else if (renderFunction === renderizarProveedores) porPagina = proveedoresPorPagina;
+    else if (renderFunction === renderizarPlantillas) porPagina = plantillasPorPagina;
+    else if (renderFunction === renderizarArchivos) porPagina = archivosPorPagina;
+    let totalPaginas = Math.ceil(data.length / porPagina);
+    if (totalPaginas < 1) totalPaginas = 1; // Siempre al menos una página
     const pagDiv = document.getElementById("paginacion");
     pagDiv.innerHTML = '';
-
     for (let i = 1; i <= totalPaginas; i++) {
       const btn = document.createElement('button');
       btn.textContent = i;
       btn.classList.add('btn', i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
       btn.addEventListener('click', () => {
         paginaActual = i;
-        renderizarUsuarios(data);
+        renderFunction(data);
       });
       pagDiv.appendChild(btn);
     }
   }
 
-  // 🚀 Cargar vista inicial según la URL
   window.addEventListener('load', () => {
     const vista = new URLSearchParams(window.location.search).get('vista') || 'archivos';
     seccionActual = vista;
     actualizarPlaceholder(vista);
-
     switch (vista) {
       case 'usuarios': cargarUsuarios(); break;
       case 'archivos': cargarArchivos(); break;
@@ -582,13 +849,9 @@ function mostrarPagina(pagina, datosFiltrados) {
   });
 
   document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
-    e.preventDefault(); // evitar que recargue la página
-
-    // Validar contraseñas igual que ya tienes
+    e.preventDefault();
     if (!validarContrasenas('proveedor')) return;
-
     const formData = new FormData(this);
-
     fetch('../pages/crear_proveedor.php', {
       method: 'POST',
       body: formData
@@ -596,10 +859,8 @@ function mostrarPagina(pagina, datosFiltrados) {
       .then(response => response.json())
       .then(data => {
         if (data.success) {
-          // Cerrar popup (suponiendo que usas Bootstrap modal)
           const modal = bootstrap.Modal.getInstance(document.getElementById('crearProveedorModal'));
           modal.hide();
-
         } else {
           alert('Error: ' + data.message);
         }
@@ -608,15 +869,6 @@ function mostrarPagina(pagina, datosFiltrados) {
         console.error('Error:', error);
       });
   });
-  // Aquí actualizar la tabla
-  // Opción 1: recargar toda la página para que la tabla se actualice
-  // location.reload();
-
-  // Opción 2: hacer una llamada fetch para actualizar sólo la tabla (más avanzado)
-  // actualizarTablaProveedores();
-
-
-</script>
 
 <script src="../assets/js/popup.js"></script>
 <script src="../assets/js/script.js"></script>
