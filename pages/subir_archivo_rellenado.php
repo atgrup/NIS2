@@ -10,22 +10,29 @@ if (!isset($_SESSION['id_usuario'])) {
     die("Usuario no autenticado");
 }
 
-$usuario_id = $_SESSION['id_usuario'];  // Este es el id del usuario que sube, guardamos en consultor_id
 $correo = $_SESSION['correo'] ?? 'desconocido';
-$proveedor_id = $_SESSION['proveedor_id'] ?? null;
-if (!$proveedor_id) {
-    die("No se pudo determinar el proveedor asociado.");
-}
-
-// Desde el modal: select plantilla_id, input file
+$rol = $_SESSION['rol'] ?? '';
 $plantilla_id = $_POST['plantilla_id'] ?? null;
+
+// Determinar proveedor_id según el rol
+if (strtolower($rol) === 'administrador') {
+    $proveedor_id = $_POST['proveedor_id'] ?? null;
+    if (!$proveedor_id) {
+        die("Debes seleccionar un proveedor.");
+    }
+} else {
+    $proveedor_id = $_SESSION['proveedor_id'] ?? null;
+    if (!$proveedor_id) {
+        die("No se pudo determinar el proveedor asociado.");
+    }
+}
 
 if (!$plantilla_id || !isset($_FILES['archivo'])) {
     die("Faltan datos del formulario");
 }
 
 // Validar plantilla
-$stmt = $conexion->prepare("SELECT id, nombre FROM plantillas WHERE id = ?");
+$stmt = $conexion->prepare("SELECT id FROM plantillas WHERE id = ?");
 $stmt->bind_param("i", $plantilla_id);
 $stmt->execute();
 $res = $stmt->get_result();
@@ -49,16 +56,16 @@ if (!move_uploaded_file($tmp, $archivo_guardado)) {
     die("Error al guardar archivo");
 }
 
-// Insertar en la base de datos SIN rol_usuario ni comentarios
+// Insertar en base de datos
 $stmt = $conexion->prepare("
-    INSERT INTO archivos_subidos (plantilla_id, consultor_id, proveedor_id, archivo_url, nombre_archivo)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO archivos_subidos (plantilla_id, proveedor_id, archivo_url, nombre_archivo)
+    VALUES (?, ?, ?, ?)
 ");
-$stmt->bind_param("iiiss", $plantilla_id, $usuario_id, $proveedor_id, $archivo_guardado, $nombre_original);
+$stmt->bind_param("iiss", $plantilla_id, $proveedor_id, $archivo_guardado, $nombre_original);
 
 if ($stmt->execute()) {
     echo "OK";
 } else {
-    echo "Error al guardar en base de datos: " . $stmt->error;
+    echo "Error al guardar en base de datos";
 }
 ?>
