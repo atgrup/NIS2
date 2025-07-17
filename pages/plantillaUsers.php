@@ -141,7 +141,6 @@ $vista = $_GET['vista'] ?? 'archivos';
 
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -203,11 +202,11 @@ $vista = $_GET['vista'] ?? 'archivos';
       <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3" style="padding-bottom: 1.5rem;">
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
-            <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
-              Subir archivo
-            </button>
+            <form method="POST" enctype="multipart/form-data" class="d-inline">
+              <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
+              <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+            </form>
           <?php endif; ?>
-
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline mb-3">
               <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
@@ -217,14 +216,11 @@ $vista = $_GET['vista'] ?? 'archivos';
           <?php if ($rol === 'administrador'): ?>
             <div class="d-flex flex-wrap gap-2 px-3 mt-2">
               <?php if ($vista === 'usuarios'): ?>
-                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear
-                  Usuario</button>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Usuario</button>
               <?php elseif ($vista === 'consultores'): ?>
-                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear
-                  Consultor</button>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear Consultor</button>
               <?php elseif ($vista === 'proveedores'): ?>
-                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear
-                  Proveedor</button>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearProveedorModal">Crear Proveedor</button>
               <?php endif; ?>
             </div>
           <?php endif; ?>
@@ -235,106 +231,100 @@ $vista = $_GET['vista'] ?? 'archivos';
           <span class="input-group-text">
             <img src="../assets/img/search.png" alt="Buscar">
           </span>
-          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
         </div>
       </div> <!-- Cierre d-flex align-items-center -->
 
       <div class="headertable">
         <?php
-        switch ($vista) {
-          case 'plantillas':
-            include 'vista_plantillas.php';
-            break;
-          case 'usuarios':
-            include 'vista_usuarios.php';
-            break;
-          case 'consultores':
-            include 'vista_consultores.php';
-            break;
-          case 'proveedores':
-            include 'vista_proveedores.php';
-            break;
-          default:
-            include 'vista_archivos.php';
-            break;
-        }
+          switch ($vista) {
+            case 'plantillas':
+              include 'vista_plantillas.php';
+              break;
+            case 'usuarios':
+              include 'vista_usuarios.php';
+              break;
+            case 'consultores':
+              include 'vista_consultores.php';
+              break;
+            case 'proveedores':
+              include 'vista_proveedores.php';
+              break;
+            default:
+              include 'vista_archivos.php';
+              break;
+          }
         ?>
       </div>
     </div> <!-- Cierre contenedorTablaStencil -->
 
   </main> <!-- Cierre main -->
-  <?php
+<?php
 
-  $alertaPassword = isset($_SESSION['error']) && $_SESSION['error'] === "Las contraseñas no coinciden.";
-  $alertaCorreo = isset($_SESSION['error']) && $_SESSION['error'] === "El correo ya está registrado.";
-  $alertaExito = isset($_SESSION['success']) && $_SESSION['success'] === "Usuario creado correctamente";
-  $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
-  ?>
+$alertaPassword = isset($_SESSION['error']) && $_SESSION['error'] === "Las contraseñas no coinciden.";
+$alertaCorreo = isset($_SESSION['error']) && $_SESSION['error'] === "El correo ya está registrado.";
+$alertaExito = isset($_SESSION['success']) && $_SESSION['success'] === "Usuario creado correctamente";
+$mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
+?>
 
   <!-- Modal Crear admin -->
-  <div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form method="POST" action="crear_admin.php" onsubmit="return validarContrasenas('usuario')">
-        <div class="modal-content">
-          <div class="modal-header bg-mi-color text-white">
-            <h5 class="modal-title" id="crearUsuarioLabel">Crear Administrador</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-              aria-label="Cerrar"></button>
-          </div>
-          <div class="modal-body">
-
-            <!-- ALERTAS -->
-            <div id="alerta-password" class="alert alert-danger alert-dismissible fade show" role="alert"
-              style="display:none;">
-              <span>Las contraseñas no coinciden</span>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-            </div>
-
-            <div id="alerta-correo" class="alert alert-danger alert-dismissible fade show" role="alert"
-              style="display:none;">
-              <span>El correo ya está registrado</span>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-            </div>
-
-            <div id="alerta-exito" class="alert alert-success alert-dismissible fade show" role="alert"
-              style="display:none;">
-              <span>Usuario creado correctamente</span>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-            </div>
-
-            <!-- FORMULARIO -->
-            <div class="mb-3">
-              <label for="correoUsuario" class="form-label-popup">Correo</label>
-              <input type="email" class="form-control" id="correoUsuario" name="correo" required>
-            </div>
-            <div class="mb-3">
-              <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
-              <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
-            </div>
-            <div class="mb-3">
-              <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
-              <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
-            </div>
-
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary">Crear Usuario</button>
-          </div>
+ <div class="modal fade" id="crearUsuarioModal" tabindex="-1" aria-labelledby="crearUsuarioLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form method="POST" action="crear_admin.php" onsubmit="return validarContrasenas('usuario')">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="crearUsuarioLabel">Crear Administrador</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-      </form>
-    </div>
+        <div class="modal-body">
+
+          <!-- ALERTAS -->
+          <div id="alerta-password" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none;">
+            <span>Las contraseñas no coinciden</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+
+          <div id="alerta-correo" class="alert alert-danger alert-dismissible fade show" role="alert" style="display:none;">
+            <span>El correo ya está registrado</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+
+          <div id="alerta-exito" class="alert alert-success alert-dismissible fade show" role="alert" style="display:none;">
+            <span>Usuario creado correctamente</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+          </div>
+
+          <!-- FORMULARIO -->
+          <div class="mb-3">
+            <label for="correoUsuario" class="form-label-popup">Correo</label>
+            <input type="email" class="form-control" id="correoUsuario" name="correo" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaUsuario" class="form-label-popup">Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaUsuario" name="contrasena" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasenaUsuario2" class="form-label-popup">Repetir Contraseña</label>
+            <input type="password" class="form-control" id="contrasenaUsuario2" name="contrasena2" required>
+          </div>
+
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Crear Usuario</button>
+        </div>
+      </div>
+    </form>
   </div>
+</div>
 
   <!-- Modal Crear Consultor -->
-  <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
     <div class="modal-dialog">
       <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
         <div class="modal-content">
           <div class="modal-header bg-mi-color text-white">
             <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-              aria-label="Cerrar"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
@@ -360,16 +350,13 @@ $vista = $_GET['vista'] ?? 'archivos';
   </div>
 
   <!-- Modal Crear Proveedor -->
-  <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel"
-    aria-hidden="true">
+  <div class="modal fade" id="crearProveedorModal" tabindex="-1" aria-labelledby="crearProveedorLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form method="POST" action="crear_proveedor.php" id="formCrearProveedor"
-        onsubmit="return validarContrasenas('proveedor')">
+      <form method="POST" action="crear_proveedor.php" id="formCrearProveedor" onsubmit="return validarContrasenas('proveedor')">
         <div class="modal-content">
           <div class="modal-header bg-mi-color text-white">
             <h5 class="modal-title" id="crearProveedorLabel">Crear Proveedor</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-              aria-label="Cerrar"></button>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body">
             <div class="mb-3">
@@ -397,6 +384,7 @@ $vista = $_GET['vista'] ?? 'archivos';
       </form>
     </div>
   </div>
+
 
   <!-- Modal Subir Archivo -->
  <!-- Botón para abrir el modal (por si lo necesitas) -->
@@ -431,10 +419,7 @@ $vista = $_GET['vista'] ?? 'archivos';
     </div>
   </div>
 </div>
-
-
-
-  </main>
+</main>
 
 </body>
 <!-- <script>
@@ -480,9 +465,7 @@ $vista = $_GET['vista'] ?? 'archivos';
   });
 
 </script> -->
-
 <script>
-
   let seccionActual = null;
   let usuariosData = [];
   let consultoresData = [];
@@ -835,30 +818,52 @@ $vista = $_GET['vista'] ?? 'archivos';
   function renderizarArchivos(data = []) {
     const inicio = (paginaActual - 1) * archivosPorPagina;
     const fin = inicio + archivosPorPagina;
-    const archivosPagina = data.slice(inicio, fin);
-    let tabla = `
-    <table class="table table-bordered mt-3">
+    // Detectar si es admin por la estructura de los datos
+    const esAdmin = data.length > 0 && data[0].correo_proveedor !== undefined;
+    let tabla = `<table class="table table-bordered mt-3" id="tablaArchivos">
       <thead>
-        <tr><th>Nombre archivo</th><th>URL</th></tr>
+        <tr>
+          <th>Nombre archivo</th>
+          ${esAdmin ? '<th>UUID</th><th>Proveedor</th>' : ''}
+          <th>Fecha</th>
+          <th>Estado</th>
+        </tr>
       </thead>
       <tbody>
-        ${archivosPagina.map(a => `
+        ${data.slice(inicio, fin).map(a => `
           <tr>
             <td>${a.nombre_archivo}</td>
-            <td>${a.archivo_url}</td>
+            ${esAdmin ? `<td>${a.id}</td><td>${a.correo_proveedor ?? 'Desconocido'}</td>` : ''}
+            <td>${a.fecha_subida}</td>
+            <td>${a.revision_estado}</td>
           </tr>`).join('')}
       </tbody>
     </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>`;
     contenedor.innerHTML = `
       <div class="input-group" style="max-width: 300px; margin-top: 10px;">
         <span class="input-group-text">
           <img src="../assets/img/search.png" alt="Buscar">
         </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+        <input type="text" class="form-control" placeholder="Buscar archivo..." id="buscadorUsuarios">
       </div>
       ` + tabla;
+    // Filtro para todas las columnas visibles
+    const buscador = document.getElementById('buscadorUsuarios');
+    buscador.onkeyup = function () {
+      const texto = buscador.value.trim().toLowerCase();
+      paginaActual = 1;
+      const filtrados = data.filter(a => {
+        let campos = [a.nombre_archivo, a.fecha_subida, a.revision_estado];
+        if (esAdmin) {
+          campos.push(a.id, a.correo_proveedor ?? '');
+        } else {
+          campos.push(a.archivo_url);
+        }
+        return campos.some(campo => (campo || '').toString().toLowerCase().includes(texto));
+      });
+      renderizarArchivos(filtrados);
+    };
     renderizarPaginacion(data, renderizarArchivos);
     rebindBuscador();
   }
@@ -924,12 +929,14 @@ $vista = $_GET['vista'] ?? 'archivos';
 
   <script src="../assets/js/popup.js"></script>
 <script src="../assets/js/script.js"></script>
+<script src="../assets/js/sortable-tables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 <?php if ($mostrarModal): ?>
-  
-    document.addEventListener('DOMContentLoaded', function () {
-        var modal = new bootstrap.Modal(document.getElementById('crearUsuarioModal'));
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var modal = new bootstrap.Modal(document.getElementById('crearUsuarioModal'));
+
     modal.show();
     // Mostrar el alert correspondiente
     <?php if ($alertaPassword): ?>
@@ -941,9 +948,10 @@ $vista = $_GET['vista'] ?? 'archivos';
     <?php if ($alertaExito): ?>
       document.getElementById('alerta-exito').style.display = 'block';
     <?php endif; ?>
-      });
-  </script>
-  <?php
+  });
+</script>
+<?php 
+
   unset($_SESSION['error']);
   unset($_SESSION['success']);
 ?>

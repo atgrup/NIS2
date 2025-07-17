@@ -15,7 +15,7 @@ $result = $conexion->query($sql);
             <tr>
                 <th>Correo</th>
                 <th>Nombre Empresa</th>
-                <th>Acciones</th>
+                <th data-no-sort>Acciones</th>
             </tr>
         </thead>
         <tbody>
