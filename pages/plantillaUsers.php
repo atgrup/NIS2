@@ -399,50 +399,39 @@ $vista = $_GET['vista'] ?? 'archivos';
   </div>
 
   <!-- Modal Subir Archivo -->
+ <!-- Botón para abrir el modal (por si lo necesitas) -->
+
+
+<!-- Modal -->
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <form method="POST" action="subir_archivo_rellenado.php" enctype="multipart/form-data">
-  <div class="modal-body">
-    <div class="mb-3">
-      <label for="archivo" class="form-label">Selecciona el archivo:</label>
-      <input type="file" name="archivo" id="archivo" class="form-control" required>
-    </div>
-    <div class="mb-3">
-      <label for="plantilla_id" class="form-label">Plantilla asociada:</label>
-      <select name="plantilla_id" id="plantilla_id" class="form-select" required>
-        <option value="">-- Elige una plantilla --</option>
-        <?php
-        $plantillas = $conexion->query("SELECT id, nombre FROM plantillas");
-        while ($p = $plantillas->fetch_assoc()) {
-            echo "<option value='{$p['id']}'>{$p['nombre']}</option>";
-        }
-        ?>
-      </select>
-    </div>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content"> <!-- FONDO DEL MODAL -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSubirArchivoLabel">Subir archivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="formSubirArchivo" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
+          <div class="mb-3">
+            <label for="archivo" class="form-label">Selecciona un archivo</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" required>
+          </div>
 
-    <?php if (strtolower($_SESSION['rol']) === 'administrador'): ?>
-    <div class="mb-3">
-      <label for="proveedor_id" class="form-label">Proveedor:</label>
-      <select name="proveedor_id" id="proveedor_id" class="form-select" required>
-        <option value="">-- Selecciona un proveedor --</option>
-        <?php
-        $proveedores = $conexion->query("SELECT id, nombre_empresa FROM proveedores");
-        while ($prov = $proveedores->fetch_assoc()) {
-            echo "<option value='{$prov['id']}'>{$prov['nombre_empresa']}</option>";
-        }
-        ?>
-      </select>
+          <div class="mb-3">
+            <label for="plantilla" class="form-label success">Selecciona una plantilla</label>
+            <select class="form-select " id="plantilla" name="plantilla_id">
+              <!-- Opciones dinámicas o estáticas -->
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Subir</button>
+        </form>
+      </div>
     </div>
-    <?php endif; ?>
-  </div>
-
-  <div class="modal-footer">
-    <button type="submit" class="btn btn-primary">Subir archivo</button>
-  </div>
-</form>
-
   </div>
 </div>
+
 
 
   </main>
@@ -933,26 +922,26 @@ $vista = $_GET['vista'] ?? 'archivos';
       });
   });
 
-<script src="../assets/js/popup.js"></script>
+  <script src="../assets/js/popup.js"></script>
 <script src="../assets/js/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
 <?php if ($mostrarModal): ?>
-  <script>
+  
     document.addEventListener('DOMContentLoaded', function () {
-      var modal = new bootstrap.Modal(document.getElementById('crearUsuarioModal'));
-      modal.show();
-      // Mostrar el alert correspondiente
-      <?php if ($alertaPassword): ?>
-        document.getElementById('alerta-password').style.display = 'block';
-      <?php endif; ?>
-      <?php if ($alertaCorreo): ?>
-        document.getElementById('alerta-correo').style.display = 'block';
-      <?php endif; ?>
-      <?php if ($alertaExito): ?>
-        document.getElementById('alerta-exito').style.display = 'block';
-      <?php endif; ?>
-    });
+        var modal = new bootstrap.Modal(document.getElementById('crearUsuarioModal'));
+    modal.show();
+    // Mostrar el alert correspondiente
+    <?php if ($alertaPassword): ?>
+      document.getElementById('alerta-password').style.display = 'block';
+    <?php endif; ?>
+    <?php if ($alertaCorreo): ?>
+      document.getElementById('alerta-correo').style.display = 'block';
+    <?php endif; ?>
+    <?php if ($alertaExito): ?>
+      document.getElementById('alerta-exito').style.display = 'block';
+    <?php endif; ?>
+      });
   </script>
   <?php
   unset($_SESSION['error']);
