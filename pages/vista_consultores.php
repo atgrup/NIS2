@@ -38,8 +38,9 @@ if ($isAdmin && isset($_GET['eliminar'])) {
         $_SESSION['error'] = "No se pudo encontrar el usuario del consultor";
     }
 
-header('Location: plantillaUsers.php?vista=consultores');
-    exit;
+echo "<script>window.location.href='plantillaUsers.php?vista=consultores';</script>";
+exit;
+
 }
 
 // Manejo de actualización vía POST (desde el modal)
