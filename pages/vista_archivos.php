@@ -7,85 +7,100 @@ include '../api/includes/conexion.php';
 
 $rol = $_SESSION['rol'] ?? '';
 $correo = $_SESSION['correo'] ?? '';
+$usuario_id = $_SESSION['id_usuarios'] ?? null;
+
+// Si es proveedor, obtenemos su proveedor_id
+$prov_id = null;
+if (strtolower($rol) === 'proveedor' && $correo) {
+    $stmtProv = $conexion->prepare("
+        SELECT p.id
+        FROM usuarios u
+        JOIN proveedores p ON u.id_usuarios = p.usuario_id
+        WHERE u.correo = ?
+    ");
+    $stmtProv->bind_param("s", $correo);
+    $stmtProv->execute();
+    $stmtProv->bind_result($prov_id);
+    $stmtProv->fetch();
+    $stmtProv->close();
+}
+
+// Cargar plantillas disponibles
+if (strtolower($rol) === 'administrador') {
+    $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas ORDER BY nombre ASC");
+} elseif (strtolower($rol) === 'proveedor' && $prov_id) {
+    // Ajusta según tu modelo si hace falta filtrar por proveedor
+    $plantillasStmt = $conexion->prepare("SELECT id, nombre FROM plantillas ORDER BY nombre ASC");
+    $plantillasStmt->execute();
+    $plantillasRes = $plantillasStmt->get_result();
+} else {
+    $plantillasRes = null;
+}
 ?>
 
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Archivos Subidos</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
+<style>
+  .form-label{
+    color:grey;
+  }
+</style>
 <body class="p-4">
+
+<?php if (strtolower($rol) === 'consultor'): ?>
+  <div class="alert alert-warning">Los consultores no pueden subir archivos.</div>
+
+<?php endif; ?>
 
 <div style="max-height: 90vh; overflow-y: auto;">
   <table class="table table-bordered border-secondary w-100">
     <thead>
       <tr>
-        <th>Nombre del archivo</th>
-        <?php if (strtolower($rol) === 'administrador'): ?>
-          <th>Correo del proveedor</th>
-        <?php endif; ?>
+        <th>Nombre</th>
+        <?php if (strtolower($rol) === 'administrador'): ?><th>Subido por</th><?php endif; ?>
         <th>Fecha</th>
         <th>Estado</th>
-        <th>Plantilla Asociada</th>
+        <th>Plantilla</th>
       </tr>
     </thead>
     <tbody>
       <?php
-      if (strtolower($rol) === 'administrador') {
-        $stmt = $conexion->prepare("
-          SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, a.archivo_url, pl.nombre as plantilla_nombre, u.correo
-          FROM archivos_subidos a
-          LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
-          LEFT JOIN proveedores p ON a.proveedor_id = p.id
-          LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios
-          ORDER BY a.fecha_subida DESC
-        ");
-      } else {
-        // Obtener el ID del proveedor a partir del correo
-        $stmt = $conexion->prepare("
-          SELECT p.id
-          FROM usuarios u
-          JOIN proveedores p ON u.id_usuarios = p.usuario_id
-          WHERE u.correo = ?
-        ");
-        $stmt->bind_param("s", $correo);
-        $stmt->execute();
-        $stmt->bind_result($prov_id);
-        $stmt->fetch();
-        $stmt->close();
+      $sql = "
+        SELECT a.nombre_archivo, a.fecha_subida, a.revision_estado, pl.nombre AS plantilla_nombre,
+               u.correo AS nombre_usuario, u.tipo_usuario_id, a.archivo_url
 
-        $stmt = $conexion->prepare("
-          SELECT a.id, a.nombre_archivo, a.fecha_subida, a.revision_estado, a.archivo_url, pl.nombre as plantilla_nombre
-          FROM archivos_subidos a
-          LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
-          WHERE a.proveedor_id = ?
-          ORDER BY a.fecha_subida DESC
-        ");
+        FROM archivos_subidos a
+        LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
+        LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
+      ";
+      if (strtolower($rol) === 'proveedor') {
+        $sql .= " WHERE a.proveedor_id = ?";
+        $stmt = $conexion->prepare($sql);
         $stmt->bind_param("i", $prov_id);
+      } else {
+        $stmt = $conexion->prepare($sql);
       }
 
       $stmt->execute();
-
-      if (strtolower($rol) === 'administrador') {
-        $stmt->bind_result($id, $nombre, $fecha, $estado, $url, $plantilla_nombre, $correo_prov);
-      } else {
-        $stmt->bind_result($id, $nombre, $fecha, $estado, $url, $plantilla_nombre);
-      }
-
+$stmt->bind_result($nombre, $fecha, $estado, $plantilla_nombre, $nombre_usuario, $tipo_usuario_id, $url);
       while ($stmt->fetch()):
         $path = realpath(__DIR__ . '/../' . $url);
         if (!file_exists($path)) continue;
       ?>
         <tr>
-          <td><a href="download.php?archivo=<?= urlencode($url) ?>"><?= htmlspecialchars($nombre) ?></a></td>
+          <td><?= htmlspecialchars($nombre) ?></td>
           <?php if (strtolower($rol) === 'administrador'): ?>
-            <td><?= htmlspecialchars($correo_prov ?: 'Desconocido') ?></td>
+            <td><?= $tipo_usuario_id == 1 ? 'Administrador' : htmlspecialchars($nombre_usuario ?: 'Proveedor') ?></td>
           <?php endif; ?>
           <td><?= htmlspecialchars($fecha) ?></td>
-          <td class="text-center"><?= htmlspecialchars($estado) ?></td>
+          <td><?= htmlspecialchars($estado) ?></td>
           <td><?= htmlspecialchars($plantilla_nombre ?: 'Sin plantilla') ?></td>
         </tr>
       <?php endwhile; $stmt->close(); ?>
@@ -93,29 +108,71 @@ $correo = $_SESSION['correo'] ?? '';
   </table>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<?php if (strtolower($rol) !== 'consultor'): ?>
+<div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form action="subir_Archivo_rellenado.php" method="post" enctype="multipart/form-data" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Archivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label for="archivo" class="form-label">Archivo</label>
+          <input type="file" class="form-control" id="archivo" name="archivo" required>
+        </div>
+        <div class="mb-3">
+          <label for="plantilla_id" class="form-label">Plantillas Asociadas</label>
+          <select name="plantilla_id" id="plantilla_id" class="form-select" required>
+            <option value="">-- Seleccione --</option>
+            <?php if ($plantillasRes): ?>
+              <?php while ($f = $plantillasRes->fetch_assoc()): ?>
+                <option value="<?= $f['id'] ?>"><?= htmlspecialchars($f['nombre']) ?></option>
+              <?php endwhile; ?>
+            <?php else: ?>
+              <option disabled>No hay plantillas</option>
+            <?php endif; ?>
+          </select>
+        </div>
+        <div id="mensajeRespuesta" class="mt-2"></div>
 
-<!-- Paginación -->
+        <input type="hidden" name="usuario_id" value="<?= $usuario_id ?>">
+        <input type="hidden" name="proveedor_id" value="<?= $prov_id ?>">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Subir</button>
+      </div>
+    </form>
+  </div>
+</div>
+<?php endif; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 <script>
-document.addEventListener('DOMContentLoaded',function(){
-  const table=document.querySelector('table'),rows=Array.from(table.querySelectorAll('tbody tr'));
-  const perPage=10;let cur=1;
-  const div=document.createElement('div');div.id='paginacion';div.className='mt-3 d-flex justify-content-center gap-2';
-  table.parentElement.appendChild(div);
-  function render(p){
-    rows.forEach((r,i)=>r.style.display=(i>=(p-1)*perPage&&i<p*perPage?'':'none'));
-  }
-  function nav(){
-    div.innerHTML='';
-    const total=Math.ceil(rows.length/perPage);
-    const b=(t,p,d)=>{const btn=document.createElement('button');btn.textContent=t;btn.className='btn '+(p===cur?'btn-primary':'btn-outline-primary');btn.disabled=d;btn.onclick=()=>{cur=p;render(cur);nav();};div.appendChild(btn);};
-    b('⏮️',1,cur===1);
-    for(let i=1;i<=total;i++)b(i,i,false);
-    b('⏭️',total,cur===total);
-  }
-  render(cur);nav();
+document.getElementById('formSubirArchivo').addEventListener('submit', function(e) {
+    e.preventDefault(); // evitar que recargue la página
+
+    const form = e.target;
+    const formData = new FormData(form);
+    const mensajeDiv = document.getElementById('mensajeRespuesta');
+
+    fetch(form.action, {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => response.text())
+    .then(data => {
+        mensajeDiv.innerHTML = `<div class="alert alert-info">${data}</div>`;
+        // Opcional: limpiar el formulario o cerrar el modal si quieres:
+        // form.reset();
+        // bootstrap.Modal.getInstance(document.getElementById('modalSubirArchivo')).hide();
+    })
+    .catch(error => {
+        mensajeDiv.innerHTML = `<div class="alert alert-danger">Error al subir el archivo.</div>`;
+    });
 });
 </script>
 
-</body>
 </html>
