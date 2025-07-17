@@ -1,13 +1,12 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+
+if (session_status() === PHP_SESSION_NONE) session_start();
 include '../api/includes/conexion.php';
 
 $rol = $_SESSION['rol'] ?? '';
-$isAdmin = ($rol === 'administrador');
-
-// Eliminar consultor (solo si eres admin)
+$isAdmin = ($rol === 'ADMINISTRADOR');
+ 
+// Manejo de eliminar
 if ($isAdmin && isset($_GET['eliminar'])) {
     $consultor_id = intval($_GET['eliminar']);
 
@@ -20,35 +19,88 @@ if ($isAdmin && isset($_GET['eliminar'])) {
     $stmt->close();
 
     if ($usuario_id) {
-        $conexion->query("DELETE FROM consultores WHERE id = $consultor_id");
-        $conexion->query("DELETE FROM usuarios WHERE id_usuarios = $usuario_id");
-        $_SESSION['mensaje'] = "Consultor eliminado correctamente";
+        $stmtDelConsultor = $conexion->prepare("DELETE FROM consultores WHERE id = ?");
+        $stmtDelConsultor->bind_param("i", $consultor_id);
+        $success1 = $stmtDelConsultor->execute();
+        $stmtDelConsultor->close();
+
+        $stmtDelUsuario = $conexion->prepare("DELETE FROM usuarios WHERE id_usuarios = ?");
+        $stmtDelUsuario->bind_param("i", $usuario_id);
+        $success2 = $stmtDelUsuario->execute();
+        $stmtDelUsuario->close();
+
+        if ($success1 && $success2) {
+            $_SESSION['mensaje'] = "Consultor eliminado correctamente";
+        } else {
+            $_SESSION['error'] = "Error al eliminar el consultor o el usuario.";
+        }
     } else {
         $_SESSION['error'] = "No se pudo encontrar el usuario del consultor";
     }
 
-    header("Location: vistaconsultores.php");
+header('Location: plantillaUsers.php?vista=consultores');
     exit;
 }
+
+// Manejo de actualización vía POST (desde el modal)
+if ($isAdmin && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_consultor'])) {
+    $consultor_id = intval($_POST['consultor_id']);
+    $nuevo_correo = $_POST['correo'] ?? '';
+
+    if (filter_var($nuevo_correo, FILTER_VALIDATE_EMAIL)) {
+        $stmt = $conexion->prepare("SELECT usuario_id FROM consultores WHERE id = ?");
+        $stmt->bind_param("i", $consultor_id);
+        $stmt->execute();
+        $stmt->bind_result($usuario_id);
+        $stmt->fetch();
+        $stmt->close();
+
+        if ($usuario_id) {
+            $stmtUpd = $conexion->prepare("UPDATE usuarios SET correo = ? WHERE id_usuarios = ?");
+            $stmtUpd->bind_param("si", $nuevo_correo, $usuario_id);
+            if ($stmtUpd->execute()) {
+                $_SESSION['mensaje'] = "Consultor actualizado correctamente";
+            } else {
+                $_SESSION['error'] = "Error al actualizar el consultor";
+            }
+            $stmtUpd->close();
+        } else {
+            $_SESSION['error'] = "Usuario no encontrado para este consultor";
+        }
+    } else {
+        $_SESSION['error'] = "Correo inválido";
+    }
+
+header("Location: plantillaUsers.php?vista=consultores");
+    exit;
+}
+
 ?>
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Listado Consultores</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 <style>
   table.consultores-table th:first-child,
   table.consultores-table td:first-child {
     display: none;
   }
 </style>
-
-<div style="max-height: 90%; overflow-y: auto;">
-  <table class="table table-bordered border-secondary w-100 consultores-table">
+</head>
+<body>
+<div class="container mt-4" style="max-height:90vh; overflow-y:auto;">
+  <table class="table table-bordered border-secondary consultores-table" id="tablaConsultores">
     <thead>
       <tr>
         <th>#</th>
         <th>Correo</th>
-        <th>Nombre Consultor</th>
-        <?php if ($isAdmin): ?>
-          <th>Acciones</th>
-        <?php endif; ?>
+        <th>Nombre</th>
+        <?php if ($isAdmin == true): ?><th>Acciones</th><?php endif; ?>
       </tr>
     </thead>
     <tbody>
@@ -56,27 +108,31 @@ if ($isAdmin && isset($_GET['eliminar'])) {
       $sql = "SELECT c.id, u.correo FROM consultores c JOIN usuarios u ON c.usuario_id = u.id_usuarios ORDER BY c.id";
       $result = $conexion->query($sql);
       $i = 1;
-
-      while ($row = $result->fetch_assoc()) {
+      while ($row = $result->fetch_assoc()):
           $correo = htmlspecialchars($row['correo']);
-          $nombre = strstr($correo, '@', true);
-          $consultor_id = $row['id'];
-
-          echo "<tr>
-                  <th scope='row'>{$i}</th>
-                  <td>{$correo}</td>
-                  <td>" . htmlspecialchars($nombre) . "</td>";
-
-          if ($isAdmin) {
-              echo "<td>
-                      <a href='editar_consultor.php?id={$consultor_id}' class='btn btn-sm btn-primary'>Editar</a>
-                      <a href='vistaconsultores.php?eliminar={$consultor_id}' class='btn btn-sm btn-danger' onclick='return confirm(\"¿Eliminar este consultor?\")'>Eliminar</a>
-                    </td>";
-          }
-
-          echo "</tr>";
-          $i++;
-      }
+          $nombre = htmlspecialchars(strstr($correo, '@', true));
+          $consultor_id = intval($row['id']);
+      ?>
+        <tr>
+          <th scope="row"><?= $i ?></th>
+          <td><?= $correo ?></td>
+          <td><?= $nombre ?></td>
+           <?php if ($isAdmin == true): ?>
+            <td class="text-center">
+              <button type="button" class="btn btn-sm btn-warning me-1 btnEditar"
+                      data-id="<?= $consultor_id ?>" data-correo="<?= $correo ?>">
+                <i class="bi bi-pencil"></i>
+              </button>
+              <button type="button" class="btn btn-sm btn-danger btnEliminar"
+                      data-id="<?= $consultor_id ?>" data-nombre="<?= $nombre ?>">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+          <?php endif; ?>
+        </tr>
+      <?php
+        $i++;
+      endwhile;
       ?>
     </tbody>
   </table>
@@ -84,64 +140,133 @@ if ($isAdmin && isset($_GET['eliminar'])) {
 
 <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
 
+<!-- Modal Editar Consultor -->
+<div class="modal fade" id="editarConsultorModal" tabindex="-1" aria-labelledby="editarConsultorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formEditarConsultor" method="POST" action="editar_consultor.php">
+      <input type="hidden" name="consultor_id" id="consultor_id">
+      <input type="hidden" name="editar_consultor" value="1">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="editarConsultorLabel">Modificar Consultor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="correo" class="form-label">Correo del consultor</label>
+            <input type="email" class="form-control" name="correo" id="correo" required>
+          </div>
+          <div class="mb-3">
+            <label for="contrasena" class="form-label">Contraseña (dejar en blanco para no cambiar)</label>
+            <input type="password" class="form-control" name="contrasena" id="contrasena" placeholder="Nueva contraseña">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Confirmar Eliminación -->
+<div class="modal fade" id="eliminarConsultorModal" tabindex="-1" aria-labelledby="eliminarConsultorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-mi-color text-white">
+        <h5 class="modal-title" id="eliminarConsultorLabel">Eliminar Consultor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p id="nombreConsultorEliminar"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" name="editar_consultor" class="btn btn-primary">Guardar Cambios</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <a href="#" id="btnConfirmarEliminar" class="btn btn-danger">Eliminar</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
+  // Lógica para abrir el modal de edición y rellenar campos
+document.querySelectorAll('.btnEditar').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const consultorId = btn.getAttribute('data-id');
+    const correo = btn.getAttribute('data-correo');
+
+    document.getElementById('consultor_id').value = consultorId;
+    document.getElementById('correo').value = correo;
+
+    const modal = new bootstrap.Modal(document.getElementById('editarConsultorModal'));
+    modal.show();
+  });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
-  const filasPorPagina = 10;
-  let paginaActual = 1;
-  const tabla = document.querySelector('table.consultores-table');
-  const tbody = tabla.querySelector('tbody');
-  const filas = Array.from(tbody.querySelectorAll('tr'));
+  // Botones editar
+  document.querySelectorAll('.btnEditar').forEach(btn =>
+    btn.addEventListener('click', () => {
+      document.getElementById('consultor_id').value = btn.dataset.id;
+      document.getElementById('correo').value = btn.dataset.correo;
+      document.getElementById('contrasena').value = '';
+      new bootstrap.Modal(document.getElementById('editarConsultorModal')).show();
+    })
+  );
+
+  // Botones eliminar
+ document.querySelectorAll('.btnEliminar').forEach(btn =>
+  btn.addEventListener('click', () => {
+    document.getElementById('nombreConsultorEliminar').textContent = `¿Seguro que quieres eliminar el consultor "${btn.dataset.nombre}"? Se eliminará también el usuario asociado.`;
+    // Cambiar para llamar a esta misma página
+    document.getElementById('btnConfirmarEliminar').href = `plantillaUsers.php?vista=consultores&eliminar=${btn.dataset.id}`;
+    new bootstrap.Modal(document.getElementById('eliminarConsultorModal')).show();
+  })
+);
+
+
+  // Paginación simple
+  const rows = Array.from(document.querySelectorAll('#tablaConsultores tbody tr'));
+  const rowsPerPage = 10;
+  let currentPage = 1;
   const pagDiv = document.getElementById('paginacion');
 
-  function mostrarPagina(pagina) {
-    const inicio = (pagina - 1) * filasPorPagina;
-    const fin = inicio + filasPorPagina;
-
-    filas.forEach((fila, i) => {
-      fila.style.display = (i >= inicio && i < fin) ? '' : 'none';
+  function renderPage(page) {
+    rows.forEach((r,i) => {
+      r.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
     });
   }
 
-  function crearPaginacion() {
+  function renderPagination() {
     pagDiv.innerHTML = '';
-    const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-
-    const btnPrimera = document.createElement('button');
-    btnPrimera.innerHTML = '⏮️';
-    btnPrimera.className = 'btn btn-outline-primary';
-    btnPrimera.disabled = paginaActual === 1;
-    btnPrimera.addEventListener('click', () => {
-      paginaActual = 1;
-      mostrarPagina(paginaActual);
-      crearPaginacion();
-    });
-    pagDiv.appendChild(btnPrimera);
-
-    for (let i = 1; i <= totalPaginas; i++) {
+    const totalPages = Math.ceil(rows.length / rowsPerPage);
+    const createBtn = (text, page) => {
       const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
+      btn.textContent = text;
+      btn.className = 'btn ' + (page === currentPage ? 'btn-primary' : 'btn-outline-primary');
+      btn.disabled = page === currentPage;
       btn.addEventListener('click', () => {
-        paginaActual = i;
-        mostrarPagina(paginaActual);
-        crearPaginacion();
+        currentPage = page;
+        renderPage(page);
+        renderPagination();
       });
-      pagDiv.appendChild(btn);
-    }
+      return btn;
+    };
 
-    const btnUltima = document.createElement('button');
-    btnUltima.innerHTML = '⏭️';
-    btnUltima.className = 'btn btn-outline-primary';
-    btnUltima.disabled = paginaActual === totalPaginas;
-    btnUltima.addEventListener('click', () => {
-      paginaActual = totalPaginas;
-      mostrarPagina(paginaActual);
-      crearPaginacion();
-    });
-    pagDiv.appendChild(btnUltima);
+    pagDiv.appendChild(createBtn('⏮️', 1));
+    for(let p=1; p<=totalPages; p++) {
+      pagDiv.appendChild(createBtn(p, p));
+    }
+    pagDiv.appendChild(createBtn('⏭️', totalPages));
   }
 
-  mostrarPagina(paginaActual);
-  crearPaginacion();
+  renderPage(currentPage);
+  renderPagination();
 });
+
 </script>
+</body>
+</html>
