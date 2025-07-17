@@ -384,6 +384,41 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
       </form>
     </div>
   </div>
+
+
+  <!-- Modal Subir Archivo -->
+ <!-- Botón para abrir el modal (por si lo necesitas) -->
+
+
+<!-- Modal -->
+<div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content"> <!-- FONDO DEL MODAL -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalSubirArchivoLabel">Subir archivo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="formSubirArchivo" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
+          <div class="mb-3">
+            <label for="archivo" class="form-label">Selecciona un archivo</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="plantilla" class="form-label success">Selecciona una plantilla</label>
+            <select class="form-select " id="plantilla" name="plantilla_id">
+              <!-- Opciones dinámicas o estáticas -->
+            </select>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Subir</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 </main>
 
 </body>
@@ -892,7 +927,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
       });
   });
 
-<script src="../assets/js/popup.js"></script>
+  <script src="../assets/js/popup.js"></script>
 <script src="../assets/js/script.js"></script>
 <script src="../assets/js/sortable-tables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
@@ -901,6 +936,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 <script>
   document.addEventListener('DOMContentLoaded', function () {
     var modal = new bootstrap.Modal(document.getElementById('crearUsuarioModal'));
+
     modal.show();
     // Mostrar el alert correspondiente
     <?php if ($alertaPassword): ?>
@@ -915,6 +951,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
   });
 </script>
 <?php 
+
   unset($_SESSION['error']);
   unset($_SESSION['success']);
 ?>
