@@ -1,3 +1,24 @@
+th.ordenado-asc, th.ordenado-desc {
+  background: #e3f2fd;
+  color: #0d6efd;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+th.ordenado-asc::after {
+  content: ' \25B2'; /* ▲ */
+  font-size: 0.9em;
+}
+th.ordenado-desc::after {
+  content: ' \25BC'; /* ▼ */
+  font-size: 0.9em;
+}
+/* Flechitas y resaltado para columnas ordenadas */
+th.ordenado-asc, th.ordenado-desc {
+  background: #e3f2fd;
+  color: #0d6efd;
+  font-weight: bold;
+  transition: background 0.2s;
+}
 /* --- Estilos globales --- */
 body, html {
   height: 100%;

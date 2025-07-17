@@ -1,5 +1,6 @@
 <div style="max-height: 90%; overflow-y: none;">
-    <table class="table table-bordered border-secondary w-100">
+    <!-- El buscador se gestiona desde plantillaUsers.php -->
+    <table class="table table-bordered border-secondary w-100" id="tablaArchivos">
         <thead>
             <tr>
                 <th>Nombre del archivo</th>
@@ -72,56 +73,4 @@
     </table>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    const tabla = document.querySelector('table');
-    const filasPorPagina = 10;
-    let paginaActual = 1;
-    const tbody = tabla.querySelector('tbody');
-    const filas = Array.from(tbody.querySelectorAll('tr'));
-    const pagDiv = document.createElement('div');
-    pagDiv.id = 'paginacion';
-    pagDiv.className = 'mt-3 d-flex justify-content-center gap-2';
-    tabla.parentElement.appendChild(pagDiv);
-
-    function mostrarPagina(pagina) {
-        const inicio = (pagina - 1) * filasPorPagina;
-        const fin = inicio + filasPorPagina;
-
-        filas.forEach((fila, i) => {
-            fila.style.display = i >= inicio && i < fin ? '' : 'none';
-        });
-    }
-
-    function crearPaginacion() {
-        pagDiv.innerHTML = '';
-        const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-
-        const crearBoton = (text, page, disabled = false) => {
-            const btn = document.createElement('button');
-            btn.textContent = text;
-            btn.className = 'btn btn-outline-primary';
-            if (disabled) btn.disabled = true;
-            btn.addEventListener('click', () => {
-                paginaActual = page;
-                mostrarPagina(paginaActual);
-                crearPaginacion();
-            });
-            return btn;
-        };
-
-        pagDiv.appendChild(crearBoton('⏮️', 1, paginaActual === 1));
-
-        for (let i = 1; i <= totalPaginas; i++) {
-            const btn = crearBoton(i, i, false);
-            btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-            pagDiv.appendChild(btn);
-        }
-
-        pagDiv.appendChild(crearBoton('⏭️', totalPaginas, paginaActual === totalPaginas));
-    }
-
-    mostrarPagina(paginaActual);
-    crearPaginacion();
-});
-</script>
+    <!-- El filtrado y paginación se gestiona desde plantillaUsers.js -->

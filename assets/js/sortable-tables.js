@@ -5,6 +5,8 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('table').forEach(function (table) {
     const ths = table.querySelectorAll('th');
     ths.forEach((th, colIdx) => {
+      // Si el th tiene data-no-sort, no hacerlo ordenable
+      if (th.hasAttribute('data-no-sort')) return;
       th.style.cursor = 'pointer';
       let asc = true;
       th.addEventListener('click', function () {
@@ -26,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
         asc = !asc;
         // Quitar filas y volver a ponerlas ordenadas
         rows.forEach(row => tbody.appendChild(row));
-        // Opcional: marcar visualmente la columna ordenada
+        // Marcar visualmente la columna ordenada y poner flechita
         ths.forEach(h => h.classList.remove('ordenado-asc', 'ordenado-desc'));
         th.classList.add(asc ? 'ordenado-asc' : 'ordenado-desc');
       });

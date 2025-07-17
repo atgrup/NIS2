@@ -783,30 +783,52 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
   function renderizarArchivos(data = []) {
     const inicio = (paginaActual - 1) * archivosPorPagina;
     const fin = inicio + archivosPorPagina;
-    const archivosPagina = data.slice(inicio, fin);
-    let tabla = `
-    <table class="table table-bordered mt-3">
+    // Detectar si es admin por la estructura de los datos
+    const esAdmin = data.length > 0 && data[0].correo_proveedor !== undefined;
+    let tabla = `<table class="table table-bordered mt-3" id="tablaArchivos">
       <thead>
-        <tr><th>Nombre archivo</th><th>URL</th></tr>
+        <tr>
+          <th>Nombre archivo</th>
+          ${esAdmin ? '<th>UUID</th><th>Proveedor</th>' : ''}
+          <th>Fecha</th>
+          <th>Estado</th>
+        </tr>
       </thead>
       <tbody>
-        ${archivosPagina.map(a => `
+        ${data.slice(inicio, fin).map(a => `
           <tr>
             <td>${a.nombre_archivo}</td>
-            <td>${a.archivo_url}</td>
+            ${esAdmin ? `<td>${a.id}</td><td>${a.correo_proveedor ?? 'Desconocido'}</td>` : ''}
+            <td>${a.fecha_subida}</td>
+            <td>${a.revision_estado}</td>
           </tr>`).join('')}
       </tbody>
     </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
+    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>`;
     contenedor.innerHTML = `
       <div class="input-group" style="max-width: 300px; margin-top: 10px;">
         <span class="input-group-text">
           <img src="../assets/img/search.png" alt="Buscar">
         </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
+        <input type="text" class="form-control" placeholder="Buscar archivo..." id="buscadorUsuarios">
       </div>
       ` + tabla;
+    // Filtro para todas las columnas visibles
+    const buscador = document.getElementById('buscadorUsuarios');
+    buscador.onkeyup = function () {
+      const texto = buscador.value.trim().toLowerCase();
+      paginaActual = 1;
+      const filtrados = data.filter(a => {
+        let campos = [a.nombre_archivo, a.fecha_subida, a.revision_estado];
+        if (esAdmin) {
+          campos.push(a.id, a.correo_proveedor ?? '');
+        } else {
+          campos.push(a.archivo_url);
+        }
+        return campos.some(campo => (campo || '').toString().toLowerCase().includes(texto));
+      });
+      renderizarArchivos(filtrados);
+    };
     renderizarPaginacion(data, renderizarArchivos);
     rebindBuscador();
   }

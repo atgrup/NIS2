@@ -100,7 +100,7 @@ header("Location: plantillaUsers.php?vista=consultores");
         <th>#</th>
         <th>Correo</th>
         <th>Nombre</th>
-        <?php if ($isAdmin == true): ?><th>Acciones</th><?php endif; ?>
+        <?php if ($isAdmin == true): ?><th data-no-sort>Acciones</th><?php endif; ?>
       </tr>
     </thead>
     <tbody>
