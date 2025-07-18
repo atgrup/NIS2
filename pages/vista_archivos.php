@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -20,54 +21,6 @@
 
 <?php endif; ?>
 
-<div style="max-height: 90vh; overflow-y: auto;">
-  <table class="table table-bordered border-secondary w-100">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <?php if (strtolower($rol) === 'administrador'): ?><th>Subido por</th><?php endif; ?>
-        <th>Fecha</th>
-        <th>Estado</th>
-        <th>Plantilla</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php
-      $sql = "
-        SELECT a.nombre_archivo, a.fecha_subida, a.revision_estado, pl.nombre AS plantilla_nombre,
-               u.correo AS nombre_usuario, u.tipo_usuario_id, a.archivo_url
-
-        FROM archivos_subidos a
-        LEFT JOIN plantillas pl ON a.plantilla_id = pl.id
-        LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
-      ";
-      if (strtolower($rol) === 'proveedor') {
-        $sql .= " WHERE a.proveedor_id = ?";
-        $stmt = $conexion->prepare($sql);
-        $stmt->bind_param("i", $prov_id);
-      } else {
-        $stmt = $conexion->prepare($sql);
-      }
-
-      $stmt->execute();
-$stmt->bind_result($nombre, $fecha, $estado, $plantilla_nombre, $nombre_usuario, $tipo_usuario_id, $url);
-      while ($stmt->fetch()):
-        $path = realpath(__DIR__ . '/../' . $url);
-        if (!file_exists($path)) continue;
-      ?>
-        <tr>
-          <td><?= htmlspecialchars($nombre) ?></td>
-          <?php if (strtolower($rol) === 'administrador'): ?>
-            <td><?= $tipo_usuario_id == 1 ? 'Administrador' : htmlspecialchars($nombre_usuario ?: 'Proveedor') ?></td>
-          <?php endif; ?>
-          <td><?= htmlspecialchars($fecha) ?></td>
-          <td><?= htmlspecialchars($estado) ?></td>
-          <td><?= htmlspecialchars($plantilla_nombre ?: 'Sin plantilla') ?></td>
-        </tr>
-      <?php endwhile; $stmt->close(); ?>
-    </tbody>
-  </table>
-</div>
 
 <?php if (strtolower($rol) !== 'consultor'): ?>
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
