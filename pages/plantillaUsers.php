@@ -216,7 +216,7 @@ $vista = $_GET['vista'] ?? 'archivos';
           <?php if ($rol === 'administrador'): ?>
             <div class="d-flex flex-wrap gap-2 px-3 mt-2">
               <?php if ($vista === 'usuarios'): ?>
-                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Usuario</button>
+                <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearUsuarioModal">Crear Administrador</button>
               <?php elseif ($vista === 'consultores'): ?>
                 <button class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#crearConsultorModal">Crear Consultor</button>
               <?php elseif ($vista === 'proveedores'): ?>
