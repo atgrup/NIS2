@@ -182,7 +182,6 @@ header("Location: plantillaUsers.php?vista=consultores");
         <p id="nombreConsultorEliminar"></p>
       </div>
       <div class="modal-footer">
-        <button type="submit" name="editar_consultor" class="btn btn-primary">Guardar Cambios</button>
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
         <a href="#" id="btnConfirmarEliminar" class="btn btn-danger">Eliminar</a>
       </div>
@@ -193,31 +192,20 @@ header("Location: plantillaUsers.php?vista=consultores");
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-  // Lógica para abrir el modal de edición y rellenar campos
-document.querySelectorAll('.btnEditar').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const consultorId = btn.getAttribute('data-id');
-    const correo = btn.getAttribute('data-correo');
-
-    document.getElementById('consultor_id').value = consultorId;
-    document.getElementById('correo').value = correo;
-
-    const modal = new bootstrap.Modal(document.getElementById('editarConsultorModal'));
-    modal.show();
-  });
-});
-
+// Lógica para abrir el modal de edición y rellenar campos
+let editarConsultorModalInstance = null;
 document.addEventListener('DOMContentLoaded', () => {
+  const modalElement = document.getElementById('editarConsultorModal');
+  editarConsultorModalInstance = new bootstrap.Modal(modalElement);
   // Botones editar
   document.querySelectorAll('.btnEditar').forEach(btn =>
     btn.addEventListener('click', () => {
       document.getElementById('consultor_id').value = btn.dataset.id;
       document.getElementById('correo').value = btn.dataset.correo;
       document.getElementById('contrasena').value = '';
-      new bootstrap.Modal(document.getElementById('editarConsultorModal')).show();
+      editarConsultorModalInstance.show();
     })
   );
-
   // Botones eliminar
  document.querySelectorAll('.btnEliminar').forEach(btn =>
   btn.addEventListener('click', () => {

@@ -92,6 +92,7 @@ buscador?.addEventListener("input", function () {
   const texto = buscador.value.trim().toLowerCase();
 
   // Busca en cualquier tabla dentro de #contenido-dinamico
+  if (!contenedor) return;
   const tabla = contenedor.querySelector("table");
   if (!tabla) return;
 
@@ -141,34 +142,6 @@ window.addEventListener('load', () => {
       }
     });
 
-    // Inicializa filtrado después de cargar la vista
+// Inicializa filtrado después de cargar la vista
     filtrarTablaHTML();
   });
-btn.addEventListener('click', async (e) => {
-  e.preventDefault();
-  const section = btn.getAttribute('data-section');
-  seccionActual = section;
-  actualizarPlaceholder(section);
-
-  switch (section) {
-    case 'usuarios':
-      if (userRol !== 'administrador') {
-        contenedor.innerHTML = `<div class="alert alert-danger">No tienes permisos para ver usuarios.</div>`;
-      } else {
-        await cargarUsuarios();
-       mostrarModal('crearUsuarioModal'); // 👈 Mostrar modal tras cargar
-      }
-      break;
-    case 'proveedores':
-      await cargarProveedores();
-     mostrarModal('crearProveedorModal'); // 👈 Mostrar modal tras cargar
-      break;
-    case 'plantillas':
-      await cargarPlantillas();
-      mostrarModal('crearPlantillaModal'); // 👈 Mostrar modal tras cargar
-      break;
-    // Añade más según tus secciones
-    default:
-      contenedor.innerHTML = `<p>Sección desconocida</p>`;
-  }
-});
