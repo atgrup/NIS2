@@ -218,7 +218,7 @@ $vista = $_GET['vista'] ?? 'archivos';
           <?php if ($vista === 'archivos'): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline">
               <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
-              <input type="file" name="archivo" id="archivo" class="d-none" onchange="this.form.submit()" required>
+              <input type="file" name="archivo" id="archivo-upload" class="d-none" onchange="this.form.submit()" required>
             </form>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
@@ -324,7 +324,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 
         </div>
         <div class="modal-footer">
-          <button type="submit" class="btn btn-primary">Crear Usuario</button>
+          <button type="submit" class="btn btn-primary">Crear Administrador</button>
         </div>
       </div>
     </form>
@@ -414,10 +414,10 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
       </div>
       
       <div class="modal-body">
-        <form id="formSubirArchivo" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
+        <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
           <div class="mb-3">
             <label for="archivo" class="form-label">Selecciona un archivo</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" required>
+            <input type="file" class="form-control" id="archivo-modal" name="archivo" required>
           </div>
 
           <div class="mb-3">
@@ -436,49 +436,6 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 </main>
 
 </body>
-<!-- <script>
-  document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
-    e.preventDefault();
-
-    const pass1 = document.getElementById('contrasenaProveedor').value;
-    const pass2 = document.getElementById('contrasenaProveedor2').value;
-    const errorDiv = document.getElementById('errorProveedor');
-
-    if (pass1 !== pass2) {
-      errorDiv.innerText = 'Las contraseñas no coinciden';
-      errorDiv.style.display = 'block';
-      return;
-    }
-    errorDiv.style.display = 'none';
-
-    const formData = new FormData(this);
-    fetch('crear_proveedor.php', {
-      method: 'POST',
-      body: formData
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          // Cierra el modal
-          const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearProveedor'));
-          modal.hide();
-
-
-          // Redirige a vista=proveedores
-          window.location.href = "plantillasUsers.php?vista=proveedores";
-        } else {
-          errorDiv.innerText = data.message || 'Error al crear proveedor';
-          errorDiv.style.display = 'block';
-        }
-      })
-      .catch(err => {
-        console.error('Error al enviar el formulario:', err);
-        errorDiv.innerText = 'Error en el servidor';
-        errorDiv.style.display = 'block';
-      });
-  });
-
-</script> -->
 <script>
   let seccionActual = null;
   let usuariosData = [];
@@ -502,46 +459,54 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
     buscador = document.getElementById('buscadorUsuarios');
     if (buscador) {
       buscador.placeholder = placeholders[seccionActual] || placeholders.default;
-      buscador.onkeyup = function () {
+      // Remove previous event listeners by resetting the input's value and event
+      buscador.oninput = null;
+      buscador.addEventListener('input', function () {
         const texto = buscador.value.trim().toLowerCase();
-        if (seccionActual === "usuarios") {
-          paginaActual = 1;
-          const filtrados = usuariosData.filter(user =>
-            (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
-            (user.correo && user.correo.toLowerCase().includes(texto)) ||
-            (user.rol && user.rol.toLowerCase().includes(texto))
-          );
-          renderizarUsuarios(filtrados);
-        } else if (seccionActual === "consultores") {
-          paginaActual = 1;
-          const filtrados = consultoresData.filter(c =>
-            (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
-            (c.correo && c.correo.toLowerCase().includes(texto)) ||
-            (c.rol && c.rol.toLowerCase().includes(texto))
-          );
-          renderizarConsultores(filtrados);
-        } else if (seccionActual === "proveedores") {
-          paginaActual = 1;
-          const filtrados = proveedoresData.filter(p =>
-            (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
-            (p.email && p.email.toLowerCase().includes(texto))
-          );
-          renderizarProveedores(filtrados);
-        } else if (seccionActual === "plantillas") {
-          paginaActual = 1;
-          const filtrados = plantillasData.filter(pl =>
-            (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
-          );
-          renderizarPlantillas(filtrados);
-        } else if (seccionActual === "archivos") {
-          paginaActual = 1;
-          const filtrados = archivosData.filter(a =>
-            (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
-            (a.archivo_url && a.archivo_url.toLowerCase().includes(texto))
-          );
-          renderizarArchivos(filtrados);
+        let filtrados = [];
+        switch (seccionActual) {
+          case "usuarios":
+            filtrados = usuariosData.filter(user =>
+              (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
+              (user.correo && user.correo.toLowerCase().includes(texto)) ||
+              (user.rol && user.rol.toLowerCase().includes(texto))
+            );
+            renderizarUsuarios(filtrados);
+            break;
+          case "consultores":
+            filtrados = consultoresData.filter(c =>
+              (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
+              (c.correo && c.correo.toLowerCase().includes(texto)) ||
+              (c.rol && c.rol.toLowerCase().includes(texto))
+            );
+            renderizarConsultores(filtrados);
+            break;
+          case "proveedores":
+            filtrados = proveedoresData.filter(p =>
+              (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
+              (p.email && p.email.toLowerCase().includes(texto))
+            );
+            renderizarProveedores(filtrados);
+            break;
+          case "plantillas":
+            filtrados = plantillasData.filter(pl =>
+              (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
+            );
+            renderizarPlantillas(filtrados);
+            break;
+          case "archivos":
+            filtrados = archivosData.filter(a =>
+              (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
+              (a.archivo_url && a.archivo_url.toLowerCase().includes(texto)) ||
+              (a.revision_estado && a.revision_estado.toLowerCase().includes(texto)) ||
+              (a.fecha_subida && a.fecha_subida.toLowerCase().includes(texto)) ||
+              (a.correo_proveedor && a.correo_proveedor.toLowerCase().includes(texto))
+            );
+            renderizarArchivos(filtrados);
+            break;
         }
-      };
+        paginaActual = 1;
+      });
     }
   }
 
@@ -560,46 +525,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
     }
   }
 
-  buscador?.addEventListener("keyup", function () {
-    const texto = buscador.value.trim().toLowerCase();
-    if (seccionActual === "usuarios") {
-      paginaActual = 1;
-      const filtrados = usuariosData.filter(user =>
-        (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
-        (user.correo && user.correo.toLowerCase().includes(texto)) ||
-        (user.rol && user.rol.toLowerCase().includes(texto))
-      );
-      renderizarUsuarios(filtrados);
-    } else if (seccionActual === "consultores") {
-      paginaActual = 1;
-      const filtrados = consultoresData.filter(c =>
-        (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
-        (c.correo && c.correo.toLowerCase().includes(texto)) ||
-        (c.rol && c.rol.toLowerCase().includes(texto))
-      );
-      renderizarConsultores(filtrados);
-    } else if (seccionActual === "proveedores") {
-      paginaActual = 1;
-      const filtrados = proveedoresData.filter(p =>
-        (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
-        (p.email && p.email.toLowerCase().includes(texto))
-      );
-      renderizarProveedores(filtrados);
-    } else if (seccionActual === "plantillas") {
-      paginaActual = 1;
-      const filtrados = plantillasData.filter(pl =>
-        (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
-      );
-      renderizarPlantillas(filtrados);
-    } else if (seccionActual === "archivos") {
-      paginaActual = 1;
-      const filtrados = archivosData.filter(a =>
-        (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
-        (a.archivo_url && a.archivo_url.toLowerCase().includes(texto))
-      );
-      renderizarArchivos(filtrados);
-    }
-  });
+  // Eliminado el listener global para evitar duplicidad y conflictos
 
   botones.forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -832,7 +758,6 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
   function renderizarArchivos(data = []) {
     const inicio = (paginaActual - 1) * archivosPorPagina;
     const fin = inicio + archivosPorPagina;
-    // Detectar si es admin por la estructura de los datos
     const esAdmin = data.length > 0 && data[0].correo_proveedor !== undefined;
     let tabla = `<table class="table table-bordered mt-3" id="tablaArchivos">
       <thead>
@@ -862,22 +787,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
         <input type="text" class="form-control" placeholder="Buscar archivo..." id="buscadorUsuarios">
       </div>
       ` + tabla;
-    // Filtro para todas las columnas visibles
-    const buscador = document.getElementById('buscadorUsuarios');
-    buscador.onkeyup = function () {
-      const texto = buscador.value.trim().toLowerCase();
-      paginaActual = 1;
-      const filtrados = data.filter(a => {
-        let campos = [a.nombre_archivo, a.fecha_subida, a.revision_estado];
-        if (esAdmin) {
-          campos.push(a.id, a.correo_proveedor ?? '');
-        } else {
-          campos.push(a.archivo_url);
-        }
-        return campos.some(campo => (campo || '').toString().toLowerCase().includes(texto));
-      });
-      renderizarArchivos(filtrados);
-    };
+    // El filtrado se hace en memoria, igual que en las demás vistas
     renderizarPaginacion(data, renderizarArchivos);
     rebindBuscador();
   }
