@@ -1,8 +1,4 @@
 
-
-    <!-- El filtrado y paginación se gestiona desde plantillaUsers.js -->
-
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
