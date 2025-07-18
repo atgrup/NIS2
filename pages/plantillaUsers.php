@@ -91,20 +91,33 @@ if ($conexion->connect_error) {
   die("Error de conexión: " . $conexion->connect_error);
 }
 
-// SUBIR ARCHIVO
-// SUBIR ARCHIVO
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   if (isset($_FILES['archivo'])) {
     $archivo = $_FILES['archivo'];
     $nombre_original = basename($archivo['name']);
     $nombre_archivo = time() . "_" . $nombre_original;
 
-    $stmt = $conexion->prepare("SELECT u.id_usuarios, p.id FROM usuarios u JOIN proveedores p ON u.id_usuarios = p.usuario_id WHERE u.correo = ?");
+    // Obtener usuario_id desde la tabla usuarios
+    $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
     $stmt->bind_param("s", $correo);
     $stmt->execute();
-    $stmt->bind_result($usuario_id, $proveedor_id);
+    $stmt->bind_result($usuario_id, $rol_db);
     $stmt->fetch();
     $stmt->close();
+
+    // Inicializar proveedor_id como null
+    $proveedor_id = null;
+
+    // Si el rol es proveedor, obtener proveedor_id
+    if (strtolower($rol_db) === 'proveedor') {
+      $stmt = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
+      $stmt->bind_param("i", $usuario_id);
+      $stmt->execute();
+      $stmt->bind_result($proveedor_id);
+      $stmt->fetch();
+      $stmt->close();
+    }
 
     $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
     $carpeta_url = 'documentos_subidos/' . $correo;
@@ -118,11 +131,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
       $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-      if ($proveedor_id) {
+      if ($proveedor_id !== null) {
         $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
       } else {
-        $null = null;
-        $stmt->bind_param("iss", $null, $ruta_para_bd, $nombre_original);
+        // Si no es proveedor, insertar NULL para proveedor_id
+        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
       }
       $stmt->execute();
       $stmt->close();
@@ -136,6 +149,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
   }
 }
+
 $vista = $_GET['vista'] ?? 'archivos';
 ?>
 
