@@ -14,26 +14,6 @@
 </head>
 <body class="p-4">
 
-<?php
-include '../api/includes/conexion.php';
-$base_url = '/documentos_subidos/';
-
-if (strtolower($rol) === 'administrador') {
-    $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
-            LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            ORDER BY a.fecha_subida DESC";
-    $archivosRes = $conexion->query($sql);
-} else if (strtolower($rol) !== 'consultor') {
-    $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
-            LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            WHERE a.proveedor_id = ?
-            ORDER BY a.fecha_subida DESC";
-    $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("i", $prov_id);
-    $stmt->execute();
-    $archivosRes = $stmt->get_result();
-}
-?>
 
 
 <?php if (strtolower($rol) === 'consultor'): ?>
@@ -41,15 +21,7 @@ if (strtolower($rol) === 'administrador') {
 <?php endif; ?>
 
 <?php if (strtolower($rol) !== 'consultor'): ?>
- 
 
-  <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data" class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Archivo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
         <div class="modal-body">
           <div class="mb-3">
             <label for="archivo" class="form-label">Archivo</label>
@@ -122,6 +94,54 @@ if (strtolower($rol) === 'administrador') {
 <?php else: ?>
   <div class="alert alert-info mt-3">No se encontraron archivos subidos.</div>
 <?php endif; ?>
+
+<!-- TABLA DE ARCHIVOS SUBIDOS -->
+<!-- Buscador ya está junto al botón de subir archivo, solo asegúrate de que el input tiene id="buscadorArchivos" -->
+<?php
+$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
+$archivos = [];
+if ($conexion->connect_error) {
+    echo '<div class="alert alert-danger">Error de conexión a la base de datos.</div>';
+} else {
+    $sql = "SELECT a.id, a.nombre_archivo, a.archivo_url, a.fecha_subida, a.revision_estado, p.nombre_empresa, u.correo as correo_usuario FROM archivos_subidos a LEFT JOIN proveedores p ON a.proveedor_id = p.id LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios ORDER BY a.fecha_subida DESC";
+    $res = $conexion->query($sql);
+    if ($res && $res->num_rows > 0) {
+        while ($row = $res->fetch_assoc()) {
+            $archivos[] = $row;
+        }
+    }
+    $res->free();
+    $conexion->close();
+}
+?>
+<div class="table-responsive mt-4" id="tablaArchivosContainer">
+  <table class="table table-bordered table-hover" id="tablaArchivos">
+    <thead class="table-light">
+      <tr>
+        <th>Nombre archivo</th>
+        <th>Fecha subida</th>
+        <th>Estado</th>
+        <th>Empresa</th>
+        <th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (count($archivos) > 0): ?>
+        <?php foreach ($archivos as $row): ?>
+          <tr>
+            <td><a href="../<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank"><?= htmlspecialchars($row['nombre_archivo']) ?></a></td>
+            <td><?= $row['fecha_subida'] ?></td>
+            <td><?= htmlspecialchars($row['revision_estado']) ?></td>
+            <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
+            <td><?= htmlspecialchars($row['correo_usuario'] ?? '-') ?></td>
+          </tr>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr><td colspan="5" class="text-center">No hay archivos subidos.</td></tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
