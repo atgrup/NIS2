@@ -221,9 +221,61 @@ if (!$plantillasRes) {
         <?php endwhile; ?>
       </tbody>
     </table>
-  <?php else: ?>
-    <div class="alert alert-info">No se encontraron archivos subidos.</div>
-  <?php endif; ?>
+
+
+  <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<?php else: ?>
+  <div class="alert alert-info mt-3">No se encontraron archivos subidos.</div>
+<?php endif; ?>
+
+<!-- TABLA DE ARCHIVOS SUBIDOS -->
+<!-- Buscador ya está junto al botón de subir archivo, solo asegúrate de que el input tiene id="buscadorArchivos" -->
+<?php
+$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
+$archivos = [];
+if ($conexion->connect_error) {
+    echo '<div class="alert alert-danger">Error de conexión a la base de datos.</div>';
+} else {
+    $sql = "SELECT a.id, a.nombre_archivo, a.archivo_url, a.fecha_subida, a.revision_estado, p.nombre_empresa, u.correo as correo_usuario FROM archivos_subidos a LEFT JOIN proveedores p ON a.proveedor_id = p.id LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios ORDER BY a.fecha_subida DESC";
+    $res = $conexion->query($sql);
+    if ($res && $res->num_rows > 0) {
+        while ($row = $res->fetch_assoc()) {
+            $archivos[] = $row;
+        }
+    }
+    $res->free();
+    $conexion->close();
+}
+?>
+<div class="table-responsive mt-4" id="tablaArchivosContainer">
+  <table class="table table-bordered table-hover" id="tablaArchivos">
+    <thead class="table-light">
+      <tr>
+        <th>Nombre archivo</th>
+        <th>Fecha subida</th>
+        <th>Estado</th>
+        <th>Empresa</th>
+        <th>Usuario</th>
+        <th data-no-sort>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <?php if (count($archivos) > 0): ?>
+        <?php foreach ($archivos as $row): ?>
+          <tr>
+            <td><a href="../<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank"><?= htmlspecialchars($row['nombre_archivo']) ?></a></td>
+            <td><?= $row['fecha_subida'] ?></td>
+            <td><?= htmlspecialchars($row['revision_estado']) ?></td>
+            <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
+            <td><?= htmlspecialchars($row['correo_usuario'] ?? '-') ?></td>
+          </tr>
+        <?php endforeach; ?>
+      <?php else: ?>
+        <tr><td colspan="5" class="text-center">No hay archivos subidos.</td></tr>
+      <?php endif; ?>
+    </tbody>
+  </table>
+
 </div>
 
 <!-- Paginación -->

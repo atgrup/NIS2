@@ -1,6 +1,6 @@
 <div style="max-height: 100%; overflow-y: auto;">
-    <table id="tablaUsuarios" class="table table-bordered border-secondary w-100">
-        <thead>
+    <table id="tablaUsuarios" class="table table-bordered table-hover">
+        <thead class="table-light">
             <tr>
                 
                 <th>Correo</th>

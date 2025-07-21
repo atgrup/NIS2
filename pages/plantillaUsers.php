@@ -93,61 +93,100 @@ if ($conexion->connect_error) {
 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  if (isset($_FILES['archivo'])) {
-    $archivo = $_FILES['archivo'];
-    $nombre_original = basename($archivo['name']);
-    $nombre_archivo = time() . "_" . $nombre_original;
+    // Manejar subida de plantillas
+    if (isset($_FILES['plantilla'])) {
+        $archivo = $_FILES['plantilla'];
+        $nombre_original = basename($archivo['name']);
+        
+        // Generar un UUID para la plantilla
+        $uuid = uniqid();
 
-    // Obtener usuario_id desde la tabla usuarios
-    $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
-    $stmt->bind_param("s", $correo);
-    $stmt->execute();
-    $stmt->bind_result($usuario_id, $rol_db);
-    $stmt->fetch();
-    $stmt->close();
+        // Obtener consultor_id desde la sesión
+        $stmt = $conexion->prepare("SELECT id FROM consultores WHERE usuario_id = (SELECT id_usuarios FROM usuarios WHERE correo = ?)");
+        $stmt->bind_param("s", $correo);
+        $stmt->execute();
+        $stmt->bind_result($consultor_id);
+        $stmt->fetch();
+        $stmt->close();
 
-    // Inicializar proveedor_id como null
-    $proveedor_id = null;
+        $carpeta_plantillas = __DIR__ . '/../plantillas_disponibles/';
+        if (!is_dir($carpeta_plantillas)) {
+            mkdir($carpeta_plantillas, 0775, true);
+        }
 
-    // Si el rol es proveedor, obtener proveedor_id
-    if (strtolower($rol_db) === 'proveedor') {
-      $stmt = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
-      $stmt->bind_param("i", $usuario_id);
-      $stmt->execute();
-      $stmt->bind_result($proveedor_id);
-      $stmt->fetch();
-      $stmt->close();
+        $ruta_fisica = $carpeta_plantillas . $nombre_original;
+
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+            $stmt = $conexion->prepare("INSERT INTO plantillas (nombre, uuid, consultor_id) VALUES (?, ?, ?)");
+            $stmt->bind_param("ssi", $nombre_original, $uuid, $consultor_id);
+            $stmt->execute();
+            $stmt->close();
+
+            echo "<script>alert('✅ Plantilla subida correctamente'); window.location.href='plantillaUsers.php?vista=plantillas';</script>";
+            exit;
+        } else {
+            echo "<script>alert('❌ Error al mover la plantilla');</script>";
+        }
     }
+    // Manejar subida de archivos
+    elseif (isset($_FILES['archivo'])) {
+        $archivo = $_FILES['archivo'];
+        $nombre_original = basename($archivo['name']);
+        $nombre_archivo = time() . "_" . $nombre_original;
 
-    $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
-    $carpeta_url = 'documentos_subidos/' . $correo;
+        // Obtener usuario_id desde la tabla usuarios
+        $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
+        $stmt->bind_param("s", $correo);
+        $stmt->execute();
+        $stmt->bind_result($usuario_id, $rol_db);
+        $stmt->fetch();
+        $stmt->close();
 
-    if (!is_dir($carpeta_usuario)) {
-      mkdir($carpeta_usuario, 0775, true);
-    }
+        // Inicializar proveedor_id como null
+        $proveedor_id = null;
 
-    $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
-    $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+        // Si el rol es proveedor, obtener proveedor_id
+        if (strtolower($rol_db) === 'proveedor') {
+            $stmt = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
+            $stmt->bind_param("i", $usuario_id);
+            $stmt->execute();
+            $stmt->bind_result($proveedor_id);
+            $stmt->fetch();
+            $stmt->close();
+        }
 
-    if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-      $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-      if ($proveedor_id !== null) {
-        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-      } else {
-        // Si no es proveedor, insertar NULL para proveedor_id
-        $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-      }
-      $stmt->execute();
-      $stmt->close();
+        $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
+        $carpeta_url = 'documentos_subidos/' . $correo;
 
-      echo "<script>alert('✅ Archivo subido correctamente'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
-      exit;
+        if (!is_dir($carpeta_usuario)) {
+            mkdir($carpeta_usuario, 0775, true);
+        }
+
+        $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
+        $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+            $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+            if ($proveedor_id !== null) {
+                $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+            } else {
+                $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+            }
+            $stmt->execute();
+            $stmt->close();
+
+            echo "<script>alert('✅ Archivo subido correctamente'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
+            exit;
+        } else {
+            echo "<script>alert('❌ Error al mover el archivo');</script>";
+        }
     } else {
-      echo "<script>alert('❌ Error al mover el archivo');</script>";
+        if (isset($_POST) && !empty($_POST)) {
+             // No es una subida de fichero, puede ser otra cosa
+        } else {
+            echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
+        }
     }
-  } else {
-    echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
-  }
 }
 
 $vista = $_GET['vista'] ?? 'archivos';
