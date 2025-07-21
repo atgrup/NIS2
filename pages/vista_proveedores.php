@@ -10,8 +10,8 @@ $result = $conexion->query($sql);
 
 <!-- CONTENEDOR DE LA TABLA CON SCROLL -->
 <div style="max-height: 90%; overflow-y: auto;">
-    <table class="table table-bordered border-secondary w-100" id="tablaProveedores">
-        <thead>
+    <table class="table table-bordered table-hover" id="tablaProveedores">
+        <thead class="table-light">
             <tr>
                 <th>Correo</th>
                 <th>Nombre Empresa</th>

@@ -123,6 +123,7 @@ if ($conexion->connect_error) {
         <th>Estado</th>
         <th>Empresa</th>
         <th>Usuario</th>
+        <th data-no-sort>Acciones</th>
       </tr>
     </thead>
     <tbody>
