@@ -38,8 +38,10 @@ if ($rol === 'proveedor') {
 // Comprobar que se ha subido un archivo
 if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
     $archivo = $_FILES['archivo'];
-    $nombre_archivo = basename($archivo['name']);
-    $ruta_destino = 'documentos_subidos/' . uniqid() . '_' . $nombre_archivo;
+    $nombre_original = basename($archivo['name']);
+    // Crear un nombre único para evitar colisiones
+    $nombre_unico = uniqid() . '_' . $nombre_original;
+    $ruta_destino = 'documentos_subidos/' . $nombre_unico;
 
     if (move_uploaded_file($archivo['tmp_name'], '../' . $ruta_destino)) {
         $plantilla_id = !empty($_POST['plantilla_id']) ? $_POST['plantilla_id'] : null;
@@ -51,16 +53,21 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
         ");
         $stmt->bind_param(
             "ssiii",
-            $nombre_archivo,
-            $ruta_destino,
+            $nombre_original, // Guardamos el nombre original para mostrar
+            $ruta_destino,    // Guardamos la ruta con nombre único para descargar
             $proveedor_id,
             $usuario_id,
             $plantilla_id
         );
-    
+
+        if ($stmt->execute()) {
+            echo "Archivo subido correctamente.";
+        } else {
+            echo "Error al guardar en la base de datos: " . $stmt->error;
+        }
+
         $stmt->close();
 
-        echo "Archivo subido correctamente.";
     } else {
         echo "Error al mover el archivo.";
     }

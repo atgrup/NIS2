@@ -472,7 +472,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
     </div>
   </div>
 </div>
-</main>
+
 
 </body>
 <script>
