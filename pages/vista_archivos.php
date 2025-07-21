@@ -8,11 +8,6 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
 </head>
-<style>
-  .form-label{
-    color:grey;
-  }
-</style>
 <body class="p-4">
 
 
@@ -89,6 +84,7 @@ if ($conexion->connect_error) {
         <th>Estado</th>
         <th>Empresa</th>
         <th>Usuario</th>
+        <th data-no-sort>Acciones</th>
       </tr>
     </thead>
     <tbody>

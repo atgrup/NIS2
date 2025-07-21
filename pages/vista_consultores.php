@@ -95,8 +95,8 @@ header("Location: plantillaUsers.php?vista=consultores");
 </head>
 <body>
 <div class="container mt-4" style="max-height:90vh; overflow-y:auto;">
-  <table class="table table-bordered border-secondary consultores-table" id="tablaConsultores">
-    <thead>
+  <table class="table table-bordered table-hover consultores-table" id="tablaConsultores">
+    <thead class="table-light">
       <tr>
         <th>#</th>
         <th>Correo</th>

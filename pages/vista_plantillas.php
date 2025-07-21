@@ -56,8 +56,8 @@ if (!$result) {
 <body class="container py-4">
 
   <div style="max-height: 80vh; overflow-y: auto;">
-    <table class="table table-bordered plantillas-table">
-      <thead>
+    <table class="table table-bordered table-hover plantillas-table">
+      <thead class="table-light">
         <tr>
           <th>#</th>
           <th>Nombre de la plantilla</th>
@@ -66,6 +66,7 @@ if (!$result) {
           <?php endif; ?>
           <th>Consultor</th>
           <th>Tipo</th>
+          <th data-no-sort>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -93,7 +94,18 @@ if (!$result) {
               <?php endif; ?>
               <td><?= $nombre_consultor_trimmed ?></td>
               <td>Plantilla</td>
-            </tr>
+             <td class="text-center">
+              <!-- Botón para ver en nueva pestaña -->
+              <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
+                <i class="bi bi-eye"></i>
+              </a>
+
+              <!-- Botón para eliminar -->
+              <button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarPlantilla('<?= $nombre ?>', '<?= $uuid ?>')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </td>
+
             <?php $i++; ?>
           <?php endwhile; ?>
         <?php else: ?>
