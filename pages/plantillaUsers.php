@@ -217,8 +217,7 @@ $vista = $_GET['vista'] ?? 'archivos';
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline">
-              <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
-              <input type="file" name="archivo" id="archivo-upload" class="d-none" onchange="this.form.submit()" required>
+              <label for="archivo" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">Subir archivo</label>
             </form>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>

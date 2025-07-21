@@ -11,7 +11,38 @@ if (!file_exists($ruta_conexion)) {
 }
 require $ruta_conexion;
 
+// Manejo de eliminación directa
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_archivo'])) {
+    $id_eliminar = (int)$_POST['id_archivo'];
+    
+    try {
+        if ($_SESSION['rol'] === 'administrador') {
+            $sql = "DELETE FROM archivos_subidos WHERE id = ?";
+            $stmt = $conexion->prepare($sql);
+            $stmt->bind_param("i", $id_eliminar);
+        } elseif ($_SESSION['rol'] === 'proveedor') {
+            $sql = "DELETE FROM archivos_subidos WHERE id = ? AND proveedor_id = ?";
+            $stmt = $conexion->prepare($sql);
+            $stmt->bind_param("ii", $id_eliminar, $_SESSION['proveedor_id']);
+        }
+        
+        if (isset($stmt) && $stmt->execute()) {
+            $_SESSION['mensaje_exito'] = "Archivo eliminado correctamente";
+        } else {
+            $_SESSION['mensaje_error'] = "No se pudo eliminar el archivo";
+        }
+    } catch (Exception $e) {
+        $_SESSION['mensaje_error'] = "Error: " . $e->getMessage();
+    }
+    
+    header("Location: ".$_SERVER['PHP_SELF']);
+    exit;
+}
 
+// Mostrar mensajes
+$mensaje_exito = $_SESSION['mensaje_exito'] ?? null;
+$mensaje_error = $_SESSION['mensaje_error'] ?? null;
+unset($_SESSION['mensaje_exito'], $_SESSION['mensaje_error']);
 
 $rol = strtolower($_SESSION['rol']);
 $usuario_id = $_SESSION['id_usuario'];
@@ -34,8 +65,11 @@ if ($rol === 'administrador') {
     $archivosRes = $stmt->get_result();
 }
 
-// Consulta para plantillas (usada en el modal)
+// Consulta para plantillas
 $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
+if (!$plantillasRes) {
+    die("Error en consulta de plantillas: " . $conexion->error);
+}
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -56,48 +90,84 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
     }
     .table-scroll table { width: 100%; margin-bottom: 0; }
     .pagination-container { margin-top: 15px; }
+    .modal-header { background-color: #0d6efd; color: white; }
+    .btn-close-white { filter: invert(1); }
   </style>
 </head>
 <body class="p-4">
 
+<!-- Mensajes de operaciones -->
+<?php if ($mensaje_exito): ?>
+<div class="alert alert-success alert-dismissible fade show">
+    <?= $mensaje_exito ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<?php endif; ?>
 
+<?php if ($mensaje_error): ?>
+<div class="alert alert-danger alert-dismissible fade show">
+    <?= $mensaje_error ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+<?php endif; ?>
+
+<!-- Botón para abrir el modal -->
+
+
+<!-- Formulario oculto para eliminación -->
+<form id="formEliminarArchivo" method="post" style="display: none;">
+    <input type="hidden" name="eliminar_archivo" value="1">
+    <input type="hidden" name="id_archivo" id="id_archivo_a_eliminar">
+</form>
 
 <!-- Modal para subir archivos -->
 <?php if ($rol !== 'consultor'): ?>
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data" class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Archivo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      <div class="modal-body">
-        <div class="mb-3">
-          <label for="archivo" class="form-label">Archivo</label>
-          <input type="file" class="form-control" id="archivo" name="archivo" required />
+    <div class="modal-content">
+      <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Nuevo Archivo</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
-        <div class="mb-3">
-          <label for="plantilla_id" class="form-label">Plantillas Asociadas</label>
-          <select name="plantilla_id" id="plantilla_id" class="form-select" required>
-            <option value="">-- Seleccione --</option>
-            <?php if ($plantillasRes): ?>
-              <?php while ($f = $plantillasRes->fetch_assoc()): ?>
-                <option value="<?= $f['id'] ?>"><?= htmlspecialchars($f['nombre']) ?></option>
-              <?php endwhile; ?>
-            <?php else: ?>
-              <option disabled>No hay plantillas</option>
-            <?php endif; ?>
-          </select>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="archivo" class="form-label fw-bold">Seleccionar Archivo</label>
+            <input type="file" class="form-control" id="archivo" name="archivo" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+            <div class="form-text">Formatos permitidos: PDF, Word, Excel, imágenes</div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="plantilla_id" class="form-label fw-bold">Plantilla Asociada</label>
+            <select name="plantilla_id" id="plantilla_id" class="form-select" required>
+              <option value="">-- Seleccione una plantilla --</option>
+              <?php if ($plantillasRes->num_rows > 0): ?>
+                <?php while ($f = $plantillasRes->fetch_assoc()): ?>
+                  <option value="<?= htmlspecialchars($f['id']) ?>">
+                    <?= htmlspecialchars($f['nombre']) ?>
+                  </option>
+                <?php endwhile; ?>
+              <?php else: ?>
+                <option disabled>No hay plantillas disponibles</option>
+              <?php endif; ?>
+            </select>
+          </div>
+          
+          <div id="mensajeRespuesta" class="alert d-none"></div>
+          
+          <input type="hidden" name="usuario_id" value="<?= htmlspecialchars($usuario_id) ?>">
+          <input type="hidden" name="proveedor_id" value="<?= htmlspecialchars($prov_id) ?>">
         </div>
-        <div id="mensajeRespuesta" class="mt-2"></div>
-        <input type="hidden" name="usuario_id" value="<?= $usuario_id ?>">
-        <input type="hidden" name="proveedor_id" value="<?= $prov_id ?>">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="submit" class="btn btn-primary">Subir</button>
-      </div>
-    </form>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cancelar
+          </button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-upload"></i> Subir Archivo
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 <?php endif; ?>
@@ -168,6 +238,11 @@ document.getElementById('formSubirArchivo')?.addEventListener('submit', function
   const form = e.target;
   const formData = new FormData(form);
   const mensajeDiv = document.getElementById('mensajeRespuesta');
+  const submitBtn = form.querySelector('button[type="submit"]');
+  
+  // Deshabilitar botón durante el envío
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Procesando...';
 
   fetch(form.action, {
     method: 'POST',
@@ -175,45 +250,34 @@ document.getElementById('formSubirArchivo')?.addEventListener('submit', function
   })
   .then(response => response.text())
   .then(data => {
-    mensajeDiv.innerHTML = `<div class="alert alert-info">${data}</div>`;
+    mensajeDiv.classList.remove('d-none', 'alert-danger');
+    mensajeDiv.classList.add('alert-success');
+    mensajeDiv.innerHTML = data;
     setTimeout(() => location.reload(), 1500);
   })
-  .catch(() => {
-    mensajeDiv.innerHTML = `<div class="alert alert-danger">Error al subir el archivo.</div>`;
+  .catch(error => {
+    mensajeDiv.classList.remove('d-none', 'alert-success');
+    mensajeDiv.classList.add('alert-danger');
+    mensajeDiv.innerHTML = 'Error al subir el archivo: ' + error.message;
+  })
+  .finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="bi bi-upload"></i> Subir Archivo';
   });
 });
 
-
-// Función para eliminar archivos - Versión mejorada
+// Función para eliminar archivos
 document.querySelectorAll('.eliminar-archivo').forEach(btn => {
-  btn.addEventListener('click', async function() {
+  btn.addEventListener('click', function() {
     const id = this.getAttribute('data-id');
-    const fila = document.getElementById(`fila-${id}`);
     
-    if (!confirm('¿Estás seguro de eliminar este archivo?')) return;
-    
-    try {
-      const response = await fetch(`../api/eliminar_archivo.php?id=${id}`);
-      
-      if (!response.ok) {
-        throw new Error('Error en la respuesta del servidor');
-      }
-      
-      const data = await response.json();
-      
-      if (data.success) {
-        fila.remove();
-        // Opcional: Mostrar notificación de éxito
-        console.log('Archivo eliminado correctamente');
-      } else {
-        throw new Error(data.message || 'Error al eliminar el archivo');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert(`Error al eliminar: ${error.message}`);
+    if (confirm('¿Estás seguro de eliminar este archivo?')) {
+      document.getElementById('id_archivo_a_eliminar').value = id;
+      document.getElementById('formEliminarArchivo').submit();
     }
   });
 });
+
 // Paginación
 document.addEventListener('DOMContentLoaded', () => {
   const filasPorPagina = 10;
