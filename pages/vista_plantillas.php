@@ -59,7 +59,6 @@ if (!$result) {
     <table class="table table-bordered plantillas-table">
       <thead>
         <tr>
-          <th>#</th>
           <th>Nombre de la plantilla</th>
           <?php if ($is_admin): ?>
             <th>UUID</th>
@@ -86,7 +85,6 @@ if (!$result) {
             $ruta_url = '../plantillas_disponibles/' . urlencode($nombre);
             ?>
             <tr>
-              <th><?= $i ?></th>
               <td><a href="<?= $ruta_url ?>" download class="text-reset text-decoration-underline"><?= $nombre ?></a></td>
               <?php if ($is_admin): ?>
                 <td><code><?= $uuid ?></code></td>

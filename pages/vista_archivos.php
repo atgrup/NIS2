@@ -16,6 +16,7 @@
 
 <?php
 include '../api/includes/conexion.php';
+$base_url = '/documentos_subidos/';
 
 if (strtolower($rol) === 'administrador') {
     $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
@@ -44,7 +45,7 @@ if (strtolower($rol) === 'administrador') {
 
   <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form id="formSubirArchivo" action="subir_Archivo_rellenado.php" method="post" enctype="multipart/form-data" class="modal-content">
+      <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data" class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Archivo</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
@@ -96,6 +97,7 @@ if (strtolower($rol) === 'administrador') {
       </thead>
       <tbody>
         <?php while ($row = $archivosRes->fetch_assoc()): ?>
+          <?php $ruta_descarga = $base_url . rawurlencode($row['nombre_archivo']); ?>
           <tr>
             <td><?= htmlspecialchars($row['nombre_archivo']) ?></td>
             <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
@@ -106,7 +108,7 @@ if (strtolower($rol) === 'administrador') {
               <a href="<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank" class="btn btn-sm btn-primary" title="Ver Archivo">
                 <i class="bi bi-eye"></i>
               </a>
-              <a href="<?= htmlspecialchars($row['archivo_url']) ?>" download class="btn btn-sm btn-success" title="Descargar Archivo">
+              <a href="../api/download.php?id=<?= $row['id'] ?>"  class="btn btn-sm btn-success" title="Descargar Archivo">
                 <i class="bi bi-download"></i>
               </a>
             </td>
