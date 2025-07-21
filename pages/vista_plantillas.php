@@ -96,6 +96,7 @@ if (!$result) {
               </a>
 
               <!-- Botón para eliminar -->
+
               <button class="btn btn-sm btn-danger"
                       onclick="mostrarModalEliminarPlantilla('<?= addslashes($nombre) ?>', '<?= addslashes($uuid_raw) ?>')"
                       <?= empty($uuid_raw) ? 'disabled' : '' ?>>
