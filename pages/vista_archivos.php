@@ -186,6 +186,8 @@ if (!$plantillasRes) {
           <th>Nombre del Archivo</th>
           <th>Plantilla Asociada</th>
           <th>Fecha de Subida</th>
+          <th>Empresa</th>
+        <th>Usuario</th>
           <th>Estado de Revisión</th>
           <th>Acciones</th>
         </tr>
@@ -196,6 +198,8 @@ if (!$plantillasRes) {
             <td><?= htmlspecialchars($row['nombre_archivo']) ?></td>
             <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
             <td><?= htmlspecialchars($row['fecha_subida']) ?></td>
+                <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
+            <td><?= htmlspecialchars($row['correo_usuario'] ?? '-') ?></td>
             <td><?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?></td>
             <td>
               <a href="<?= htmlspecialchars($row['archivo_url']) ?>" 
@@ -247,36 +251,7 @@ if ($conexion->connect_error) {
     $conexion->close();
 }
 ?>
-<div class="table-responsive mt-4" id="tablaArchivosContainer">
-  <table class="table table-bordered table-hover" id="tablaArchivos">
-    <thead class="table-light">
-      <tr>
-        <th>Nombre archivo</th>
-        <th>Fecha subida</th>
-        <th>Estado</th>
-        <th>Empresa</th>
-        <th>Usuario</th>
-        <th data-no-sort>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php if (count($archivos) > 0): ?>
-        <?php foreach ($archivos as $row): ?>
-          <tr>
-            <td><a href="../<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank"><?= htmlspecialchars($row['nombre_archivo']) ?></a></td>
-            <td><?= $row['fecha_subida'] ?></td>
-            <td><?= htmlspecialchars($row['revision_estado']) ?></td>
-            <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
-            <td><?= htmlspecialchars($row['correo_usuario'] ?? '-') ?></td>
-          </tr>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <tr><td colspan="5" class="text-center">No hay archivos subidos.</td></tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
 
-</div>
 
 <!-- Paginación -->
 <div id="paginacion" class="pagination-container d-flex justify-content-center gap-2"></div>
