@@ -56,9 +56,6 @@ if (!$result) {
       <thead class="table-light">
         <tr>
           <th>Nombre de la plantilla</th>
-          <?php if ($is_admin): ?>
-            <th>UUID</th>
-          <?php endif; ?>
           <th>Consultor</th>
           <th>Tipo</th>
           <th data-no-sort>Acciones</th>
@@ -84,9 +81,6 @@ if (!$result) {
             ?>
             <tr data-uuid="<?= $uuid_raw ?>">
               <td><a href="<?= $ruta_url ?>" download class="text-reset text-decoration-underline"><?= $nombre ?></a></td>
-              <?php if ($is_admin): ?>
-                <td><code><?= $uuid_display ?></code></td>
-              <?php endif; ?>
               <td><?= $nombre_consultor_trimmed ?></td>
               <td>Plantilla</td>
              <td class="text-center">
@@ -108,7 +102,7 @@ if (!$result) {
           <?php endwhile; ?>
         <?php else: ?>
           <tr>
-            <td colspan="<?= $is_admin ? 5 : 4 ?>" class="text-center">No hay plantillas.</td>
+            <td colspan="4" class="text-center">No hay plantillas.</td>
           </tr>
         <?php endif; ?>
       </tbody>
