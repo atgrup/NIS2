@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once dirname(__DIR__) . '/api/includes/conexion.php';
 
-$usuario_id = $_SESSION['rol'] ?? null;
+$usuario_id = $_SESSION['id_usuario'] ?? null;
 $is_admin = false;
 
 if (!$usuario_id) {
@@ -46,10 +46,6 @@ if (!$result) {
   <title>Listado de Plantillas</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    table.plantillas-table th:first-child,
-    table.plantillas-table td:first-child {
-      display: none;
-    }
   </style>
 </head>
 
@@ -74,7 +70,8 @@ if (!$result) {
           <?php while ($row = $result->fetch_assoc()): ?>
             <?php
             $nombre = htmlspecialchars($row['nombre']);
-            $uuid = !empty($row['uuid']) ? htmlspecialchars($row['uuid']) : '<i>sin UUID</i>';
+            $uuid_raw = $row['uuid'] ?? '';
+            $uuid_display = !empty($uuid_raw) ? htmlspecialchars($uuid_raw) : '<i>sin UUID</i>';
 
             $nombre_consultor_raw = $row['nombre_consultor'] ?? '';
             if ($nombre_consultor_raw) {
@@ -85,10 +82,10 @@ if (!$result) {
 
             $ruta_url = '../plantillas_disponibles/' . urlencode($nombre);
             ?>
-            <tr>
+            <tr data-uuid="<?= $uuid_raw ?>">
               <td><a href="<?= $ruta_url ?>" download class="text-reset text-decoration-underline"><?= $nombre ?></a></td>
               <?php if ($is_admin): ?>
-                <td><code><?= $uuid ?></code></td>
+                <td><code><?= $uuid_display ?></code></td>
               <?php endif; ?>
               <td><?= $nombre_consultor_trimmed ?></td>
               <td>Plantilla</td>
@@ -99,7 +96,10 @@ if (!$result) {
               </a>
 
               <!-- Botón para eliminar -->
-              <button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarPlantilla('<?= $nombre ?>', '<?= $uuid ?>')">
+
+              <button class="btn btn-sm btn-danger"
+                      onclick="mostrarModalEliminarPlantilla('<?= addslashes($nombre) ?>', '<?= addslashes($uuid_raw) ?>')"
+                      <?= empty($uuid_raw) ? 'disabled' : '' ?>>
                 <i class="bi bi-trash"></i>
               </button>
             </td>
@@ -116,6 +116,25 @@ if (!$result) {
   </div>
 
   <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+
+  <!-- Modal Confirmar Eliminación -->
+  <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="modalEliminarPlantillaLabel">Eliminar Plantilla</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <p id="eliminarPlantillaTexto"></p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-danger" id="btnConfirmarEliminarPlantilla">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -161,6 +180,44 @@ if (!$result) {
       mostrarPagina(paginaActual);
       crearPaginacion();
     });
+
+    function mostrarModalEliminarPlantilla(nombre, uuid) {
+        const modalElement = document.getElementById('modalEliminarPlantilla');
+        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+        
+        const textoModal = document.getElementById('eliminarPlantillaTexto');
+        const btnConfirmar = document.getElementById('btnConfirmarEliminarPlantilla');
+
+        textoModal.textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
+        
+        btnConfirmar.onclick = function() {
+            fetch('eliminar_plantilla.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `uuid=${encodeURIComponent(uuid)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const filaParaEliminar = document.querySelector(`tr[data-uuid="${uuid}"]`);
+                    if (filaParaEliminar) {
+                        filaParaEliminar.remove();
+                    }
+                    modal.hide();
+                } else {
+                    alert('Error al eliminar la plantilla: ' + (data.error || 'Error desconocido'));
+                }
+            })
+            .catch(error => {
+                console.error('Error en la petición de eliminación:', error);
+                alert('Ocurrió un error de red. Por favor, inténtalo de nuevo.');
+            });
+        };
+
+        modal.show();
+    }
   </script>
 
 </body>

@@ -28,7 +28,7 @@ if ($result->num_rows === 1) {
     if (password_verify($password, $user['password'])) {
         $_SESSION['id_usuario'] = $user['id_usuarios'];
         $_SESSION['correo'] = $correo;
-        $_SESSION['rol'] = $user['rol'];
+        $_SESSION['rol'] = $user['rol']; // 'rol' es el nombre del tipo de usuario
 
         header("Location: ../../pages/plantillaUsers.php");
         exit;
