@@ -97,6 +97,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['plantilla'])) {
         $archivo = $_FILES['plantilla'];
         $nombre_original = basename($archivo['name']);
+        $extension = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
+
+        if ($extension !== 'pdf') {
+            echo "<script>alert('❌ Error: Solo se permiten archivos PDF.'); window.location.href='plantillaUsers.php?vista=plantillas';</script>";
+            exit;
+        }
         
         // Generar un UUID para la plantilla
         $uuid = uniqid();
@@ -263,7 +269,7 @@ $vista = $_GET['vista'] ?? 'archivos';
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline mb-3">
               <label for="plantilla" class="btn bg-mi-color w-100">Subir plantilla</label>
-              <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required>
+              <input type="file" name="plantilla" id="plantilla" class="d-none" onchange="this.form.submit()" required accept=".pdf">
             </form>
           <?php endif; ?>
           <?php if ($rol === 'administrador'): ?>
