@@ -213,6 +213,7 @@ if ($conexion->connect_error) {
 }
 ?>
 <!-- FIN -->
+
 <div class="table-responsive mt-4" id="tablaArchivosContainer">
   <table class="table table-bordered table-hover archivos-table" id="tablaArchivos">
     <thead class="table-light">
@@ -421,6 +422,7 @@ document.addEventListener('DOMContentLoaded', () => {
     mostrarPagina(paginaActual);
     crearPaginacion();
   }
+
 });
 </script>
 </body>
