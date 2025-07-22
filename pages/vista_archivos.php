@@ -81,13 +81,7 @@ if (!$plantillasRes) {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
   <style>
     .form-label { color: grey; }
-    .table-scroll {
-      max-height: 70vh;
-      overflow-y: auto;
-      border: 1px solid #dee2e6;
-      border-radius: 0.25rem;
-      margin-top: 20px;
-    }
+   
     .table-scroll table { width: 100%; margin-bottom: 0; }
     .pagination-container { margin-top: 15px; }
     .modal-header { background-color: #0d6efd; color: white; }
@@ -251,7 +245,6 @@ if ($conexion->connect_error) {
     $conexion->close();
 }
 ?>
-
 
 <!-- Paginación -->
 <div id="paginacion" class="pagination-container d-flex justify-content-center gap-2"></div>
