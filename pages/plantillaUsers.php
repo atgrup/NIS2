@@ -458,7 +458,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
         alert('Todos los campos son obligatorios');
         return false;
     }
-    
+    console.log('Formulario validado correctamente. Enviando...');
     return true;
 });
 document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
