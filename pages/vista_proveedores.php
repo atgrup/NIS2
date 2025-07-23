@@ -9,7 +9,7 @@ $result = $conexion->query($sql);
 ?>
 
 <!-- CONTENEDOR DE LA TABLA CON SCROLL -->
-<div style="max-height: 90%; overflow-y: auto;">
+<div>
     <table class="table table-bordered table-hover" id="tablaProveedores">
         <thead class="table-light">
             <tr>
@@ -22,7 +22,13 @@ $result = $conexion->query($sql);
             <?php
             $i = 1;
 // Mostrar todos los proveedores, aunque no tengan usuario asociado o archivos subidos
-$sql = "SELECT p.id, p.nombre_empresa, u.correo FROM proveedores p LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios ORDER BY p.id";
+// Contar total de filas
+$sql_total = "SELECT COUNT(*) as total FROM proveedores";
+$result_total = $conexion->query($sql_total);
+$total_filas = $result_total->fetch_assoc()['total'];
+$total_paginas = ceil($total_filas / $filas_por_pagina);
+
+$sql = "SELECT p.id, p.nombre_empresa, u.correo FROM proveedores p LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios ORDER BY p.id LIMIT $inicio, $filas_por_pagina";
 $result = $conexion->query($sql);
 while ($row = $result->fetch_assoc()) {
     $proveedorId = $row['id'];
@@ -44,74 +50,13 @@ while ($row = $result->fetch_assoc()) {
 </div>
 
 <!-- CONTENEDOR DE LA PAGINACIÓN FUERA DEL SCROLL -->
-<div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<?php
+$url_base = '?vista=proveedores';
+echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
+?>
 
 <!-- SCRIPT DE PAGINACIÓN -->
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const tabla = document.getElementById('tablaProveedores');
-  if (!tabla) return;
-
-  const filasPorPagina = 10;
-  let paginaActual = 1;
-  const tbody = tabla.querySelector('tbody');
-  const filas = Array.from(tbody.querySelectorAll('tr'));
-  const pagDiv = document.getElementById('paginacion');
-
-  function mostrarPagina(pagina) {
-  const inicio = (pagina - 1) * filasPorPagina;
-  const fin = inicio + filasPorPagina;
-
-  filas.forEach((fila, i) => {
-    fila.style.display = i >= inicio && i < fin ? '' : 'none';
-  });
-}
-
-  function crearPaginacion() {
-    pagDiv.innerHTML = '';
-    const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-
-    // Botón "Primera página"
-    const btnPrimera = document.createElement('button');
-    btnPrimera.innerHTML = '⏮️'; // icono doble flecha izquierda
-    btnPrimera.className = 'btn btn-outline-primary';
-    btnPrimera.disabled = paginaActual === 1;
-    btnPrimera.addEventListener('click', () => {
-      paginaActual = 1;
-      mostrarPagina(paginaActual);
-      crearPaginacion();
-    });
-    pagDiv.appendChild(btnPrimera);
-
-    // Botones numéricos de página
-    for (let i = 1; i <= totalPaginas; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-      btn.addEventListener('click', () => {
-        paginaActual = i;
-        mostrarPagina(paginaActual);
-        crearPaginacion();
-      });
-      pagDiv.appendChild(btn);
-    }
-
-    // Botón "Última página"
-    const btnUltima = document.createElement('button');
-    btnUltima.innerHTML = '⏭️'; // icono doble flecha derecha
-    btnUltima.className = 'btn btn-outline-primary';
-    btnUltima.disabled = paginaActual === totalPaginas;
-    btnUltima.addEventListener('click', () => {
-      paginaActual = totalPaginas;
-      mostrarPagina(paginaActual);
-      crearPaginacion();
-    });
-    pagDiv.appendChild(btnUltima);
-  }
-
-  mostrarPagina(paginaActual);
-  crearPaginacion();
-});
 </script>
 
 <!-- Modal Editar Proveedor -->

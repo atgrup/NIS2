@@ -24,11 +24,18 @@ if ($stmtAdmin->fetch() && $tipo_usuario_id == 1) {
 $stmtAdmin->close();
 
 // Consultar plantillas con nombre del consultor
+// Contar total de filas
+$sql_total = "SELECT COUNT(*) as total FROM plantillas";
+$result_total = $conexion->query($sql_total);
+$total_filas = $result_total->fetch_assoc()['total'];
+$total_paginas = ceil($total_filas / $filas_por_pagina);
+
 $sql = "
   SELECT p.nombre, p.uuid, p.consultor_id, c.nombre AS nombre_consultor
   FROM plantillas p
   LEFT JOIN consultores c ON p.consultor_id = c.id
   ORDER BY p.nombre
+  LIMIT $inicio, $filas_por_pagina
 ";
 $result = $conexion->query($sql);
 
@@ -51,7 +58,7 @@ if (!$result) {
 
 <body class="container py-4">
 
-  <div style="max-height: 80vh; overflow-y: auto;">
+  <div>
     <table class="table table-bordered table-hover plantillas-table">
       <thead class="table-light">
         <tr>
@@ -90,7 +97,6 @@ if (!$result) {
               </a>
 
               <!-- Botón para eliminar -->
-
               <button class="btn btn-sm btn-danger"
                       onclick="mostrarModalEliminarPlantilla('<?= addslashes($nombre) ?>', '<?= addslashes($uuid_raw) ?>')"
                       <?= empty($uuid_raw) ? 'disabled' : '' ?>>
@@ -109,8 +115,11 @@ if (!$result) {
     </table>
   </div>
 
-  <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-
+  <?php
+  $url_base = '?vista=plantillas';
+  echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
+  ?>
+  
   <!-- Modal Confirmar Eliminación -->
   <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -131,49 +140,6 @@ if (!$result) {
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const filasPorPagina = 10;
-      let paginaActual = 1;
-
-      const filas = [...document.querySelectorAll('table.plantillas-table tbody tr')];
-      const pagDiv = document.getElementById('paginacion');
-
-      function mostrarPagina(pagina) {
-        const inicio = (pagina - 1) * filasPorPagina;
-        const fin = inicio + filasPorPagina;
-        filas.forEach((fila, i) => fila.style.display = (i >= inicio && i < fin) ? '' : 'none');
-      }
-
-      function crearPaginacion() {
-        pagDiv.innerHTML = '';
-        const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-
-        const btnPrimera = document.createElement('button');
-        btnPrimera.textContent = '⏮️';
-        btnPrimera.className = 'btn btn-outline-primary';
-        btnPrimera.disabled = paginaActual === 1;
-        btnPrimera.onclick = () => { paginaActual = 1; mostrarPagina(paginaActual); crearPaginacion(); };
-        pagDiv.appendChild(btnPrimera);
-
-        for (let i = 1; i <= totalPaginas; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-          btn.onclick = () => { paginaActual = i; mostrarPagina(paginaActual); crearPaginacion(); };
-          pagDiv.appendChild(btn);
-        }
-
-        const btnUltima = document.createElement('button');
-        btnUltima.textContent = '⏭️';
-        btnUltima.className = 'btn btn-outline-primary';
-        btnUltima.disabled = paginaActual === totalPaginas;
-        btnUltima.onclick = () => { paginaActual = totalPaginas; mostrarPagina(paginaActual); crearPaginacion(); };
-        pagDiv.appendChild(btnUltima);
-      }
-
-      mostrarPagina(paginaActual);
-      crearPaginacion();
-    });
 
     function mostrarModalEliminarPlantilla(nombre, uuid) {
         const modalElement = document.getElementById('modalEliminarPlantilla');
