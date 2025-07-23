@@ -3,7 +3,7 @@ session_start();
 require_once '../api/includes/conexion.php';
 
 $rol = $_SESSION['rol'] ?? '';
-if ($rol !== 'administrador') {
+if (strtolower($rol) !== 'administrador') {
     header('Location: plantillaUsers.php?vista=consultores');
     exit;
 }
@@ -12,6 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_consultor'])) 
     $consultor_id = intval($_POST['consultor_id']);
     $correo = filter_var($_POST['correo'], FILTER_SANITIZE_EMAIL);
     $contrasena = $_POST['contrasena'] ?? '';
+
+    if (!filter_var($correo, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['error'] = "Correo inválido";
+        header('Location: plantillaUsers.php?vista=consultores');
+        exit;
+    }
 
     // Obtener usuario_id del consultor
     $stmt = $conexion->prepare("SELECT usuario_id FROM consultores WHERE id = ?");
@@ -25,15 +31,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_consultor'])) 
         // Actualizar correo en tabla usuarios
         $stmt = $conexion->prepare("UPDATE usuarios SET correo = ? WHERE id_usuarios = ?");
         $stmt->bind_param("si", $correo, $usuario_id);
-        $stmt->execute();
+        if (!$stmt->execute()) {
+            $_SESSION['error'] = "Error al actualizar correo: " . $stmt->error;
+            $stmt->close();
+            header('Location: plantillaUsers.php?vista=consultores');
+            exit;
+        }
         $stmt->close();
 
-        // Actualizar contraseña si viene (hashearla)
+        // Actualizar contraseña si se proporciona (y se hashea)
         if (!empty($contrasena)) {
             $hash = password_hash($contrasena, PASSWORD_DEFAULT);
-            $stmt = $conexion->prepare("UPDATE usuarios SET contrasena = ? WHERE id_usuarios = ?");
+            $stmt = $conexion->prepare("UPDATE usuarios SET password = ? WHERE id_usuarios = ?");
             $stmt->bind_param("si", $hash, $usuario_id);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                $_SESSION['error'] = "Error al actualizar contraseña: " . $stmt->error;
+                $stmt->close();
+                header('Location: plantillaUsers.php?vista=consultores');
+                exit;
+            }
             $stmt->close();
         }
 
@@ -41,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['editar_consultor'])) 
     } else {
         $_SESSION['error'] = "Consultor no encontrado.";
     }
-}
 
-header('Location: plantillaUsers.php?vista=consultores');
-exit;
+    header('Location: plantillaUsers.php?vista=consultores');
+    exit;
+}
