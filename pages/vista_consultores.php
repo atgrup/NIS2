@@ -94,7 +94,7 @@ header("Location: plantillaUsers.php?vista=consultores");
 </style>
 </head>
 <body>
-<div class="container mt-4" style="max-height:90vh; overflow-y:auto;">
+<div class="container mt-4">
   <table class="table table-bordered table-hover consultores-table" id="tablaConsultores">
     <thead class="table-light">
       <tr>
@@ -106,7 +106,13 @@ header("Location: plantillaUsers.php?vista=consultores");
     </thead>
     <tbody>
       <?php
-      $sql = "SELECT c.id, u.correo FROM consultores c JOIN usuarios u ON c.usuario_id = u.id_usuarios ORDER BY c.id";
+      // Contar total de filas
+      $sql_total = "SELECT COUNT(*) as total FROM consultores";
+      $result_total = $conexion->query($sql_total);
+      $total_filas = $result_total->fetch_assoc()['total'];
+      $total_paginas = ceil($total_filas / $filas_por_pagina);
+
+      $sql = "SELECT c.id, u.correo FROM consultores c JOIN usuarios u ON c.usuario_id = u.id_usuarios ORDER BY c.id LIMIT $inicio, $filas_por_pagina";
       $result = $conexion->query($sql);
       $i = 1;
       while ($row = $result->fetch_assoc()):
@@ -139,7 +145,10 @@ header("Location: plantillaUsers.php?vista=consultores");
   </table>
 </div>
 
-<div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<?php
+$url_base = '?vista=consultores';
+echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
+?>
 
 <!-- Modal Editar Consultor -->
 <div class="modal fade" id="editarConsultorModal" tabindex="-1" aria-labelledby="editarConsultorLabel" aria-hidden="true">
@@ -217,43 +226,6 @@ document.addEventListener('DOMContentLoaded', () => {
 );
 
 
-  // Paginación simple
-  const rows = Array.from(document.querySelectorAll('#tablaConsultores tbody tr'));
-  const rowsPerPage = 10;
-  let currentPage = 1;
-  const pagDiv = document.getElementById('paginacion');
-
-  function renderPage(page) {
-    rows.forEach((r,i) => {
-      r.style.display = (i >= (page-1)*rowsPerPage && i < page*rowsPerPage) ? '' : 'none';
-    });
-  }
-
-  function renderPagination() {
-    pagDiv.innerHTML = '';
-    const totalPages = Math.ceil(rows.length / rowsPerPage);
-    const createBtn = (text, page) => {
-      const btn = document.createElement('button');
-      btn.textContent = text;
-      btn.className = 'btn ' + (page === currentPage ? 'btn-primary' : 'btn-outline-primary');
-      btn.disabled = page === currentPage;
-      btn.addEventListener('click', () => {
-        currentPage = page;
-        renderPage(page);
-        renderPagination();
-      });
-      return btn;
-    };
-
-    pagDiv.appendChild(createBtn('⏮️', 1));
-    for(let p=1; p<=totalPages; p++) {
-      pagDiv.appendChild(createBtn(p, p));
-    }
-    pagDiv.appendChild(createBtn('⏭️', totalPages));
-  }
-
-  renderPage(currentPage);
-  renderPagination();
 });
 
 </script>

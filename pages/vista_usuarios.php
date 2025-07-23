@@ -1,4 +1,4 @@
-<div style="max-height: 100%; overflow-y: auto;">
+<div>
     <table id="tablaUsuarios" class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
@@ -11,10 +11,17 @@
         </thead>
         <tbody>
             <?php
+            // Contar total de filas
+            $sql_total = "SELECT COUNT(*) as total FROM usuarios";
+            $result_total = $conexion->query($sql_total);
+            $total_filas = $result_total->fetch_assoc()['total'];
+            $total_paginas = ceil($total_filas / $filas_por_pagina);
+
             $sql = "SELECT u.id_usuarios, u.correo, t.nombre AS tipo_usuario, u.verificado
                     FROM usuarios u
                     LEFT JOIN tipo_usuario t ON u.tipo_usuario_id = t.id_tipo_usuario
-                    ORDER BY u.id_usuarios";
+                    ORDER BY u.id_usuarios
+                    LIMIT $inicio, $filas_por_pagina";
 
             $result = $conexion->query($sql);
             $i = 1;
@@ -39,7 +46,10 @@
         </tbody>
     </table>
 </div>
-<div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
+<?php
+$url_base = '?vista=usuarios';
+echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
+?>
 
 <!-- Modal Editar Usuario -->
 <div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-labelledby="modalEditarUsuarioLabel" aria-hidden="true">
@@ -116,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   });
+
 });
 
 // Modal de confirmación de eliminación y alerta Bootstrap

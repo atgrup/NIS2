@@ -1,78 +1,3 @@
-<script>
-  // Paginación clásica SOLO para la tabla de usuarios
-  document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('tablaUsuarios')) {
-      const filasPorPagina = 10;
-      let paginaActual = 1;
-      const tabla = document.getElementById('tablaUsuarios');
-      const tbody = tabla.querySelector('tbody');
-      const filas = Array.from(tbody.querySelectorAll('tr'));
-      const pagDiv = document.getElementById('paginacion');
-      const buscador = document.getElementById('buscadorUsuarios');
-
-      function mostrarPagina(pagina, datosFiltrados) {
-        const inicio = (pagina - 1) * filasPorPagina;
-        const fin = inicio + filasPorPagina;
-        filas.forEach(fila => fila.style.display = 'none');
-        datosFiltrados.slice(inicio, fin).forEach(fila => fila.style.display = '');
-      }
-
-      function crearPaginacion(datosFiltrados) {
-        pagDiv.innerHTML = '';
-        const totalPaginas = Math.ceil(datosFiltrados.length / filasPorPagina);
-        // Botón "Primera página"
-        const btnPrimera = document.createElement('button');
-        btnPrimera.innerHTML = '⏮️';
-        btnPrimera.className = 'btn btn-outline-primary';
-        btnPrimera.disabled = paginaActual === 1;
-        btnPrimera.addEventListener('click', () => {
-          paginaActual = 1;
-          mostrarPagina(paginaActual, datosFiltrados);
-          crearPaginacion(datosFiltrados);
-        });
-        pagDiv.appendChild(btnPrimera);
-        // Botones de números de página
-        for (let i = 1; i <= totalPaginas; i++) {
-          const btn = document.createElement('button');
-          btn.textContent = i;
-          btn.className = 'btn ' + (i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-          btn.addEventListener('click', () => {
-            paginaActual = i;
-            mostrarPagina(paginaActual, datosFiltrados);
-            crearPaginacion(datosFiltrados);
-          });
-          pagDiv.appendChild(btn);
-        }
-        // Botón "Última página"
-        const btnUltima = document.createElement('button');
-        btnUltima.innerHTML = '⏭️';
-        btnUltima.className = 'btn btn-outline-primary';
-        btnUltima.disabled = paginaActual === totalPaginas;
-        btnUltima.addEventListener('click', () => {
-          paginaActual = totalPaginas;
-          mostrarPagina(paginaActual, datosFiltrados);
-          crearPaginacion(datosFiltrados);
-        });
-        pagDiv.appendChild(btnUltima);
-      }
-
-      function filtrarTabla() {
-        const texto = buscador.value.toLowerCase();
-        const filasFiltradas = filas.filter(fila => {
-          return Array.from(fila.cells).some(celda =>
-            celda.textContent.toLowerCase().includes(texto)
-          );
-        });
-        paginaActual = 1;
-        mostrarPagina(paginaActual, filasFiltradas);
-        crearPaginacion(filasFiltradas);
-      }
-
-      buscador.addEventListener('input', filtrarTabla);
-      filtrarTabla();
-    }
-  });
-</script>
 <?php
 session_start();
 
@@ -103,9 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<script>alert('❌ Error: Solo se permiten archivos PDF.'); window.location.href='plantillaUsers.php?vista=plantillas';</script>";
             exit;
         }
-        
-        // Generar un UUID para la plantilla
-        $uuid = uniqid();
+      
 
         // Obtener consultor_id desde la sesión
         $stmt = $conexion->prepare("SELECT id FROM consultores WHERE usuario_id = (SELECT id_usuarios FROM usuarios WHERE correo = ?)");
@@ -196,8 +119,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 $vista = $_GET['vista'] ?? 'archivos';
-?>
 
+// Paginación
+$pagina_actual = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$filas_por_pagina = 10;
+$inicio = ($pagina_actual - 1) * $filas_por_pagina;
+
+function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
+    if ($total_paginas <= 1) {
+        return '';
+    }
+
+    $html = '<div class="d-flex justify-content-center gap-2">';
+
+    // Botón "Primera"
+    $disabled_primera = $pagina_actual <= 1 ? 'disabled' : '';
+    $html .= '<a href="' . $url_base . '&pagina=1" class="btn btn-outline-primary btn-paginacion ' . $disabled_primera . '">⏮️</a>';
+
+    // Botón "Anterior"
+    $disabled_anterior = $pagina_actual <= 1 ? 'disabled' : '';
+    $html .= '<a href="' . $url_base . '&pagina=' . ($pagina_actual - 1) . '" class="btn btn-outline-primary btn-paginacion ' . $disabled_anterior . '">‹</a>';
+
+
+    // Números de página
+    for ($i = 1; $i <= $total_paginas; $i++) {
+        $active_class = $i == $pagina_actual ? 'btn-primary active-paginacion' : 'btn-outline-primary';
+        $html .= '<a href="' . $url_base . '&pagina=' . $i . '" class="btn btn-paginacion ' . $active_class . '">' . $i . '</a>';
+    }
+
+    // Botón "Siguiente"
+    $disabled_siguiente = $pagina_actual >= $total_paginas ? 'disabled' : '';
+    $html .= '<a href="' . $url_base . '&pagina=' . ($pagina_actual + 1) . '" class="btn btn-outline-primary btn-paginacion ' . $disabled_siguiente . '">›</a>';
+
+    // Botón "Última"
+    $disabled_ultima = $pagina_actual >= $total_paginas ? 'disabled' : '';
+    $html .= '<a href="' . $url_base . '&pagina=' . $total_paginas . '" class="btn btn-outline-primary btn-paginacion ' . $disabled_ultima . '">⏭️</a>';
+
+
+    $html .= '</div>';
+    return $html;
+}
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -210,11 +172,6 @@ $vista = $_GET['vista'] ?? 'archivos';
   <!-- Bootstrap Icons -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 </head>
-
-
-
-</head>
-
 <body class="stencilBody sin-scroll">
   <main class="stencil container-fluid p-0 overflow-hidden">
     <nav class="indexStencil">
@@ -379,7 +336,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
   <!-- Modal Crear Consultor -->
   <div class="modal fade" id="crearConsultorModal" tabindex="-1" aria-labelledby="crearConsultorLabel" aria-hidden="true">
     <div class="modal-dialog">
-      <form method="POST" action="crear_consultor.php" onsubmit="return validarContrasenas('consultor')">
+      <form method="POST" action="crear_consultor.php" id="formCrearConsultor" onsubmit="return validarContrasenas('consultor')">
         <div class="modal-content">
           <div class="modal-header bg-mi-color text-white">
             <h5 class="modal-title" id="crearConsultorLabel">Crear Consultor</h5>
@@ -482,421 +439,55 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 
 </body>
 <script>
-  let seccionActual = null;
-  let usuariosData = [];
-  let consultoresData = [];
-  let proveedoresData = [];
-  let plantillasData = [];
-  let archivosData = [];
-  let usuariosPorPagina = 10;
-  let consultoresPorPagina = 10;
-  let proveedoresPorPagina = 10;
-  let plantillasPorPagina = 10;
-  let archivosPorPagina = 10;
-  let paginaActual = 1;
-
-  const botones = document.querySelectorAll('.cajaArchivos button[data-section], .cajaArchivos a[data-section]');
-  let buscador = document.getElementById('buscadorUsuarios');
-  const contenedor = document.getElementById('contenido-dinamico');
-
-  // Reasignar el buscador tras renderizar cada tabla dinámica
-  function rebindBuscador() {
-    buscador = document.getElementById('buscadorUsuarios');
-    if (buscador) {
-      buscador.placeholder = placeholders[seccionActual] || placeholders.default;
-      // Remove previous event listeners by resetting the input's value and event
-      buscador.oninput = null;
-      buscador.addEventListener('input', function () {
-        const texto = buscador.value.trim().toLowerCase();
-        let filtrados = [];
-        switch (seccionActual) {
-          case "usuarios":
-            filtrados = usuariosData.filter(user =>
-              (user.nombre && user.nombre.toLowerCase().includes(texto)) ||
-              (user.correo && user.correo.toLowerCase().includes(texto)) ||
-              (user.rol && user.rol.toLowerCase().includes(texto))
-            );
-            renderizarUsuarios(filtrados);
-            break;
-          case "consultores":
-            filtrados = consultoresData.filter(c =>
-              (c.nombre && c.nombre.toLowerCase().includes(texto)) ||
-              (c.correo && c.correo.toLowerCase().includes(texto)) ||
-              (c.rol && c.rol.toLowerCase().includes(texto))
-            );
-            renderizarConsultores(filtrados);
-            break;
-          case "proveedores":
-            filtrados = proveedoresData.filter(p =>
-              (p.nombre_empresa && p.nombre_empresa.toLowerCase().includes(texto)) ||
-              (p.email && p.email.toLowerCase().includes(texto))
-            );
-            renderizarProveedores(filtrados);
-            break;
-          case "plantillas":
-            filtrados = plantillasData.filter(pl =>
-              (pl.nombre_archivo && pl.nombre_archivo.toLowerCase().includes(texto))
-            );
-            renderizarPlantillas(filtrados);
-            break;
-          case "archivos":
-            filtrados = archivosData.filter(a =>
-              (a.nombre_archivo && a.nombre_archivo.toLowerCase().includes(texto)) ||
-              (a.archivo_url && a.archivo_url.toLowerCase().includes(texto)) ||
-              (a.revision_estado && a.revision_estado.toLowerCase().includes(texto)) ||
-              (a.fecha_subida && a.fecha_subida.toLowerCase().includes(texto)) ||
-              (a.correo_proveedor && a.correo_proveedor.toLowerCase().includes(texto))
-            );
-            renderizarArchivos(filtrados);
-            break;
-        }
-        paginaActual = 1;
-      });
+  document.getElementById('formCrearConsultor').addEventListener('submit', function(e) {
+    // Validación básica de contraseñas
+    const password = document.getElementById('contrasenaConsultor').value;
+    const repeat_password = document.getElementById('contrasenaConsultor2').value;
+    
+    if (password !== repeat_password) {
+        e.preventDefault();
+        alert('Las contraseñas no coinciden');
+        return false;
     }
-  }
-
-  const placeholders = {
-    usuarios: "Buscar usuario...",
-    archivos: "Buscar archivo...",
-    consultores: "Buscar consultor...",
-    proveedores: "Buscar proveedor...",
-    plantillas: "Buscar plantilla...",
-    default: "Buscar..."
-  };
-
-  function actualizarPlaceholder(seccion) {
-    if (buscador) {
-      buscador.placeholder = placeholders[seccion] || placeholders.default;
+    
+    // Validación de campos obligatorios
+    const correo = document.getElementById('correoConsultor').value;
+    
+    if (!correo || !password) {
+        e.preventDefault();
+        alert('Todos los campos son obligatorios');
+        return false;
     }
-  }
-
-  // Eliminado el listener global para evitar duplicidad y conflictos
-
-  botones.forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      const section = btn.getAttribute('data-section');
-      seccionActual = section;
-      actualizarPlaceholder(section);
-
-      switch (section) {
-        case 'usuarios':
-          if (userRol !== 'administrador') {
-            contenedor.innerHTML = `<div class="alert alert-danger">No tienes permisos para ver usuarios.</div>`;
-          } else {
-            cargarUsuarios();
-          }
-          break;
-        case 'archivos':
-          cargarArchivos(); break;
-        case 'consultores':
-          cargarConsultores(); break;
-        case 'proveedores':
-          cargarProveedores(); break;
-        case 'plantillas':
-          cargarPlantillas(); break;
-        default:
-          contenedor.innerHTML = `<p>Sección desconocida</p>`;
-      }
-    });
-  });
-
-  // Usuarios
-  function cargarUsuarios() {
-    contenedor.innerHTML = `<p>Cargando usuarios...</p>`;
-    fetch('http://localhost/NIS2/api/models/Usuario.php')
-      .then(res => res.json())
-      .then(data => {
-        usuariosData = data;
-        paginaActual = 1;
-        renderizarUsuarios(usuariosData);
-      })
-      .catch(err => {
-        console.error(err);
-        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar usuarios.</div>`;
-      });
-  }
-  function renderizarUsuarios(data = []) {
-    const inicio = (paginaActual - 1) * usuariosPorPagina;
-    const fin = inicio + usuariosPorPagina;
-    let tabla = `
-    <table class="table table-bordered mt-3" id="tablaUsuarios">
-      <thead>
-        <tr><th>Correo</th><th>Nombre</th><th>Rol</th></tr>
-      </thead>
-      <tbody>
-        ${data.slice(inicio, fin).map(u => `
-          <tr>
-            <td>${u.correo}</td>
-            <td>${u.nombre}</td>
-            <td>${u.rol}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
-    contenedor.innerHTML = `
-      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
-        <span class="input-group-text">
-          <img src="../assets/img/search.png" alt="Buscar">
-        </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-      </div>
-      ` + tabla;
-    renderizarPaginacion(data, renderizarUsuarios);
-    rebindBuscador();
-  }
-
-  // Consultores
-  function cargarConsultores() {
-    contenedor.innerHTML = `<p>Cargando consultores...</p>`;
-    fetch('http://localhost/NIS2/api/models/Consultor.php')
-      .then(res => res.json())
-      .then(data => {
-        consultoresData = data;
-        paginaActual = 1;
-        renderizarConsultores(consultoresData);
-      })
-      .catch(err => {
-        console.error(err);
-        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar consultores.</div>`;
-      });
-  }
-  function renderizarConsultores(data = []) {
-    const inicio = (paginaActual - 1) * consultoresPorPagina;
-    const fin = inicio + consultoresPorPagina;
-    const consultoresPagina = data.slice(inicio, fin);
-    let tabla = `
-    <table class="table table-bordered mt-3">
-      <thead>
-        <tr><th>Correo</th><th>Nombre</th><th>Rol</th></tr>
-      </thead>
-      <tbody>
-        ${consultoresPagina.map(c => `
-          <tr>
-            <td>${c.correo}</td>
-            <td>${c.nombre}</td>
-            <td>${c.rol}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
-    contenedor.innerHTML = `
-      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
-        <span class="input-group-text">
-          <img src="../assets/img/search.png" alt="Buscar">
-        </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-      </div>
-      ` + tabla;
-    renderizarPaginacion(data, renderizarConsultores);
-    rebindBuscador();
-  }
-
-  // Proveedores
-  function cargarProveedores() {
-    contenedor.innerHTML = `<p>Cargando proveedores...</p>`;
-    fetch('http://localhost/NIS2/api/models/Proveedor.php')
-      .then(res => res.json())
-      .then(data => {
-        proveedoresData = data;
-        paginaActual = 1;
-        renderizarProveedores(proveedoresData);
-      })
-      .catch(err => {
-        console.error(err);
-        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar proveedores.</div>`;
-      });
-  }
-  function renderizarProveedores(data = []) {
-    const inicio = (paginaActual - 1) * proveedoresPorPagina;
-    const fin = inicio + proveedoresPorPagina;
-    const proveedoresPagina = data.slice(inicio, fin);
-    let tabla = `
-    <table class="table table-bordered mt-3">
-      <thead>
-        <tr><th>Email</th><th>Empresa</th></tr>
-      </thead>
-      <tbody>
-        ${proveedoresPagina.map(p => `
-          <tr>
-            <td>${p.email}</td>
-            <td>${p.nombre_empresa}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
-    contenedor.innerHTML = `
-      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
-        <span class="input-group-text">
-          <img src="../assets/img/search.png" alt="Buscar">
-        </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-      </div>
-      ` + tabla;
-    renderizarPaginacion(data, renderizarProveedores);
-    rebindBuscador();
-  }
-
-  // Plantillas
-  function cargarPlantillas() {
-    contenedor.innerHTML = `<p>Cargando plantillas...</p>`;
-    fetch('http://localhost/NIS2/api/models/get_archivos.php?tipo=plantillas')
-      .then(res => res.json())
-      .then(data => {
-        plantillasData = data;
-        paginaActual = 1;
-        renderizarPlantillas(plantillasData);
-      })
-      .catch(err => {
-        console.error(err);
-        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar plantillas.</div>`;
-      });
-  }
-  function renderizarPlantillas(data = []) {
-    const inicio = (paginaActual - 1) * plantillasPorPagina;
-    const fin = inicio + plantillasPorPagina;
-    const plantillasPagina = data.slice(inicio, fin);
-    let tabla = `
-    <table class="table table-bordered mt-3">
-      <thead>
-        <tr><th>Nombre archivo</th></tr>
-      </thead>
-      <tbody>
-        ${plantillasPagina.map(pl => `
-          <tr>
-            <td>${pl.nombre_archivo}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>
-  `;
-    contenedor.innerHTML = `
-      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
-        <span class="input-group-text">
-          <img src="../assets/img/search.png" alt="Buscar">
-        </span>
-        <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios">
-      </div>
-      ` + tabla;
-    renderizarPaginacion(data, renderizarPlantillas);
-    rebindBuscador();
-  }
-
-  // Archivos
-  function cargarArchivos() {
-    contenedor.innerHTML = `<p>Cargando archivos...</p>`;
-    fetch('http://localhost/NIS2/api/models/get_archivos.php?tipo=archivos')
-      .then(res => res.json())
-      .then(data => {
-        archivosData = data;
-        paginaActual = 1;
-        renderizarArchivos(archivosData);
-      })
-      .catch(err => {
-        console.error(err);
-        contenedor.innerHTML = `<div class="alert alert-danger">Error al cargar archivos.</div>`;
-      });
-  }
-  function renderizarArchivos(data = []) {
-    const inicio = (paginaActual - 1) * archivosPorPagina;
-    const fin = inicio + archivosPorPagina;
-    const esAdmin = data.length > 0 && data[0].correo_proveedor !== undefined;
-    let tabla = `<table class="table table-bordered mt-3" id="tablaArchivos">
-      <thead>
-        <tr>
-          <th>Nombre archivo</th>
-          ${esAdmin ? '<th>UUID</th><th>Proveedor</th>' : ''}
-          <th>Fecha</th>
-          <th>Estado</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${data.slice(inicio, fin).map(a => `
-          <tr>
-            <td>${a.nombre_archivo}</td>
-            ${esAdmin ? `<td>${a.id}</td><td>${a.correo_proveedor ?? 'Desconocido'}</td>` : ''}
-            <td>${a.fecha_subida}</td>
-            <td>${a.revision_estado}</td>
-          </tr>`).join('')}
-      </tbody>
-    </table>
-    <div id="paginacion" class="mt-3 d-flex justify-content-center gap-2"></div>`;
-    contenedor.innerHTML = `
-      <div class="input-group" style="max-width: 300px; margin-top: 10px;">
-        <span class="input-group-text">
-          <img src="../assets/img/search.png" alt="Buscar">
-        </span>
-        <input type="text" class="form-control" placeholder="Buscar archivo..." id="buscadorUsuarios">
-      </div>
-      ` + tabla;
-    // El filtrado se hace en memoria, igual que en las demás vistas
-    renderizarPaginacion(data, renderizarArchivos);
-    rebindBuscador();
-  }
-
-  function renderizarPaginacion(data, renderFunction) {
-    let porPagina = usuariosPorPagina;
-    if (renderFunction === renderizarUsuarios) porPagina = usuariosPorPagina;
-    else if (renderFunction === renderizarConsultores) porPagina = consultoresPorPagina;
-    else if (renderFunction === renderizarProveedores) porPagina = proveedoresPorPagina;
-    else if (renderFunction === renderizarPlantillas) porPagina = plantillasPorPagina;
-    else if (renderFunction === renderizarArchivos) porPagina = archivosPorPagina;
-    let totalPaginas = Math.ceil(data.length / porPagina);
-    if (totalPaginas < 1) totalPaginas = 1; // Siempre al menos una página
-    const pagDiv = document.getElementById("paginacion");
-    pagDiv.innerHTML = '';
-    for (let i = 1; i <= totalPaginas; i++) {
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.classList.add('btn', i === paginaActual ? 'btn-primary' : 'btn-outline-primary');
-      btn.addEventListener('click', () => {
-        paginaActual = i;
-        renderFunction(data);
-      });
-      pagDiv.appendChild(btn);
+    
+    return true;
+});
+document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
+    // Validación básica de contraseñas
+    const contrasena = document.getElementById('contrasenaProveedor').value;
+    const contrasena2 = document.getElementById('contrasenaProveedor2').value;
+    
+    if (contrasena !== contrasena2) {
+        e.preventDefault();
+        alert('Las contraseñas no coinciden');
+        return false;
     }
-  }
-
-  window.addEventListener('load', () => {
-    const vista = new URLSearchParams(window.location.search).get('vista') || 'archivos';
-    seccionActual = vista;
-    actualizarPlaceholder(vista);
-    switch (vista) {
-      case 'usuarios': cargarUsuarios(); break;
-      case 'archivos': cargarArchivos(); break;
-      case 'consultores': cargarConsultores(); break;
-      case 'proveedores': cargarProveedores(); break;
-      case 'plantillas': cargarPlantillas(); break;
-      default: contenedor.innerHTML = `<p>Vista desconocida</p>`;
+    
+    // Validación de campos obligatorios
+    const correo = document.getElementById('correoProveedor').value;
+    const nombreEmpresa = document.getElementById('nombreEmpresa').value;
+    
+    if (!correo || !nombreEmpresa || !contrasena) {
+        e.preventDefault();
+        alert('Todos los campos son obligatorios');
+        return false;
     }
-  });
+    
+    // El formulario se enviará normalmente si pasa las validaciones
+    return true;
+});
+</script> <!-- Cierre correcto del script -->
 
-  document.getElementById('formCrearProveedor').addEventListener('submit', function (e) {
-    e.preventDefault();
-    if (!validarContrasenas('proveedor')) return;
-    const formData = new FormData(this);
-    fetch('../pages/crear_proveedor.php', {
-      method: 'POST',
-      body: formData
-    })
-      .then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          const modal = bootstrap.Modal.getInstance(document.getElementById('crearProveedorModal'));
-          modal.hide();
-        } else {
-          alert('Error: ' + data.message);
-        }
-      })
-      .catch(error => {
-        console.error('Error:', error);
-      });
-  });
-
-  <script src="../assets/js/popup.js"></script>
+<script src="../assets/js/popup.js"></script>
 <script src="../assets/js/script.js"></script>
 <script src="../assets/js/sortable-tables.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
