@@ -17,19 +17,10 @@ $stmt->bind_result($ruta_relativa, $nombre_archivo);
 if ($stmt->fetch()) {
     $stmt->close();
 
-    // Construimos la ruta física al archivo en el servidor
+    $ruta_archivo = realpath(__DIR__ . '/../' . $ruta_relativa);
 
-$ruta_archivo = realpath(__DIR__ . '/../documentos_subidos/admin@nis2.com/');
-
-if ($ruta_archivo && file_exists($ruta_archivo)) {
-    echo "Archivo encontrado. Intentando descarga...";
-    // Código de descarga aquí
-} else {
-    echo "Archivo no encontrado.";
-}
-
-      if ($ruta_archivo && file_exists($ruta_archivo)){
-        // Fuerza descarga
+    if ($ruta_archivo && file_exists($ruta_archivo)) {
+        // Forzar descarga
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
         header('Content-Disposition: attachment; filename="' . basename($nombre_archivo) . '"');
@@ -41,8 +32,8 @@ if ($ruta_archivo && file_exists($ruta_archivo)) {
         readfile($ruta_archivo);
         exit;
     } else {
-        die("Archivo no encontrado en el servidor.");
+        die("❌ Archivo no encontrado en el servidor.");
     }
 } else {
-    die("Archivo no encontrado en la base de datos.");
+    die("❌ Archivo no encontrado en la base de datos.");
 }
