@@ -97,11 +97,13 @@ if (!$result) {
               </a>
 
               <!-- Botón para eliminar -->
-              <button class="btn btn-sm btn-danger"
-                      onclick="mostrarModalEliminarPlantilla('<?= addslashes($nombre) ?>', '<?= addslashes($uuid_raw) ?>')"
-                      <?= empty($uuid_raw) ? 'disabled' : '' ?>>
+              <button class="btn btn-sm btn-danger btn-eliminar"
+                      <?= empty($uuid_raw) ? 'disabled' : '' ?>
+                      data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
+                      data-uuid="<?= htmlspecialchars($uuid_raw, ENT_QUOTES) ?>">
                 <i class="bi bi-trash"></i>
               </button>
+
             </td>
 
             <?php $i++; ?>
@@ -140,45 +142,59 @@ if (!$result) {
   </div>
 
   <script>
+document.querySelector('.plantillas-table tbody').addEventListener('click', function(e) {
+  const btn = e.target.closest('button.btn-eliminar');
+  if (!btn || btn.disabled) return;  // Ignorar si no es botón eliminar o está deshabilitado
 
-    function mostrarModalEliminarPlantilla(nombre, uuid) {
-        const modalElement = document.getElementById('modalEliminarPlantilla');
-        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        
-        const textoModal = document.getElementById('eliminarPlantillaTexto');
-        const btnConfirmar = document.getElementById('btnConfirmarEliminarPlantilla');
+  const nombre = btn.getAttribute('data-nombre');
+  const uuid = btn.getAttribute('data-uuid');
 
-        textoModal.textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
-        
-        btnConfirmar.onclick = function() {
-            fetch('eliminar_plantilla.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `uuid=${encodeURIComponent(uuid)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const filaParaEliminar = document.querySelector(`tr[data-uuid="${uuid}"]`);
-                    if (filaParaEliminar) {
-                        filaParaEliminar.remove();
-                    }
-                    modal.hide();
-                } else {
-                    alert('Error al eliminar la plantilla: ' + (data.error || 'Error desconocido'));
+  if (!uuid) return; // No hacemos nada si no hay uuid
+
+  mostrarModalEliminarPlantilla(nombre, uuid);
+});
+
+function mostrarModalEliminarPlantilla(nombre, uuid) {
+    const modalElement = document.getElementById('modalEliminarPlantilla');
+    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+    
+    const textoModal = document.getElementById('eliminarPlantillaTexto');
+    textoModal.textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
+
+    const btnConfirmarAntiguo = document.getElementById('btnConfirmarEliminarPlantilla');
+    const btnConfirmarNuevo = btnConfirmarAntiguo.cloneNode(true);
+    btnConfirmarAntiguo.parentNode.replaceChild(btnConfirmarNuevo, btnConfirmarAntiguo);
+
+    btnConfirmarNuevo.addEventListener('click', function () {
+        fetch('eliminar_plantilla.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `uuid=${encodeURIComponent(uuid)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const filaParaEliminar = document.querySelector(`tr[data-uuid="${uuid}"]`);
+                if (filaParaEliminar) {
+                    filaParaEliminar.remove();
                 }
-            })
-            .catch(error => {
-                console.error('Error en la petición de eliminación:', error);
-                alert('Ocurrió un error de red. Por favor, inténtalo de nuevo.');
-            });
-        };
+                modal.hide();
+            } else {
+                alert('Error al eliminar la plantilla: ' + (data.error || 'Error desconocido'));
+            }
+        })
+        .catch(error => {
+            console.error('Error en la petición de eliminación:', error);
+            alert('Ocurrió un error de red. Por favor, inténtalo de nuevo.');
+        });
+    });
 
-        modal.show();
-    }
+    modal.show();
+}
+
   </script>
-
+  
 </body>
 </html>
