@@ -21,7 +21,8 @@ $usuario_id = $_SESSION['id_usuario'];
 $prov_id = $_SESSION['proveedor_id'] ?? null;
 
 // Consulta para archivos según el rol
-if ($rol === 'administrador') {
+if ($rol === 'administrador' || $rol === 'consultor') {
+    // ADMINISTRADOR y CONSULTOR ven todos los archivos
     $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos";
     $result_total = $conexion->query($sql_total);
     $total_filas = $result_total->fetch_assoc()['total'];
@@ -29,10 +30,15 @@ if ($rol === 'administrador') {
     $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
             ORDER BY a.fecha_subida DESC
-            LIMIT $inicio, $filas_por_pagina";
-    $archivosRes = $conexion->query($sql);
+            LIMIT ?, ?";
+    
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("ii", $inicio, $filas_por_pagina);
+    $stmt->execute();
+    $archivosRes = $stmt->get_result();
 
 } elseif ($rol === 'proveedor') {
+    // PROVEEDOR solo ve archivos propios
     $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos WHERE proveedor_id = ?";
     $stmt_total = $conexion->prepare($sql_total);
     $stmt_total->bind_param("i", $prov_id);
@@ -43,9 +49,10 @@ if ($rol === 'administrador') {
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
             WHERE a.proveedor_id = ?
             ORDER BY a.fecha_subida DESC
-            LIMIT $inicio, $filas_por_pagina";
+            LIMIT ?, ?";
+    
     $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("i", $prov_id);
+    $stmt->bind_param("iii", $prov_id, $inicio, $filas_por_pagina);
     $stmt->execute();
     $archivosRes = $stmt->get_result();
 }
@@ -74,15 +81,6 @@ if (!$plantillasRes) {
     .pagination-container { margin-top: 15px; }
     .modal-header { background-color: #0d6efd; color: white; }
     .btn-close-white { filter: invert(1); }
-    
-  /* Estilo para que los botones de acciones estén en línea horizontal */
-  td[data-no-sort] {
-    white-space: nowrap;
-    display: flex;
-    gap: 0.25rem; /* espacio entre botones */
-    align-items: center;
-    justify-content: start;
-  }
 </style>
 
 </head>
@@ -234,7 +232,7 @@ echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
 </div>
 
 
-  <script>
+<script>
 function mostrarModalEliminarArchivo(id, nombreArchivo) {
   const modalElement = document.getElementById('modalEliminarArchivo');
   const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
@@ -290,8 +288,6 @@ document.getElementById('formSubirArchivo')?.addEventListener('submit', function
     submitBtn.innerHTML = '<i class="bi bi-upload"></i> Subir Archivo';
   });
 });
-
-
 </script>
 </body>
 </html> 
