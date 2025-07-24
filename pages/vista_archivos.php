@@ -132,9 +132,9 @@ if (!$plantillasRes) {
 <?php if ($rol !== 'consultor'): ?>
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
-        <div class="modal-header">
+    <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
           <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Nuevo Archivo</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
@@ -144,7 +144,7 @@ if (!$plantillasRes) {
             <input type="file" class="form-control" id="archivo" name="archivo" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
             <div class="form-text">Formatos permitidos: PDF, Word, Excel, imágenes</div>
           </div>
-          
+
           <div class="mb-3">
             <label for="plantilla_id" class="form-label fw-bold">Plantilla Asociada</label>
             <select name="plantilla_id" id="plantilla_id" class="form-select" required>
@@ -160,9 +160,9 @@ if (!$plantillasRes) {
               <?php endif; ?>
             </select>
           </div>
-          
+
           <div id="mensajeRespuesta" class="alert d-none"></div>
-          
+
           <input type="hidden" name="usuario_id" value="<?= htmlspecialchars($usuario_id) ?>">
           <input type="hidden" name="proveedor_id" value="<?= htmlspecialchars($prov_id) ?>">
         </div>
@@ -174,15 +174,10 @@ if (!$plantillasRes) {
             <i class="bi bi-upload"></i> Subir Archivo
           </button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 </div>
-<?php endif; ?>
-
-<!-- Mensaje para consultores -->
-<?php if ($rol === 'consultor'): ?>
-  <div class="alert alert-warning">Los consultores no pueden subir archivos.</div>
 <?php endif; ?>
 
 <!-- Tabla principal de archivos -->

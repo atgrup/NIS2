@@ -222,10 +222,11 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
       <div class="d-flex align-items-center flex-wrap gap-2 mt-3 px-3" style="padding-bottom: 1.5rem;">
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
-            <form method="POST" enctype="multipart/form-data" class="d-inline">
-              <label for="archivo" class="btn bg-mi-color w-100">Subir archivo</label>
-              <input type="file" name="archivo" id="archivo-upload" class="d-none" onchange="this.form.submit()" required>
-            </form>
+             <div class="mb-3">
+              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
+                Subir Archivo
+              </button>
+            </div>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
             <form method="POST" enctype="multipart/form-data" class="d-inline mb-3">
