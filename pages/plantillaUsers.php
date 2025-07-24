@@ -28,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             echo "<script>alert('❌ Error: Solo se permiten archivos PDF.'); window.location.href='plantillaUsers.php?vista=plantillas';</script>";
             exit;
         }
-      
 
         // Obtener consultor_id desde la sesión
         $stmt = $conexion->prepare("SELECT id FROM consultores WHERE usuario_id = (SELECT id_usuarios FROM usuarios WHERE correo = ?)");
@@ -51,71 +50,76 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute();
             $stmt->close();
 
-            echo "<script>alert('✅ Plantilla subida correctamente'); window.location.href='plantillaUsers.php?vista=plantillas';</script>";
+            echo "<script>window.location.href='plantillaUsers.php?vista=plantillas';</script>";
             exit;
         } else {
             echo "<script>alert('❌ Error al mover la plantilla');</script>";
         }
     }
-    // Manejar subida de archivos
-    elseif (isset($_FILES['archivo'])) {
-        $archivo = $_FILES['archivo'];
-        $nombre_original = basename($archivo['name']);
-        $nombre_archivo = time() . "_" . $nombre_original;
+// Manejar subida de archivos
+elseif (isset($_FILES['archivo'])) {
+    $archivo = $_FILES['archivo'];
+    $nombre_original = basename($archivo['name']);
+    $extension = strtolower(pathinfo($nombre_original, PATHINFO_EXTENSION));
+    
+    // Validar solo PDF
+    if ($extension !== 'pdf') {
+        echo "<script>alert('❌ Error: Solo se permiten archivos PDF.'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
+        exit;
+    }
 
-        // Obtener usuario_id desde la tabla usuarios
-        $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
-        $stmt->bind_param("s", $correo);
+    $nombre_archivo = time() . "_" . $nombre_original;
+
+    // Obtener usuario_id desde la tabla usuarios
+    $stmt = $conexion->prepare("SELECT id_usuarios, tipo_usuario_id FROM usuarios WHERE correo = ?");
+    $stmt->bind_param("s", $correo);
+    $stmt->execute();
+    $stmt->bind_result($usuario_id, $rol_db);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Inicializar proveedor_id como null
+    $proveedor_id = null;
+
+    // Si el rol es proveedor, obtener proveedor_id
+    if (strtolower($rol_db) === 'proveedor') {
+        $stmt = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
+        $stmt->bind_param("i", $usuario_id);
         $stmt->execute();
-        $stmt->bind_result($usuario_id, $rol_db);
+        $stmt->bind_result($proveedor_id);
         $stmt->fetch();
         $stmt->close();
-
-        // Inicializar proveedor_id como null
-        $proveedor_id = null;
-
-        // Si el rol es proveedor, obtener proveedor_id
-        if (strtolower($rol_db) === 'proveedor') {
-            $stmt = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
-            $stmt->bind_param("i", $usuario_id);
-            $stmt->execute();
-            $stmt->bind_result($proveedor_id);
-            $stmt->fetch();
-            $stmt->close();
-        }
-
-        $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
-        $carpeta_url = 'documentos_subidos/' . $correo;
-
-        if (!is_dir($carpeta_usuario)) {
-            mkdir($carpeta_usuario, 0775, true);
-        }
-
-        $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
-        $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
-
-        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-            $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
-            if ($proveedor_id !== null) {
-                $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-            } else {
-                $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
-            }
-            $stmt->execute();
-            $stmt->close();
-
-            echo "<script>alert('✅ Archivo subido correctamente'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
-            exit;
-        } else {
-            echo "<script>alert('❌ Error al mover el archivo');</script>";
-        }
-    } else {
-        if (isset($_POST) && !empty($_POST)) {
-             // No es una subida de fichero, puede ser otra cosa
-        } else {
-            echo "<script>alert('❌ No se ha seleccionado archivo');</script>";
-        }
     }
+
+    $carpeta_usuario = __DIR__ . '/../documentos_subidos/' . $correo;
+    $carpeta_url = 'documentos_subidos/' . $correo;
+
+    if (!is_dir($carpeta_usuario)) {
+        mkdir($carpeta_usuario, 0775, true);
+    }
+
+    $ruta_fisica = $carpeta_usuario . '/' . $nombre_archivo;
+    $ruta_para_bd = $carpeta_url . '/' . $nombre_archivo;
+
+    if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
+        $stmt = $conexion->prepare("INSERT INTO archivos_subidos (proveedor_id, archivo_url, nombre_archivo, revision_estado) VALUES (?, ?, ?, 'pendiente')");
+        // proveedor_id puede ser null, usar bind_param según corresponda
+        if ($proveedor_id !== null) {
+            $stmt->bind_param("iss", $proveedor_id, $ruta_para_bd, $nombre_original);
+        } else {
+            // Para null, hay que pasar un valor NULL y usar "iss" sigue correcto porque proveedor_id es int nullable
+            $null = null;
+            $stmt->bind_param("iss", $null, $ruta_para_bd, $nombre_original);
+        }
+        $stmt->execute();
+        $stmt->close();
+
+        echo "<script>alert('✅ Archivo subido correctamente'); window.location.href='plantillaUsers.php?vista=archivos';</script>";
+        exit;
+    } else {
+        echo "<script>alert('❌ Error al mover el archivo');</script>";
+    }
+  }
 }
 
 $vista = $_GET['vista'] ?? 'archivos';
@@ -458,7 +462,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
         alert('Todos los campos son obligatorios');
         return false;
     }
-    
+    console.log('Formulario validado correctamente. Enviando...');
     return true;
 });
 document.getElementById('formCrearProveedor').addEventListener('submit', function(e) {
