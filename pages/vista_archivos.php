@@ -11,34 +11,6 @@ if (!file_exists($ruta_conexion)) {
 }
 require $ruta_conexion;
 
-// Manejo de eliminación directa
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['eliminar_archivo'])) {
-    $id_eliminar = (int)$_POST['id_archivo'];
-    
-    try {
-        if ($_SESSION['rol'] === 'administrador') {
-            $sql = "DELETE FROM archivos_subidos WHERE id = ?";
-            $stmt = $conexion->prepare($sql);
-            $stmt->bind_param("i", $id_eliminar);
-        } elseif ($_SESSION['rol'] === 'proveedor') {
-            $sql = "DELETE FROM archivos_subidos WHERE id = ? AND proveedor_id = ?";
-            $stmt = $conexion->prepare($sql);
-            $stmt->bind_param("ii", $id_eliminar, $_SESSION['proveedor_id']);
-        }
-        
-        if (isset($stmt) && $stmt->execute()) {
-            $_SESSION['mensaje_exito'] = "Archivo eliminado correctamente";
-        } else {
-            $_SESSION['mensaje_error'] = "No se pudo eliminar el archivo";
-        }
-    } catch (Exception $e) {
-        $_SESSION['mensaje_error'] = "Error: " . $e->getMessage();
-    }
-    
-    header("Location: ".$_SERVER['PHP_SELF']);
-    exit;
-}
-
 // Mostrar mensajes
 $mensaje_exito = $_SESSION['mensaje_exito'] ?? null;
 $mensaje_error = $_SESSION['mensaje_error'] ?? null;
@@ -49,7 +21,8 @@ $usuario_id = $_SESSION['id_usuario'];
 $prov_id = $_SESSION['proveedor_id'] ?? null;
 
 // Consulta para archivos según el rol
-if ($rol === 'administrador') {
+if ($rol === 'administrador' || $rol === 'consultor') {
+    // ADMINISTRADOR y CONSULTOR ven todos los archivos
     $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos";
     $result_total = $conexion->query($sql_total);
     $total_filas = $result_total->fetch_assoc()['total'];
@@ -57,10 +30,15 @@ if ($rol === 'administrador') {
     $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
             ORDER BY a.fecha_subida DESC
-            LIMIT $inicio, $filas_por_pagina";
-    $archivosRes = $conexion->query($sql);
+            LIMIT ?, ?";
+    
+    $stmt = $conexion->prepare($sql);
+    $stmt->bind_param("ii", $inicio, $filas_por_pagina);
+    $stmt->execute();
+    $archivosRes = $stmt->get_result();
 
 } elseif ($rol === 'proveedor') {
+    // PROVEEDOR solo ve archivos propios
     $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos WHERE proveedor_id = ?";
     $stmt_total = $conexion->prepare($sql_total);
     $stmt_total->bind_param("i", $prov_id);
@@ -71,9 +49,10 @@ if ($rol === 'administrador') {
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
             WHERE a.proveedor_id = ?
             ORDER BY a.fecha_subida DESC
-            LIMIT $inicio, $filas_por_pagina";
+            LIMIT ?, ?";
+    
     $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("i", $prov_id);
+    $stmt->bind_param("iii", $prov_id, $inicio, $filas_por_pagina);
     $stmt->execute();
     $archivosRes = $stmt->get_result();
 }
@@ -84,7 +63,9 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
 if (!$plantillasRes) {
     die("Error en consulta de plantillas: " . $conexion->error);
 }
+
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -100,7 +81,8 @@ if (!$plantillasRes) {
     .pagination-container { margin-top: 15px; }
     .modal-header { background-color: #0d6efd; color: white; }
     .btn-close-white { filter: invert(1); }
-  </style>
+</style>
+
 </head>
 <body class="p-4">
 
@@ -118,23 +100,13 @@ if (!$plantillasRes) {
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 <?php endif; ?>
-
-<!-- Botón para abrir el modal -->
-
-
-<!-- Formulario oculto para eliminación -->
-<form id="formEliminarArchivo" method="post" style="display: none;">
-    <input type="hidden" name="eliminar_archivo" value="1">
-    <input type="hidden" name="id_archivo" id="id_archivo_a_eliminar">
-</form>
-
 <!-- Modal para subir archivos -->
 <?php if ($rol !== 'consultor'): ?>
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
-        <div class="modal-header">
+    <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
           <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Nuevo Archivo</h5>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
@@ -144,7 +116,7 @@ if (!$plantillasRes) {
             <input type="file" class="form-control" id="archivo" name="archivo" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
             <div class="form-text">Formatos permitidos: PDF, Word, Excel, imágenes</div>
           </div>
-          
+
           <div class="mb-3">
             <label for="plantilla_id" class="form-label fw-bold">Plantilla Asociada</label>
             <select name="plantilla_id" id="plantilla_id" class="form-select" required>
@@ -160,9 +132,9 @@ if (!$plantillasRes) {
               <?php endif; ?>
             </select>
           </div>
-          
+
           <div id="mensajeRespuesta" class="alert d-none"></div>
-          
+
           <input type="hidden" name="usuario_id" value="<?= htmlspecialchars($usuario_id) ?>">
           <input type="hidden" name="proveedor_id" value="<?= htmlspecialchars($prov_id) ?>">
         </div>
@@ -174,15 +146,10 @@ if (!$plantillasRes) {
             <i class="bi bi-upload"></i> Subir Archivo
           </button>
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   </div>
 </div>
-<?php endif; ?>
-
-<!-- Mensaje para consultores -->
-<?php if ($rol === 'consultor'): ?>
-  <div class="alert alert-warning">Los consultores no pueden subir archivos.</div>
 <?php endif; ?>
 
 <!-- Tabla principal de archivos -->
@@ -195,9 +162,9 @@ if (!$plantillasRes) {
           <th>Plantilla Asociada</th>
           <th>Fecha de Subida</th>
           <th>Empresa</th>
-        <th>Usuario</th>
+          <th>Usuario</th>
           <th>Estado de Revisión</th>
-          <th>Acciones</th>
+          <th data-no-sort>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -211,18 +178,22 @@ if (!$plantillasRes) {
             <td><?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?></td>
             <td>
               <!-- Botón para ver en nueva pestaña -->
-              <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
-                <i class="bi bi-eye"></i>
-              </a>
+              <!-- Poner bien la ruta de ver el documento, ya que depende del  -->
+            <?php 
+              $nombre = $row['nombre_archivo'];
+              $ruta_url = './documentos_subidos/' . urlencode($nombre);
+            ?>
+            <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
+              <i class="bi bi-eye"></i>
+            </a>
 
               <!-- Botón para eliminar -->
-              <button class="btn btn-sm btn-danger eliminar-archivo"
-                      data-id="<?= $row['id'] ?>"
-                      data-nombre="<?= htmlspecialchars($row['nombre_archivo']) ?>"
-                      onclick="mostrarModalEliminarArchivo(this.dataset.id, this.dataset.nombre)"
-                      title="Eliminar Archivo">
-                <i class="bi bi-trash"></i>
-              </button>
+            <button class="btn btn-sm btn-danger"
+                    onclick="mostrarModalEliminarArchivo('<?= $row['id'] ?>', '<?= htmlspecialchars($row['nombre_archivo'], ENT_QUOTES) ?>')"
+                    title="Eliminar Archivo">
+              <i class="bi bi-trash"></i>
+            </button>
+
             </td>
           </tr>
         <?php endwhile; ?>
@@ -237,65 +208,50 @@ $url_base = '?vista=archivos';
 echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
 ?>
  
-  <!-- Modal Confirmar Eliminación -->
-  <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header bg-mi-color text-white">
-          <h5 class="modal-title" id="modalEliminarPlantillaLabel">Eliminar Plantilla</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-        </div>
-        <div class="modal-body">
-          <p id="eliminarPlantillaTexto"></p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="button" class="btn btn-danger" id="btnConfirmarEliminarPlantilla">Eliminar</button>
-        </div>
+<!-- Modal Confirmar Eliminación de Archivo -->
+<div class="modal fade" id="modalEliminarArchivo" tabindex="-1" aria-labelledby="modalEliminarArchivoLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-mi-color text-white">
+        <h5 class="modal-title" id="modalEliminarArchivoLabel">Eliminar Archivo</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
+      <div class="modal-body">
+        <p id="eliminarArchivoTexto"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminarArchivo">Eliminar</button>
+      </div>
+       <!-- Aquí está el formulario oculto -->
+      <form id="formEliminarArchivo" action="eliminar_archivos.php" method="post">
+        <input type="hidden" name="id_archivo" id="id_archivo_a_eliminar">
+      </form>
     </div>
   </div>
+</div>
 
-  <script>
 
-    function mostrarModalEliminarArchivo(nombre) {
-        const modalElement = document.getElementById('modalEliminarArchivo');
-        const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-        
-        const textoModal = document.getElementById('eliminarPlantillaTexto');
-        const btnConfirmar = document.getElementById('btnConfirmarEliminarPlantilla');
+<script>
+function mostrarModalEliminarArchivo(id, nombreArchivo) {
+  const modalElement = document.getElementById('modalEliminarArchivo');
+  const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+  
+  document.getElementById('eliminarArchivoTexto').textContent = 
+    `¿Estás seguro de que deseas eliminar el archivo "${nombreArchivo}"?`;
+  
+  // Asigna el ID al campo oculto del formulario
+  document.getElementById('id_archivo_a_eliminar').value = id;
 
-        textoModal.textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
-        
-        btnConfirmar.onclick = function() {
-            fetch('eliminar_plantilla.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: `uuid=${encodeURIComponent(uuid)}`
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const filaParaEliminar = document.querySelector(`tr[data-uuid="${uuid}"]`);
-                    if (filaParaEliminar) {
-                        filaParaEliminar.remove();
-                    }
-                    modal.hide();
-                } else {
-                    alert('Error al eliminar la plantilla: ' + (data.error || 'Error desconocido'));
-                }
-            })
-            .catch(error => {
-                console.error('Error en la petición de eliminación:', error);
-                alert('Ocurrió un error de red. Por favor, inténtalo de nuevo.');
-            });
-        };
+  // Asigna la acción del botón "Eliminar"
+  document.getElementById('btnConfirmarEliminarArchivo').onclick = function () {
+    document.getElementById('formEliminarArchivo').submit();
+  };
 
-        modal.show();
-    }
-  </script>
+  modal.show();
+}
+</script>
+
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -332,8 +288,6 @@ document.getElementById('formSubirArchivo')?.addEventListener('submit', function
     submitBtn.innerHTML = '<i class="bi bi-upload"></i> Subir Archivo';
   });
 });
-
-
 </script>
 </body>
 </html> 
