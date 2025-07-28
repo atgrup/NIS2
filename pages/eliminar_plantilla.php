@@ -24,17 +24,17 @@ if (!$is_admin) {
     exit;
 }
 
-if (!isset($_POST['uuid'])) {
+if (!isset($_POST['id'])) {
     header('Content-Type: application/json');
-    echo json_encode(['success' => false, 'error' => 'missing_uuid']);
+    echo json_encode(['success' => false, 'error' => 'missing_id']);
     exit;
 }
 
-$uuid = trim($_POST['uuid']);
+$id = intval($_POST['id']);
 
-// 1. Obtener el nombre del archivo de la plantilla desde la base de datos
-$stmt = $conexion->prepare("SELECT nombre FROM plantillas WHERE uuid = ?");
-$stmt->bind_param("s", $uuid);
+// 1. Obtener el nombre del archivo
+$stmt = $conexion->prepare("SELECT nombre FROM plantillas WHERE id = ?");
+$stmt->bind_param("i", $id);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -43,26 +43,23 @@ if ($result->num_rows === 1) {
     $nombre_plantilla = $plantilla['nombre'];
     $stmt->close();
 
-    // 2. Eliminar el archivo físico
+    // 2. Eliminar archivo físico
     $ruta_archivo = dirname(__DIR__) . '/plantillas_disponibles/' . $nombre_plantilla;
     if (file_exists($ruta_archivo)) {
         unlink($ruta_archivo);
     }
 
-    // 3. Eliminar el registro de la base de datos
-    $stmtDelete = $conexion->prepare("DELETE FROM plantillas WHERE uuid = ?");
-    $stmtDelete->bind_param("s", $uuid);
+    // 3. Eliminar de la base de datos
+    $stmtDelete = $conexion->prepare("DELETE FROM plantillas WHERE id = ?");
+    $stmtDelete->bind_param("i", $id);
     if ($stmtDelete->execute()) {
-        header('Content-Type: application/json');
         echo json_encode(['success' => true]);
     } else {
-        header('Content-Type: application/json');
         echo json_encode(['success' => false, 'error' => 'db_error']);
     }
     $stmtDelete->close();
 } else {
     $stmt->close();
-    header('Content-Type: application/json');
     echo json_encode(['success' => false, 'error' => 'not_found']);
 }
 

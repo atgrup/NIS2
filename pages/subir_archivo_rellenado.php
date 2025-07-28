@@ -39,9 +39,18 @@ if ($rol === 'proveedor') {
 if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) {
     $archivo = $_FILES['archivo'];
     $nombre_original = basename($archivo['name']);
-    // Crear un nombre único para evitar colisiones
-    $nombre_unico = uniqid() . '_' . $nombre_original;
-    $ruta_destino = 'documentos_subidos/' . $nombre_unico;
+
+    // Carpeta con el correo tal cual (sin reemplazos)
+    $carpeta_usuario = $correo;
+    $ruta_usuario = 'documentos_subidos/' . $carpeta_usuario . '/';
+
+    // Crear carpeta si no existe
+    if (!is_dir('../' . $ruta_usuario)) {
+        mkdir('../' . $ruta_usuario, 0777, true);
+    }
+
+    // Guardar archivo con nombre original, sin nombre único
+    $ruta_destino = $ruta_usuario . $nombre_original;
 
     if (move_uploaded_file($archivo['tmp_name'], '../' . $ruta_destino)) {
         $plantilla_id = !empty($_POST['plantilla_id']) ? $_POST['plantilla_id'] : null;
@@ -53,8 +62,8 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
         ");
         $stmt->bind_param(
             "ssiii",
-            $nombre_original, // Guardamos el nombre original para mostrar
-            $ruta_destino,    // Guardamos la ruta con nombre único para descargar
+            $nombre_original, // nombre original para mostrar
+            $ruta_destino,    // ruta para descargar
             $proveedor_id,
             $usuario_id,
             $plantilla_id

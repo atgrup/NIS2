@@ -14,14 +14,14 @@ if (!$usuario_id) {
 }
 
 // Verificar si el usuario es administrador (tipo_usuario_id = 1)
+$tipo_usuario_id = null;
 $stmtAdmin = $conexion->prepare("SELECT tipo_usuario_id FROM usuarios WHERE id_usuarios = ?");
 $stmtAdmin->bind_param("i", $usuario_id);
 $stmtAdmin->execute();
 $stmtAdmin->bind_result($tipo_usuario_id);
-if ($stmtAdmin->fetch() && $tipo_usuario_id == 1) {
-  $is_admin = true;
-}
+$stmtAdmin->fetch();
 $stmtAdmin->close();
+
 
 // Consultar plantillas con nombre del consultor
 // Contar total de filas
@@ -31,7 +31,7 @@ $total_filas = $result_total->fetch_assoc()['total'];
 $total_paginas = ceil($total_filas / $filas_por_pagina);
 
 $sql = "
-  SELECT p.nombre, p.uuid, p.consultor_id, c.nombre AS nombre_consultor
+  SELECT p.id, p.nombre, p.consultor_id, c.nombre AS nombre_consultor
   FROM plantillas p
   LEFT JOIN consultores c ON p.consultor_id = c.id
   ORDER BY p.nombre
@@ -69,49 +69,35 @@ if (!$result) {
         </tr>
       </thead>
       <tbody>
-        <?php if ($result->num_rows > 0): ?>
-          <?php $i = 1; ?>
+       <?php if ($result->num_rows > 0): ?>
           <?php while ($row = $result->fetch_assoc()): ?>
             <?php
             $nombre = htmlspecialchars($row['nombre']);
-            $uuid_raw = $row['uuid'] ?? '';
-            $uuid_display = !empty($uuid_raw) ? htmlspecialchars($uuid_raw) : '<i>sin UUID</i>';
-
+            $id = $row['id'];
             $nombre_consultor_raw = $row['nombre_consultor'] ?? '';
-            if ($nombre_consultor_raw) {
-              $nombre_consultor_trimmed = trim(explode('@', $nombre_consultor_raw)[0]);
-            } else {
-              $nombre_consultor_trimmed = '<i>Sin consultor</i>';
-            }
-
+            $nombre_consultor_trimmed = $nombre_consultor_raw ? trim(explode('@', $nombre_consultor_raw)[0]) : '<i>Sin consultor</i>';
             $ruta_url = '../plantillas_disponibles/' . urlencode($nombre);
             ?>
-            <tr data-uuid="<?= $uuid_raw ?>">
+            <tr data-id="<?= $id ?>">
               <td><a href="<?= $ruta_url ?>" download class="text-reset text-decoration-underline"><?= $nombre ?></a></td>
               <td><?= $nombre_consultor_trimmed ?></td>
               <td>Plantilla</td>
-             <td class="text-center">
-              <!-- Botón para ver en nueva pestaña -->
-              <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
-                <i class="bi bi-eye"></i>
-              </a>
-
-              <!-- Botón para eliminar -->
-              <button class="btn btn-sm btn-danger btn-eliminar"
-                      <?= empty($uuid_raw) ? 'disabled' : '' ?>
-                      data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
-                      data-uuid="<?= htmlspecialchars($uuid_raw, ENT_QUOTES) ?>">
-                <i class="bi bi-trash"></i>
-              </button>
-
-            </td>
-
-            <?php $i++; ?>
+              <td class="text-center">
+                <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <?php if ($tipo_usuario_id !== 2): ?>
+                  <button class="btn btn-sm btn-danger btn-eliminar"
+                          data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
+                          data-id="<?= htmlspecialchars($id, ENT_QUOTES) ?>">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                <?php endif; ?>
+              </td>
+            </tr>
           <?php endwhile; ?>
         <?php else: ?>
-          <tr>
-            <td colspan="4" class="text-center">No hay plantillas.</td>
-          </tr>
+          <tr><td colspan="4" class="text-center">No hay plantillas.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -141,59 +127,53 @@ if (!$result) {
     </div>
   </div>
 
+
   <script>
 document.querySelector('.plantillas-table tbody').addEventListener('click', function(e) {
   const btn = e.target.closest('button.btn-eliminar');
-  if (!btn || btn.disabled) return;  // Ignorar si no es botón eliminar o está deshabilitado
+  if (!btn) return;
 
   const nombre = btn.getAttribute('data-nombre');
-  const uuid = btn.getAttribute('data-uuid');
+  const id = btn.getAttribute('data-id');
+  if (!id) return;
 
-  if (!uuid) return; // No hacemos nada si no hay uuid
-
-  mostrarModalEliminarPlantilla(nombre, uuid);
+  mostrarModalEliminarPlantilla(nombre, id);
 });
 
-function mostrarModalEliminarPlantilla(nombre, uuid) {
-    const modalElement = document.getElementById('modalEliminarPlantilla');
-    const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-    
-    const textoModal = document.getElementById('eliminarPlantillaTexto');
-    textoModal.textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
+function mostrarModalEliminarPlantilla(nombre, id) {
+  const modalElement = document.getElementById('modalEliminarPlantilla');
+  const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+  
+  document.getElementById('eliminarPlantillaTexto').textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
 
-    const btnConfirmarAntiguo = document.getElementById('btnConfirmarEliminarPlantilla');
-    const btnConfirmarNuevo = btnConfirmarAntiguo.cloneNode(true);
-    btnConfirmarAntiguo.parentNode.replaceChild(btnConfirmarNuevo, btnConfirmarAntiguo);
+  const oldBtn = document.getElementById('btnConfirmarEliminarPlantilla');
+  const newBtn = oldBtn.cloneNode(true);
+  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
 
-    btnConfirmarNuevo.addEventListener('click', function () {
-        fetch('eliminar_plantilla.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `uuid=${encodeURIComponent(uuid)}`
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const filaParaEliminar = document.querySelector(`tr[data-uuid="${uuid}"]`);
-                if (filaParaEliminar) {
-                    filaParaEliminar.remove();
-                }
-                modal.hide();
-            } else {
-                alert('Error al eliminar la plantilla: ' + (data.error || 'Error desconocido'));
-            }
-        })
-        .catch(error => {
-            console.error('Error en la petición de eliminación:', error);
-            alert('Ocurrió un error de red. Por favor, inténtalo de nuevo.');
-        });
+  newBtn.addEventListener('click', function () {
+    fetch('eliminar_plantilla.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `id=${encodeURIComponent(id)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        const fila = document.querySelector(`tr[data-id="${id}"]`);
+        if (fila) fila.remove();
+        modal.hide();
+      } else {
+        alert('Error: ' + (data.error || 'Error desconocido'));
+      }
+    })
+    .catch(error => {
+      console.error('Error de red:', error);
+      alert('Ocurrió un error. Intenta de nuevo.');
     });
+  });
 
-    modal.show();
+  modal.show();
 }
-
   </script>
   
 </body>

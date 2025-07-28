@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($tipoId) {
             if (!empty($nuevaContrasena)) {
                 $hash = password_hash($nuevaContrasena, PASSWORD_DEFAULT);
-                $stmt = $conexion->prepare('UPDATE usuarios SET correo = ?, tipo_usuario_id = ?, contrasena = ? WHERE id_usuarios = ?');
+                $stmt = $conexion->prepare('UPDATE usuarios SET correo = ?, tipo_usuario_id = ?, password = ? WHERE id_usuarios = ?');
                 $stmt->bind_param('siss', $correo, $tipoId, $hash, $id);
             } else {
                 $stmt = $conexion->prepare('UPDATE usuarios SET correo = ?, tipo_usuario_id = ? WHERE id_usuarios = ?');
