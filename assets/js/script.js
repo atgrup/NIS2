@@ -1,5 +1,6 @@
 const contenedor = document.getElementById('contenido-dinamico');
 const buscador = document.getElementById('buscadorUsuarios');
+const buscadorArchivos = document.getElementById('buscadorArchivos');
 
 let paginaActual = 1;
 const usuariosPorPagina = 10;
@@ -10,7 +11,7 @@ async function cargarUsuarios(page = 1, query = '') {
 
   let url = `api/models/usuarios.php?page=${paginaActual}&limit=${usuariosPorPagina}`;
   if (query) {
-    url += `&query=${encodeURIComponent(query)}`;  // Si agregas búsqueda en backend luego
+    url += `&query=${encodeURIComponent(query)}`;
   }
 
   contenedor.innerHTML = '<p>Cargando usuarios...</p>';
@@ -66,7 +67,6 @@ function renderizarPaginacion() {
   const paginacionDiv = document.getElementById('paginacion');
 
   if (!paginacionDiv) {
-    // Crear contenedor si no existe
     const div = document.createElement('div');
     div.id = 'paginacion';
     div.className = 'mt-3 d-flex justify-content-center gap-2';
@@ -87,17 +87,16 @@ function renderizarPaginacion() {
   }
 }
 
-// Evento para buscar usuarios por nombre (simple filtro local)
+// ---------------------------
+// FILTRADO POR USUARIOS
+// ---------------------------
 buscador?.addEventListener("input", function () {
   const texto = buscador.value.trim().toLowerCase();
-
-  // Busca en cualquier tabla dentro de #contenido-dinamico
   if (!contenedor) return;
   const tabla = contenedor.querySelector("table");
   if (!tabla) return;
 
   const filas = tabla.querySelectorAll("tbody tr");
-
   filas.forEach(fila => {
     const visible = Array.from(fila.cells).some(celda =>
       celda.textContent.toLowerCase().includes(texto)
@@ -106,42 +105,56 @@ buscador?.addEventListener("input", function () {
   });
 });
 
-// Carga inicial
+// ---------------------------
+// FILTRADO SEGÚN SECCIÓN (usuarios / archivos / proveedores / etc.)
+// ---------------------------
+document.addEventListener('DOMContentLoaded', () => {
+  let seccionActual = new URLSearchParams(window.location.search).get('vista') || 'archivos';
+
+  function filtrarTablaHTML(input) {
+    const texto = input.value.trim().toLowerCase();
+    const tabla = document.querySelector('table');
+    if (!tabla) return;
+
+    const filas = tabla.querySelectorAll('tbody tr');
+    let contador = 1;
+
+    filas.forEach(fila => {
+      const celdas = Array.from(fila.querySelectorAll('td'));
+      const coincide = celdas.some(td =>
+        td.textContent.toLowerCase().includes(texto)
+      );
+      fila.style.display = coincide ? '' : 'none';
+      if (coincide && fila.querySelector('th')) {
+        fila.querySelector('th').textContent = contador++;
+      }
+    });
+  }
+
+  buscador?.addEventListener('input', () => {
+    if (['usuarios', 'proveedores', 'consultores', 'plantillas'].includes(seccionActual)) {
+      filtrarTablaHTML(buscador);
+    }
+  });
+
+  buscadorArchivos?.addEventListener('input', () => {
+    if (seccionActual === 'archivos') {
+      filtrarTablaHTML(buscadorArchivos);
+    }
+  });
+
+  // Inicializar filtrado si ya estamos en archivos o usuarios
+  if (seccionActual === 'archivos' && buscadorArchivos) {
+    filtrarTablaHTML(buscadorArchivos);
+  } else if (['usuarios', 'proveedores', 'consultores', 'plantillas'].includes(seccionActual) && buscador) {
+    filtrarTablaHTML(buscador);
+  }
+});
+
+// ---------------------------
+// CARGA INICIAL DE USUARIOS
+// ---------------------------
 window.addEventListener('load', () => {
   cargarUsuarios();
 });
 
-  document.addEventListener('DOMContentLoaded', () => {
-    let seccionActual = new URLSearchParams(window.location.search).get('vista') || 'archivos';
-    const buscador = document.getElementById('buscadorUsuarios');
-
-    // Publica una función modular para filtrar tabla HTML
-    function filtrarTablaHTML() {
-      const texto = buscador.value.trim().toLowerCase();
-      const tabla = document.querySelector('table');
-      if (!tabla) return;
-      const filas = tabla.querySelectorAll('tbody tr');
-      let contador = 1;
-
-      filas.forEach(fila => {
-        const celdas = Array.from(fila.querySelectorAll('td'));
-        const coincide = celdas.some(td =>
-          td.textContent.toLowerCase().includes(texto)
-        );
-        fila.style.display = coincide ? '' : 'none';
-        if (coincide && fila.querySelector('th')) {
-          fila.querySelector('th').textContent = contador++;
-        }
-      });
-    }
-
-    buscador.addEventListener('input', () => {
-      if (seccionActual === 'usuarios' || seccionActual === 'proveedores' ||
-          seccionActual === 'consultores' || seccionActual === 'plantillas') {
-        filtrarTablaHTML();
-      }
-    });
-
-// Inicializa filtrado después de cargar la vista
-    filtrarTablaHTML();
-  });
