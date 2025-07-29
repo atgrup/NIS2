@@ -44,16 +44,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $ruta_fisica = $carpeta_plantillas . $nombre_original;
 
-        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-            $stmt = $conexion->prepare("INSERT INTO plantillas (nombre, uuid, consultor_id) VALUES (?, ?, ?)");
-            $stmt->bind_param("ssi", $nombre_original, $uuid, $consultor_id);
-            $stmt->execute();
-            $stmt->close();
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {  
+          // Preparar consulta con columnas: nombre, descripcion, consultor_id, archivo_url, fecha_subida (fecha con NOW())
+          $stmt = $conexion->prepare("INSERT INTO plantillas (nombre, descripcion, consultor_id, archivo_url, fecha_subida) VALUES (?, ?, ?, ?, NOW())");
 
-            echo "<script>window.location.href='plantillaUsers.php?vista=plantillas';</script>";
-            exit;
-        } else {
-            echo "<script>alert('❌ Error al mover la plantilla');</script>";
+          if ($stmt === false) {
+              die("Error en la preparación: " . $conexion->error);
+          }
+
+          $stmt->bind_param("ssis", $nombre_original, $descripcion, $consultor_id, $ruta_fisica);
+          $stmt->execute();
+          $stmt->close();
+
+          echo "<script>window.location.href='plantillaUsers.php?vista=plantillas';</script>";
+          exit;
         }
     }
 // Manejar subida de archivos
@@ -248,38 +252,48 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
         </div>
 
         <!-- Buscador -->
-        <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text">
-            <img src="../assets/img/search.png" alt="Buscar">
-          </span>
-          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
-        </div>
-      </div> <!-- Cierre d-flex align-items-center -->
+        <?php if ($vista === 'archivos'): ?>
+          <!-- Buscador para proveedores -->
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <img src="../assets/img/search.png" alt="Buscar">
+            </span>
+            <input type="text" class="form-control" placeholder="Buscar archivos..." id="buscadorArchivos"> 
+          </div>
+        <?php else: ?>
+          <!-- Buscador para otros roles -->
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <img src="../assets/img/search.png" alt="Buscar">
+            </span>
+            <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
+          </div>
+        <?php endif; ?>
+    </div> <!-- Cierre d-flex align-items-center -->
 
-      <div class="headertable">
-        <?php
-          switch ($vista) {
-            case 'plantillas':
-              include 'vista_plantillas.php';
-              break;
-            case 'usuarios':
-              include 'vista_usuarios.php';
-              break;
-            case 'consultores':
-              include 'vista_consultores.php';
-              break;
-            case 'proveedores':
-              include 'vista_proveedores.php';
-              break;
-            default:
-              include 'vista_archivos.php';
-              break;
-          }
-        ?>
-      </div>
-    </div> <!-- Cierre contenedorTablaStencil -->
-
-  </main> <!-- Cierre main -->
+    <div class="headertable">
+      <?php
+        switch ($vista) {
+          case 'plantillas':
+            include 'vista_plantillas.php';
+            break;
+          case 'usuarios':
+            include 'vista_usuarios.php';
+            break;
+          case 'consultores':
+            include 'vista_consultores.php';
+            break;
+          case 'proveedores':
+            include 'vista_proveedores.php';
+            break;
+          default:
+            include 'vista_archivos.php';
+            break;
+        }
+      ?>
+    </div>
+  </div> <!-- Cierre contenedorTablaStencil -->
+</main> <!-- Cierre main -->
 <?php
 
 $alertaPassword = isset($_SESSION['error']) && $_SESSION['error'] === "Las contraseñas no coinciden.";

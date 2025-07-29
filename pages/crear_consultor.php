@@ -68,13 +68,16 @@ try {
     $stmt->close();
 
     // Insertar consultor (tabla consultores requiere usuario_id)
-    $stmt2 = $conexion->prepare("INSERT INTO consultores (usuario_id) VALUES (?)");
-    $stmt2->bind_param('i', $usuario_id);
-    
+    // Extraer parte del correo antes de la arroba para el nombre
+    $nombre_consultor = explode('@', $correo)[0];
+
+    // Insertar consultor con usuario_id y nombre
+    $stmt2 = $conexion->prepare("INSERT INTO consultores (usuario_id, nombre) VALUES (?, ?)");
+    $stmt2->bind_param('is', $usuario_id, $nombre_consultor);
+
     if (!$stmt2->execute()) {
         throw new Exception("Error al crear consultor: ".$conexion->error);
     }
-    
     $stmt2->close();
     
     // Confirmar transacción

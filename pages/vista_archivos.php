@@ -3,7 +3,6 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
 // Ajustar la ruta de conexión según tu estructura
 $ruta_conexion = __DIR__ . '/../api/includes/conexion.php';
 if (!file_exists($ruta_conexion)) {
@@ -26,6 +25,7 @@ $usuario_id = $_SESSION['id_usuario'];
 $prov_id = $_SESSION['proveedor_id'] ?? null;
 
 // Consulta para archivos según el rol
+// Consulta para archivos según el rol
 if ($rol === 'administrador' || $rol === 'consultor') {
     // ADMINISTRADOR y CONSULTOR ven todos los archivos
     $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos";
@@ -35,53 +35,73 @@ if ($rol === 'administrador' || $rol === 'consultor') {
     }
     $total_filas = $result_total->fetch_assoc()['total'];
 
-    $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
+    // Consulta con JOIN para obtener los campos solicitados
+    $sql = "SELECT 
+                a.id,
+                a.nombre_archivo, 
+                p.nombre AS nombre_plantilla, 
+                a.fecha_subida, 
+                pr.nombre_empresa, 
+                u.correo AS correo_usuario,
+                a.revision_estado
+            FROM archivos_subidos a
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
+            LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
+            LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
             ORDER BY a.fecha_subida DESC
             LIMIT ?, ?";
-    
+
     $stmt = $conexion->prepare($sql);
     if (!$stmt) {
         die("Error en la preparación de la consulta: " . $conexion->error);
     }
+
     $stmt->bind_param("ii", $inicio, $filas_por_pagina);
     $stmt->execute();
     $archivosRes = $stmt->get_result();
-    if (!$archivosRes) {
-        die("Error en la obtención de resultados: " . $conexion->error);
-    }
 
 } elseif ($rol === 'proveedor') {
-    // PROVEEDOR solo ve archivos propios
-    $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos WHERE proveedor_id = ?";
+    // PROVEEDOR ve solo archivos que subió él (usuario_id)
+    $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos WHERE usuario_id = ?";
     $stmt_total = $conexion->prepare($sql_total);
     if (!$stmt_total) {
         die("Error en la preparación de la consulta total: " . $conexion->error);
     }
-    $stmt_total->bind_param("i", $prov_id);
+    $stmt_total->bind_param("i", $usuario_id);
     $stmt_total->execute();
     $total_filas = $stmt_total->get_result()->fetch_assoc()['total'];
 
-    $sql = "SELECT a.*, p.nombre AS nombre_plantilla FROM archivos_subidos a
+    // Consulta con JOIN y filtro por usuario_id
+    $sql = "SELECT 
+                a.id,
+                a.nombre_archivo, 
+                p.nombre AS nombre_plantilla, 
+                a.fecha_subida, 
+                pr.nombre_empresa, 
+                u.correo AS correo_usuario,
+                a.revision_estado
+            FROM archivos_subidos a
             LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            WHERE a.proveedor_id = ?
+            LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
+            LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
+            WHERE a.usuario_id = ?
             ORDER BY a.fecha_subida DESC
             LIMIT ?, ?";
-    
+
     $stmt = $conexion->prepare($sql);
     if (!$stmt) {
         die("Error en la preparación de la consulta archivos: " . $conexion->error);
     }
-    $stmt->bind_param("iii", $prov_id, $inicio, $filas_por_pagina);
+
+    $stmt->bind_param("iii", $usuario_id, $inicio, $filas_por_pagina);
     $stmt->execute();
     $archivosRes = $stmt->get_result();
-    if (!$archivosRes) {
-        die("Error en la obtención de resultados archivos: " . $conexion->error);
-    }
+
 } else {
     $total_filas = 0;
     $archivosRes = null;
 }
+
 
 $total_paginas = ($total_filas > 0) ? ceil($total_filas / $filas_por_pagina) : 1;
 
@@ -199,7 +219,7 @@ if (!$plantillasRes) {
             <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
             <td><?= htmlspecialchars($row['fecha_subida']) ?></td>
             <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
-            <td><?= htmlspecialchars($row['correo_usuario'] ?? '-') ?></td>
+            <td><?= isset($row['correo_usuario']) ? htmlspecialchars(explode('@', $row['correo_usuario'])[0]) : '-' ?></td>
             <td><?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?></td>
             <td>
               <a href="visualizar_archivo.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
