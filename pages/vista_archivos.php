@@ -149,7 +149,7 @@ if (!$plantillasRes) {
 <?php if ($rol !== 'consultor'): ?>
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog">
-    <form id="formSubirArchivo" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
+    <form id="formSubirArchivoModal" action="subir_archivo_rellenado.php" method="post" enctype="multipart/form-data">
       <div class="modal-content">
         <div class="modal-header bg-mi-color text-white">
           <h5 class="modal-title" id="modalSubirArchivoLabel">Subir Nuevo Archivo</h5>
@@ -158,7 +158,7 @@ if (!$plantillasRes) {
         <div class="modal-body">
           <div class="mb-3">
             <label for="archivo" class="form-label fw-bold">Seleccionar Archivo</label>
-            <input type="file" class="form-control" id="archivo" name="archivo" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png">
+            <input type="file" class="form-control" id="archivo-modal" name="archivo" required accept=".pdf">
             <div class="form-text">Formatos permitidos: PDF, Word, Excel, imágenes</div>
           </div>
 
@@ -322,6 +322,27 @@ document.getElementById('formSubirArchivo')?.addEventListener('submit', function
   });
 });
 </script>
+<script>
+  document.getElementById('formSubirArchivoModal').addEventListener('submit', function(e) {
+    const archivoInput = document.getElementById('archivo-modal');
+    const archivo = archivoInput.files[0];
 
+    if (!archivo) {
+      alert('Por favor selecciona un archivo.');
+      e.preventDefault();
+      return false;
+    }
+
+    const nombreArchivo = archivo.name.toLowerCase();
+
+    if (!nombreArchivo.endsWith('.pdf')) {
+      alert('Solo se permiten archivos PDF.');
+      e.preventDefault();
+      return false;
+    }
+
+    return true;
+  });
+</script>
 </body>
 </html>

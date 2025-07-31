@@ -70,12 +70,14 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
         );
 
         if ($stmt->execute()) {
-            echo "Archivo subido correctamente.";
+            $_SESSION['success_subida'] = "Archivo subido correctamente.";
         } else {
-            echo "Error al guardar en la base de datos: " . $stmt->error;
+            $_SESSION['error_subida'] = "Error al guardar en la base de datos.";
         }
-
         $stmt->close();
+
+        header("Location: plantillaUsers.php?vista=archivos");
+        exit;
 
     } else {
         echo "Error al mover el archivo.";

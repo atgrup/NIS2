@@ -438,7 +438,7 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
         <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
           <div class="mb-3">
             <label for="archivo" class="form-label">Selecciona un archivo</label>
-            <input type="file" class="form-control" id="archivo-modal" name="archivo" required>
+            <input type="file" class="form-control" id="archivo-modal" name="archivo" required accept=".pdf">
           </div>
 
           <div class="mb-3">
@@ -454,8 +454,6 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
     </div>
   </div>
 </div>
-
-
 </body>
 <script>
   document.getElementById('formCrearConsultor').addEventListener('submit', function(e) {
