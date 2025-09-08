@@ -176,6 +176,7 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
 if (!$plantillasRes) {
     die("Error en consulta de plantillas: " . $conexion->error);
 }
+$estados_revision = ['pendiente', 'aprobado', 'rechazado'];
 ?>
 
 <!DOCTYPE html>
@@ -199,6 +200,10 @@ if (!$plantillasRes) {
     .pagination-container { margin-top: 15px; }
     .modal-header { background-color: #0d6efd; color: white; }
     .btn-close-white { filter: invert(1); }
+    /* Nuevas clases para los estados de revisión */
+    .estado-pendiente { background-color: #fff3cd; color: #856404; }
+    .estado-aprobado { background-color: #d1e7dd; color: #0f5132; }
+    .estado-rechazado { background-color: #f8d7da; color: #721c24; }
   </style>
 </head>
 
@@ -285,37 +290,50 @@ if (!$plantillasRes) {
   <div>
     <?php if (isset($archivosRes) && $archivosRes && $archivosRes->num_rows > 0): ?>
       <table class="table table-bordered table-hover archivos-table">
-        <thead class="table-light">
+        <thead>
           <tr>
-            <th>Nombre del Archivo</th>
-            <th>Plantilla Asociada</th>
-            <th>Fecha de Subida</th>
+            <th>Nombre archivo</th>
+            <th>Plantilla</th>
+            <th>Fecha subida</th>
             <th>Empresa</th>
             <th>Usuario</th>
-            <th>Estado</th>
-            <th data-no-sort>Acciones</th>
+            <th>Estado revisión</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           <?php while ($row = $archivosRes->fetch_assoc()): ?>
             <tr id="fila-<?= $row['id'] ?>">
-              <!-- Nombre del archivo enlazado a la descarga -->
-              <td><a href="../api/download.php?id=<?= $row['id'] ?>" title="Descargar Archivo"><?= htmlspecialchars($row['nombre_archivo']) ?></a></td>
+              <td><?= htmlspecialchars($row['nombre_archivo']) ?></td>
               <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
               <td><?= htmlspecialchars($row['fecha_subida']) ?></td>
               <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
-              <!-- Mostramos solo el nombre de usuario (parte antes del @) -->
               <td><?= isset($row['correo_usuario']) ? htmlspecialchars(explode('@', $row['correo_usuario'])[0]) : '-' ?></td>
-              <td><?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?></td>
+              <td
+                <?php
+                  $estado = strtolower($row['revision_estado'] ?? 'pendiente');
+                  $claseEstado = '';
+                  if ($estado === 'pendiente') $claseEstado = 'estado-pendiente';
+                  elseif ($estado === 'aprobado') $claseEstado = 'estado-aprobado';
+                  elseif ($estado === 'rechazado') $claseEstado = 'estado-rechazado';
+                ?>
+                class="<?= $claseEstado ?>"
+              >
+                <?php if ($rol === 'administrador' || $rol === 'consultor'): ?>
+                  <select class="form-select form-select-sm estado-select" data-id="<?= $row['id'] ?>">
+                    <?php foreach ($estados_revision as $estadoOpt): ?>
+                      <option value="<?= $estadoOpt ?>" <?= $row['revision_estado'] === $estadoOpt ? 'selected' : '' ?>><?= ucfirst($estadoOpt) ?></option>
+                    <?php endforeach; ?>
+                  </select>
+                <?php else: ?>
+                  <?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?>
+                <?php endif; ?>
+              </td>
               <td>
-                <!-- Botón para visualizar documento -->
                 <a href="visualizar_archivo.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
                   <i class="bi bi-eye"></i>
                 </a>
-                <!-- Botón para eliminar documento (abre modal de confirmación) -->
-                <button class="btn btn-sm btn-danger"
-                        onclick="mostrarModalEliminarArchivo('<?= $row['id'] ?>', '<?= htmlspecialchars($row['nombre_archivo'], ENT_QUOTES) ?>')"
-                        title="Eliminar Archivo">
+                <button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarArchivo('<?= $row['id'] ?>', '<?= htmlspecialchars($row['nombre_archivo'], ENT_QUOTES) ?>')" title="Eliminar Archivo">
                   <i class="bi bi-trash"></i>
                 </button>
               </td>
@@ -324,7 +342,6 @@ if (!$plantillasRes) {
         </tbody>
       </table>
     <?php else: ?>
-      <!-- Si no hay resultados -->
       <div class="alert alert-info mt-3">No se encontraron archivos subidos.</div>
     <?php endif; ?>
   </div>
@@ -424,7 +441,7 @@ if (!$plantillasRes) {
       body: formData,
     })
     .then(response => response.text()) // Esperamos respuesta en texto plano (puede ser HTML).
-    .then(data => {
+    .then data => {
       // Mostramos mensaje de éxito.
       mensajeDiv.classList.remove('d-none', 'alert-danger');
       mensajeDiv.classList.add('alert-success');
@@ -475,5 +492,34 @@ if (!$plantillasRes) {
     return true;
   });
   </script>
+
+  <script>
+document.querySelectorAll('.estado-select').forEach(function(select) {
+  select.addEventListener('change', function() {
+    const id = this.dataset.id;
+    const nuevoEstado = this.value;
+    this.disabled = true;
+    fetch('actualizar_estado_revision.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: `id=${encodeURIComponent(id)}&estado=${encodeURIComponent(nuevoEstado)}`
+    })
+    .then(res => res.text())
+    .then(msg => {
+      this.disabled = false;
+      // Cambia el color de la celda según el nuevo estado
+      const td = this.closest('td');
+      td.classList.remove('estado-pendiente', 'estado-aprobado', 'estado-rechazado');
+      if (nuevoEstado === 'pendiente') td.classList.add('estado-pendiente');
+      else if (nuevoEstado === 'aprobado') td.classList.add('estado-aprobado');
+      else if (nuevoEstado === 'rechazado') td.classList.add('estado-rechazado');
+    })
+    .catch(() => {
+      alert('Error al actualizar el estado');
+      this.disabled = false;
+    });
+  });
+});
+</script>
 </body>
 </html>

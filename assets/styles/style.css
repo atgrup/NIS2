@@ -309,3 +309,30 @@ h4 {
 .form-label-modal{
   color:gray;
 }
+
+/* Tamaño de texto para tablas */
+table, th, td {
+  font-size: 14px;
+}
+.table {
+  font-size: 14px;
+}
+
+/* Tamaño de texto para el select de estado en tablas */
+.estado-select {
+  font-size: 14px !important;
+}
+
+/* Colores para el estado de revisión en la tabla de archivos */
+.estado-pendiente {
+  background-color: #ffe5b4 !important; /* naranja claro */
+  color: #b26a00 !important;
+}
+.estado-aprobado {
+  background-color: #d4f8d4 !important; /* verde claro */
+  color: #218838 !important;
+}
+.estado-rechazado {
+  background-color: #ffd6d6 !important; /* rojo claro */
+  color: #c82333 !important;
+}
