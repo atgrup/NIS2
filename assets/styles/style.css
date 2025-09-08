@@ -184,7 +184,7 @@ h4 {
   border: 0.5px solid white;
   border-radius: 20px;
   padding: 20px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -194,8 +194,8 @@ h4 {
 
 /* PLANTILLAUSERS.PHP */
 .indexStencil {
-  width: 290px;
-  height: 895px;
+  width: 20%;
+  height: 100vh;
   background: #072989;
 }
 
@@ -206,14 +206,14 @@ h4 {
 
 .contenedorTablaStencil {
   border-radius: 40px;
+  margin-left: 15px;
   background: #FFF;
-  padding: 30px;
-  width: 76%;
+  padding: 20px;
+  width: 78%;
   height: 850px;
   display: flex;
   align-self: center;
   flex-direction: column;
-  margin-left: 20px;
 }
 
 .stencilBody {
