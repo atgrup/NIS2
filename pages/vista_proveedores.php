@@ -2,8 +2,8 @@
 // =============================
 // CONSULTA DE PROVEEDORES
 // =============================
-// Se selecciona el correo desde usuarios y el nombre de empresa desde proveedores
-$sql = "SELECT u.correo, p.nombre_empresa
+// Se selecciona el correo desde usuarios, el nombre de empresa y el estado desde proveedores
+$sql = "SELECT u.correo, p.nombre_empresa, p.estado
         FROM proveedores p
         JOIN usuarios u ON p.usuario_id = u.id_usuarios
         ORDER BY p.id";
@@ -20,6 +20,7 @@ $result = $conexion->query($sql);
             <tr>
                 <th>Correo</th>
                 <th>Nombre Empresa</th>
+                <th>Estado</th>
                 <th data-no-sort>Acciones</th>
             </tr>
         </thead>
@@ -36,10 +37,9 @@ $result = $conexion->query($sql);
             $total_paginas = ceil($total_filas / $filas_por_pagina);
 
             // =============================
-            // CONSULTA CON JOIN A USUARIOS
+            // CONSULTA CON JOIN A USUARIOS + ESTADO
             // =============================
-            // LEFT JOIN asegura que aunque no tengan usuario asociado se muestren
-            $sql = "SELECT p.id, p.nombre_empresa, u.correo 
+            $sql = "SELECT p.id, p.nombre_empresa, p.estado, u.correo 
                     FROM proveedores p 
                     LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios 
                     ORDER BY p.id 
@@ -53,12 +53,35 @@ $result = $conexion->query($sql);
                 $proveedorId = $row['id'];
                 $correo = htmlspecialchars($row['correo'] ?? '');
                 $nombreEmpresa = htmlspecialchars($row['nombre_empresa'] ?? '');
-                
-                echo "<tr>
+                $estado = htmlspecialchars($row['estado'] ?? 'sin_contenido');
+
+                // Determinar clase de fila y badge según estado
+                switch ($estado) {
+                    case 'en_revision':
+                        $rowClass = 'fila-revision';
+                        $badge = "<span class='badge  text-dark fs-6'>En revisión</span>";
+                        break;
+                    case 'correcto':
+                        $rowClass = 'fila-correcto';
+                        $badge = "<span class='badge fs-6'>Correcto</span>";
+                        break;
+                    case 'incorrecto':
+                        $rowClass = 'fila-incorrecto';
+                        $badge = "<span class='badge fs-6'>Incorrecto</span>";
+                        break;
+                    case 'sin_contenido':
+                    default:
+                        $rowClass = 'fila-sin-contenido';
+                        $badge = "<span class='badge fs-6'>Sin contenido</span>";
+                        break;
+                }
+
+                echo "<tr class='{$rowClass}'>
                         <td>{$correo}</td>
                         <td>{$nombreEmpresa}</td>
+                        <td>{$badge}</td>
                         <td class='text-center'>
-                            <!-- Botón EDITAR abre modal y pasa data-* -->
+                            <!-- Botón EDITAR abre modal -->
                             <button class='btn btn-sm btn-warning me-1' 
                                     data-bs-toggle='modal' 
                                     data-bs-target='#modalEditarProveedor' 
@@ -67,7 +90,7 @@ $result = $conexion->query($sql);
                                     data-nombre='{$nombreEmpresa}'>
                                 <i class='bi bi-pencil'></i>
                             </button>
-                            <!-- Botón ELIMINAR abre modal de confirmación -->
+                            <!-- Botón ELIMINAR -->
                             <button class='btn btn-sm btn-danger' 
                                     onclick=\"mostrarModalEliminarProveedor({$proveedorId}, '{$correo}')\">
                                 <i class='bi bi-trash'></i>
@@ -88,6 +111,7 @@ $result = $conexion->query($sql);
 $url_base = '?vista=proveedores';
 echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
 ?>
+
 <!-- =============================
      MODAL EDITAR PROVEEDOR
      ============================= -->
@@ -129,6 +153,7 @@ echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
     </form>
   </div>
 </div>
+
 <!-- =============================
      MODAL ELIMINAR PROVEEDOR
      ============================= -->
@@ -150,6 +175,27 @@ echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
     </div>
   </div>
 </div>
+
+<!-- =============================
+     ESTILOS DE FILAS POR ESTADO
+     ============================= -->
+<style>
+.fila-revision td {
+    background-color: #fff3cd !important; /* amarillo claro */
+}
+.fila-correcto td {
+    background-color: #d4edda !important; /* verde claro */
+}
+.fila-incorrecto td {
+    background-color: #f8d7da !important; /* rojo claro */
+}
+.fila-sin-contenido td {
+    background-color: #e2e3e5 !important; /* gris claro */
+    color: #212529 !important; /* texto oscuro */
+}
+
+</style>
+
 <script>
 // =============================
 // RELLENAR MODAL EDITAR
@@ -157,12 +203,11 @@ echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
 document.addEventListener('DOMContentLoaded', function () {
   var modalEditar = document.getElementById('modalEditarProveedor');
   modalEditar.addEventListener('show.bs.modal', function (event) {
-    var button = event.relatedTarget; // botón que abrió el modal
+    var button = event.relatedTarget;
     var id = button.getAttribute('data-id');
     var correo = button.getAttribute('data-correo');
     var nombreEmpresa = button.getAttribute('data-nombre');
 
-    // Rellenar los campos del modal con los datos del proveedor
     document.getElementById('editarProveedorId').value = id;
     document.getElementById('editarCorreoProveedor').value = correo;
     document.getElementById('editarNombreEmpresa').value = nombreEmpresa;
@@ -174,7 +219,6 @@ document.addEventListener('DOMContentLoaded', function () {
 // =============================
 let proveedorEliminarId = null;
 
-// Mostrar modal con texto dinámico
 function mostrarModalEliminarProveedor(id, correo) {
   proveedorEliminarId = id;
   document.getElementById('eliminarProveedorTexto').textContent = 
@@ -184,10 +228,8 @@ function mostrarModalEliminarProveedor(id, correo) {
   modal.show();
 }
 
-// Acción al confirmar
 document.getElementById('btnConfirmarEliminarProveedor').onclick = function() {
   if (proveedorEliminarId) {
-    // Redirige a script PHP que elimina
     window.location.href = 'eliminar_proveedor.php?id=' + proveedorEliminarId;
   }
 };
