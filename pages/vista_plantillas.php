@@ -1,19 +1,29 @@
-<?php
+<?php 
+// =============================
+// INICIO DE SESIÓN Y CONEXIÓN
+// =============================
 if (session_status() === PHP_SESSION_NONE) {
-  session_start();
+  session_start(); // Inicia sesión si no existe
 }
 
-require_once dirname(__DIR__) . '/api/includes/conexion.php';
+require_once dirname(__DIR__) . '/api/includes/conexion.php'; // Conexión DB
 
+// =============================
+// VALIDAR USUARIO
+// =============================
 $usuario_id = $_SESSION['id_usuario'] ?? null;
-$is_admin = false;
+$is_admin = false; // Flag para admin (se usará más adelante)
 
 if (!$usuario_id) {
+  // Si no hay sesión, no permitimos el acceso
   echo "<p>No estás autenticado. Por favor, inicia sesión.</p>";
   exit;
 }
 
-// Verificar si el usuario es administrador (tipo_usuario_id = 1)
+// =============================
+// VERIFICAR SI ES ADMINISTRADOR
+// =============================
+// (tipo_usuario_id = 1 → Administrador)
 $tipo_usuario_id = null;
 $stmtAdmin = $conexion->prepare("SELECT tipo_usuario_id FROM usuarios WHERE id_usuarios = ?");
 $stmtAdmin->bind_param("i", $usuario_id);
@@ -22,14 +32,17 @@ $stmtAdmin->bind_result($tipo_usuario_id);
 $stmtAdmin->fetch();
 $stmtAdmin->close();
 
+// =============================
+// CONSULTA DE PLANTILLAS
+// =============================
 
-// Consultar plantillas con nombre del consultor
-// Contar total de filas
+// Contar total de plantillas para la paginación
 $sql_total = "SELECT COUNT(*) as total FROM plantillas";
 $result_total = $conexion->query($sql_total);
 $total_filas = $result_total->fetch_assoc()['total'];
 $total_paginas = ceil($total_filas / $filas_por_pagina);
 
+// Consulta principal con JOIN a consultores
 $sql = "
   SELECT p.id, p.nombre, p.consultor_id, c.nombre AS nombre_consultor
   FROM plantillas p
@@ -44,21 +57,20 @@ if (!$result) {
   exit;
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
   <meta charset="UTF-8">
   <title>Listado de Plantillas</title>
+  <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <style>
-  </style>
 </head>
 
 <body class="container py-4">
-
   <div>
+    <!-- =============================
+         TABLA DE PLANTILLAS
+    ============================== -->
     <table class="table table-bordered table-hover plantillas-table">
       <thead class="table-light">
         <tr>
@@ -72,20 +84,37 @@ if (!$result) {
        <?php if ($result->num_rows > 0): ?>
           <?php while ($row = $result->fetch_assoc()): ?>
             <?php
-            $nombre = htmlspecialchars($row['nombre']);
-            $id = $row['id'];
+            // =============================
+            // PROCESAR CADA FILA
+            // =============================
+            $nombre = htmlspecialchars($row['nombre']); // Nombre de la plantilla
+            $id = $row['id']; // ID de la plantilla
             $nombre_consultor_raw = $row['nombre_consultor'] ?? '';
-            $nombre_consultor_trimmed = $nombre_consultor_raw ? trim(explode('@', $nombre_consultor_raw)[0]) : '<i>Sin consultor</i>';
+
+            // Consultor = parte antes de la @ o texto por defecto si no existe
+            $nombre_consultor_trimmed = $nombre_consultor_raw ? 
+              trim(explode('@', $nombre_consultor_raw)[0]) : '<i>Sin consultor</i>';
+
+            // Ruta al archivo en carpeta plantillas
             $ruta_url = '../plantillas_disponibles/' . urlencode($nombre);
             ?>
+            <!-- =============================
+                 FILA DE TABLA
+            ============================== -->
             <tr data-id="<?= $id ?>">
+              <!-- Nombre con enlace de descarga -->
               <td><a href="<?= $ruta_url ?>" download class="text-reset text-decoration-underline"><?= $nombre ?></a></td>
+              <!-- Consultor -->
               <td><?= $nombre_consultor_trimmed ?></td>
+              <!-- Tipo fijo: Plantilla -->
               <td>Plantilla</td>
+              <!-- Acciones -->
               <td class="text-center">
+                <!-- Ver documento -->
                 <a href="<?= $ruta_url ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
                   <i class="bi bi-eye"></i>
                 </a>
+                <!-- Eliminar (si no es tipo_usuario_id 2 = consultor/proveedor) -->
                 <?php if ($tipo_usuario_id !== 2): ?>
                   <button class="btn btn-sm btn-danger btn-eliminar"
                           data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
@@ -97,6 +126,7 @@ if (!$result) {
             </tr>
           <?php endwhile; ?>
         <?php else: ?>
+          <!-- Si no hay plantillas -->
           <tr><td colspan="4" class="text-center">No hay plantillas.</td></tr>
         <?php endif; ?>
       </tbody>
@@ -104,11 +134,15 @@ if (!$result) {
   </div>
 
   <?php
+  // =============================
+  // PAGINACIÓN
+  // =============================
   $url_base = '?vista=plantillas';
   echo generar_paginacion($url_base, $pagina_actual, $total_paginas);
   ?>
-  
-  <!-- Modal Confirmar Eliminación -->
+  <!-- =============================
+       MODAL ELIMINAR PLANTILLA
+  ============================== -->
   <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -126,9 +160,12 @@ if (!$result) {
       </div>
     </div>
   </div>
-
-
   <script>
+// =============================
+// ELIMINAR PLANTILLA (con modal + fetch AJAX)
+// =============================
+
+// Detectar click en botón eliminar dentro de la tabla
 document.querySelector('.plantillas-table tbody').addEventListener('click', function(e) {
   const btn = e.target.closest('button.btn-eliminar');
   if (!btn) return;
@@ -140,16 +177,21 @@ document.querySelector('.plantillas-table tbody').addEventListener('click', func
   mostrarModalEliminarPlantilla(nombre, id);
 });
 
+// Función que muestra modal y ejecuta petición AJAX
 function mostrarModalEliminarPlantilla(nombre, id) {
   const modalElement = document.getElementById('modalEliminarPlantilla');
   const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
   
-  document.getElementById('eliminarPlantillaTexto').textContent = `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
+  // Texto dinámico en el modal
+  document.getElementById('eliminarPlantillaTexto').textContent = 
+    `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
 
+  // Clonamos el botón para reiniciar listeners anteriores
   const oldBtn = document.getElementById('btnConfirmarEliminarPlantilla');
   const newBtn = oldBtn.cloneNode(true);
   oldBtn.parentNode.replaceChild(newBtn, oldBtn);
 
+  // Al confirmar, hacemos la petición AJAX
   newBtn.addEventListener('click', function () {
     fetch('eliminar_plantilla.php', {
       method: 'POST',
@@ -159,6 +201,7 @@ function mostrarModalEliminarPlantilla(nombre, id) {
     .then(response => response.json())
     .then(data => {
       if (data.success) {
+        // Eliminamos la fila de la tabla
         const fila = document.querySelector(`tr[data-id="${id}"]`);
         if (fila) fila.remove();
         modal.hide();
@@ -172,9 +215,9 @@ function mostrarModalEliminarPlantilla(nombre, id) {
     });
   });
 
+  // Mostrar modal
   modal.show();
 }
   </script>
-  
 </body>
 </html>
