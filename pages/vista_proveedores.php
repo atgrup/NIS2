@@ -97,6 +97,69 @@ if (!$result) {
     </tbody>
   </table>
 </div>
+<!-- =============================
+     MODAL EDITAR PROVEEDOR
+     ============================= -->
+<div class="modal fade" id="modalEditarProveedor" tabindex="-1" aria-labelledby="modalEditarProveedorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formEditarProveedor" method="POST" action="editar_proveedor.php">
+      <div class="modal-content">
+        <div class="modal-header bg-mi-color text-white">
+          <h5 class="modal-title" id="modalEditarProveedorLabel">Editar Proveedor</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body">
+          <!-- ID oculto -->
+          <input type="hidden" name="id_proveedor" id="editarProveedorId">
+          
+          <!-- Correo -->
+          <div class="mb-3">
+            <label for="editarCorreoProveedor" class="form-label-popup">Correo del proveedor</label>
+            <input type="email" class="form-control" name="correo" id="editarCorreoProveedor" required>
+          </div>
+          
+          <!-- Nombre de empresa -->
+          <div class="mb-3">
+            <label for="editarNombreEmpresa" class="form-label-popup">Nombre de empresa</label>
+            <input type="text" class="form-control" name="nombre_empresa" id="editarNombreEmpresa" required>
+          </div>
+          
+          <!-- Contraseña opcional -->
+          <div class="mb-3">
+            <label for="editarContrasenaProveedor" class="form-label-popup">Contraseña (dejar en blanco para no cambiar)</label>
+            <input type="password" class="form-control" name="contrasena" id="editarContrasenaProveedor" placeholder="Nueva contraseña">
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- =============================
+     MODAL ELIMINAR PROVEEDOR
+     ============================= -->
+<div class="modal fade" id="modalEliminarProveedor" tabindex="-1" aria-labelledby="modalEliminarProveedorLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-mi-color text-white">
+        <h5 class="modal-title" id="modalEliminarProveedorLabel">Eliminar Proveedor</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Texto dinámico según el proveedor -->
+        <p id="eliminarProveedorTexto" class="mb-3"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-danger" id="btnConfirmarEliminarProveedor">Eliminar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Estilos de filas por estado -->
 <style>

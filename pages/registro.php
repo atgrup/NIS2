@@ -55,8 +55,17 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
             <h3 class="mb-4">NIS2</h3>
 
             <!-- Sección para mostrar mensajes de estado al usuario. Solo se renderiza si la variable `$mensaje` no está vacía. -->
-            <?php if (!empty($mensaje)): ?>
-                <!-- Un div de alerta de Bootstrap. `alert-info` se usa para mensajes informativos. -->
+            <?php if (isset($_GET['error']) && $_GET['error'] === 'correo'): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <strong>Error:</strong> El mail ya está en uso.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            <?php elseif (isset($_GET['error']) && $_GET['error'] === 'contraseña'): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                  <strong>Error:</strong> Las contraseñas no coinciden.
+                  <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+                </div>
+            <?php elseif (!empty($mensaje)): ?>
                 <div class="alert alert-info"><?php echo $mensaje; ?></div>
             <?php endif; ?>
 
