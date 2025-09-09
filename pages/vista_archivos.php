@@ -231,7 +231,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
   <!-- ==========================
        MODAL: SUBIR NUEVO ARCHIVO
        ========================== -->
-  <?php if ($rol !== 'consultor'): ?>
+  <?php if ($rol == 'consultor'): ?>
     <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
       <div class="modal-dialog">
         <!-- El formulario envía los datos al script "subir_archivo_rellenado.php" -->
