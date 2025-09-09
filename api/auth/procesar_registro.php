@@ -14,6 +14,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit;
     }
 
+    // Verificar si el correo ya existe
+    $stmt_check = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ? LIMIT 1");
+    $stmt_check->bind_param("s", $correo);
+    $stmt_check->execute();
+    $stmt_check->store_result();
+    if ($stmt_check->num_rows > 0) {
+        $stmt_check->close();
+        $conexion->close();
+        header("Location: ../../pages/registro.php?error=correo");
+        exit;
+    }
+    $stmt_check->close();
+
     // Hashear contraseña
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
