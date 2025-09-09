@@ -11,11 +11,7 @@ $correo = $_SESSION['correo'] ?? null;
 $nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
 
 // Conexión BD
-$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
-if ($conexion->connect_error) {
-  die("Error de conexión: " . $conexion->connect_error);
-}
-
+require_once dirname(__DIR__) . '/api/includes/conexion.php'; 
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Manejar subida de plantillas

@@ -83,18 +83,40 @@ h4 {
   border: 1px solid white;
   color: white;
   font-weight: bold !important;
+  background: none !important;
 }
-
 .btn-outline-light:hover {
-  background-color: white;
-  color: #002f86;
-  border: 1px solid #002f86;
+  background-color: white !important;
+  color: #002f86 !important;
+  border: 1px solid #002f86 !important;
 }
-
-.back-arrow {
-  font-size: 3rem;
-  color: #002f86;
-  text-decoration: none;
+.bg-mi-color {
+  background-color: #072989!important;
+  color: white!important;
+  border-radius: 10px !important;
+  padding: 8px 15px !important;
+  font-family: "Instrument Sans", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  margin: 10px;
+}
+.bg-mi-color:hover{
+  opacity: 80%;
+}
+.btn-paginacion.active-paginacion {
+    background-color: #072989 !important;
+    border-color: #072989 !important;
+    color: white !important;
+}
+.btnUser {
+  background: none;
+  color: white;
+  border: none;
+}
+.logout {
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 3px 10px;
 }
 
 /* Contenedores y secciones */
@@ -194,120 +216,80 @@ h4 {
 
 /* PLANTILLAUSERS.PHP */
 .indexStencil {
-  width: 20%;
+  width: 270px;
+  min-width: 220px;
+  max-width: 350px;
   height: 100vh;
   background: #072989;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
 }
-
 .stencil {
   display: flex;
   flex-direction: row;
+  min-height: 100vh;
 }
-
 .contenedorTablaStencil {
   border-radius: 40px;
-  margin-left: 15px;
   background: #FFF;
   padding: 20px;
-  width: 78%;
-  height: 850px;
+  margin-left: 270px;
+  width: calc(100% - 270px);
+  min-width: 260px;
+  max-width: 1600px;
+  height: auto;
+  min-height: 600px;
   display: flex;
   align-self: center;
   flex-direction: column;
 }
-
-.stencilBody {
-  background-color: #E6E6E6;
+@media (max-width: 900px) {
+  .indexStencil {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    border-radius: 0 0 30px 30px;
+    height: auto;
+  }
+  .contenedorTablaStencil {
+    margin-left: 0;
+    width: 100%;
+  }
 }
-
-.cajaArchivos {
-  display: flex;
-  flex-direction: row;
+/* --- Botones de la navegación --- */
+.menuNav .btn-outline-light {
+  border: 1px solid white;
   color: white;
-  justify-content: center;
-  gap: 20px;
-}
-
-.footerNaV {
-  color: #FFF;
-  font-family: "Instrument Sans";
-  font-size: 15px;
-  font-weight: 400;
-  text-align: center;
-  position: absolute;
-  bottom: 40px;
-}
-
-.footerNaV form {
-  padding: 20px;
-}
-
-.menuNav {
-  margin-top: 50px;
-  gap: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.menuNav .cajaArchivos {
-  flex: 1 1 45%;
-  min-width: 140px;
-}
-@media (max-width: 768px) {
-  .menuNav .cajaArchivos {
-    flex: 1 1 100%;
-  }
-  .input-group {
-    width: 100% !important;
-    position: static !important;
-    margin-top: 1rem;
-  }
-}
-.imgEmpresa {
-  position: absolute;
-  top: 120%;
-  border-radius: 120px;
-  width: 60px;
-}
-
-.bg-mi-color {
-  background-color: #072989!important;
-  color: white!important;
+  font-weight: bold !important;
+  background: none !important;
   border-radius: 10px !important;
-  padding: 8px 15px !important;
+  padding: 6px 10px !important;
   font-family: "Instrument Sans", sans-serif !important;
   font-weight: 700 !important;
   text-transform: uppercase !important;
-  margin: 10px;
+  margin: 4px 0 !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  width: 160px !important;
+  min-width: 120px;
+  max-width: 90%;
+  display: block;
+  margin: 6px auto !important;
+}
+.menuNav .btn-outline-light:hover {
+  background-color: white !important;
+  color: #072989 !important;
+  border: 1px solid #072989 !important;
 }
 
-.bg-mi-color:hover{
-  opacity: 80%;
-}
-
-.btn-paginacion.active-paginacion {
-    background-color: #072989 !important;
-    border-color: #072989 !important;
-    color: white !important;
-}
-
-.btnUser {
-  background: none;
-  color: white;
-  border: none;
-}
-
-.logout {
-  border: 1px solid white;
-  border-radius: 10px;
-  padding: 3px 10px;
-}
-
-/*MODAL  ESTILOS*/
-.form-label-modal{
-  color:gray;
+/* Mejorar el scroll y evitar overflow */
+.stencilBody {
+  background-color: #E6E6E6;
+  overflow-x: hidden;
 }
 
 /* Tamaño de texto para tablas */
@@ -335,4 +317,35 @@ table, th, td {
 .estado-rechazado {
   background-color: #ffd6d6 !important; /* rojo claro */
   color: #c82333 !important;
+}
+/* --- Footer de la nav siempre abajo, sin mover el contenedor principal --- */
+.indexStencil {
+  position: fixed;
+}
+.footerNaV {
+  color: #FFF;
+  font-family: "Instrument Sans";
+  font-size: 15px;
+  font-weight: 400;
+  text-align: center;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  width: 100%;
+  padding: 0 10px;
+}
+.footerNaV form {
+  padding: 0;
+  margin: 0 auto;
+}
+@media (max-width: 900px) {
+  .indexStencil {
+    position: relative;
+  }
+  .footerNaV {
+    position: static;
+    bottom: auto;
+    margin-top: 30px;
+  }
 }
