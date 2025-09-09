@@ -7,28 +7,28 @@ $sql = "SELECT
     p.nombre_empresa,
     u.correo,
     CASE
-        WHEN COUNT(a.id) = 0 THEN 'sin_contenido'                    -- sin archivos subidos
-        WHEN SUM(a.revision_estado = 'en_revision') > 0 THEN 'pendiente'   -- al menos uno en revisión
-        WHEN SUM(a.revision_estado = 'incorrecto') = COUNT(a.id) THEN 'rechazado' -- todos rechazados
-        WHEN SUM(a.revision_estado = 'correcto') = COUNT(a.id) THEN 'correcto'    -- todos correctos
-        ELSE 'pendiente'                                             -- mezcla de correctos y rechazados
+        WHEN COUNT(a.id) = 0 THEN 'sin_contenido'                          -- sin archivos subidos
+        WHEN SUM(a.revision_estado = 'pendiente') > 0 THEN 'pendiente'     -- al menos uno pendiente
+        WHEN SUM(a.revision_estado = 'rechazado') = COUNT(a.id) THEN 'rechazado' -- todos rechazados
+        WHEN SUM(a.revision_estado = 'aprobado') = COUNT(a.id) THEN 'aprobado'   -- todos aprobados
+        ELSE 'pendiente'                                                   -- mezcla de aprobados y rechazados
     END AS estado,
     COUNT(a.id) AS total_archivos,
-    SUM(a.revision_estado = 'correcto') AS total_correcto,
-    SUM(a.revision_estado = 'en_revision') AS total_revision,
-    SUM(a.revision_estado = 'incorrecto') AS total_incorrecto
+    SUM(a.revision_estado = 'aprobado') AS total_aprobado,
+    SUM(a.revision_estado = 'pendiente') AS total_pendiente,
+    SUM(a.revision_estado = 'rechazado') AS total_rechazado
 FROM proveedores p
 LEFT JOIN usuarios u ON p.usuario_id = u.id_usuarios
 LEFT JOIN archivos_subidos a ON a.proveedor_id = p.id
 GROUP BY p.id
 ORDER BY p.id
-LIMIT $inicio, $filas_por_pagina
-";
+LIMIT $inicio, $filas_por_pagina";
+
 
 $result = $conexion->query($sql);
 
-if(!$result){
-    die("Error en la consulta SQL: " . $conexion->error);
+if (!$result) {
+  die("Error en la consulta SQL: " . $conexion->error);
 }
 
 ?>
@@ -46,33 +46,34 @@ if(!$result){
     <tbody>
       <?php
       while ($row = $result->fetch_assoc()) {
-          $proveedorId = $row['id'];
-          $correo = htmlspecialchars($row['correo'] ?? '');
-          $nombreEmpresa = htmlspecialchars($row['nombre_empresa'] ?? '');
-          $estado = $row['estado'];
+        $proveedorId = $row['id'];
+        $correo = htmlspecialchars($row['correo'] ?? '');
+        $nombreEmpresa = htmlspecialchars($row['nombre_empresa'] ?? '');
+        $estado = $row['estado'];
 
-          // Determinar clase de fila y badge según estado
-          switch ($estado) {
-              case 'pendiente':
-                  $rowClass = 'fila-revision';
-                  $badge = "<span class='badge  text-dark fs-6'>Pendiente</span>";
-                  break;
-              case 'correcto':
-                  $rowClass = 'fila-correcto';
-                  $badge = "<span class='badge  text-dark fs-6'>Correcto</span>";
-                  break;
-              case 'rechazado':
-                  $rowClass = 'fila-incorrecto';
-                  $badge = "<span class='badge text-dark fs-6'>Rechazado</span>";
-                  break;
-              case 'sin_contenido':
-              default:
-                  $rowClass = 'fila-sin-contenido';
-                  $badge = "<span class='badge text-dark fs-6'>Sin contenido</span>";
-                  break;
-          }
+        // Determinar clase de fila y badge según estado
+        switch ($estado) {
+          case 'pendiente':
+            $rowClass = 'fila-revision';
+            $badge = "<span class='badge text-dark fs-6'>Pendiente</span>";
+            break;
+          case 'aprobado':
+            $rowClass = 'fila-correcto';
+            $badge = "<span class='badge text-dark fs-6'>Aprobado</span>";
+            break;
+          case 'rechazado':
+            $rowClass = 'fila-incorrecto';
+            $badge = "<span class='badge text-dark fs-6'>Rechazado</span>";
+            break;
+          case 'sin_contenido':
+          default:
+            $rowClass = 'fila-sin-contenido';
+            $badge = "<span class='badge text-dark fs-6'>Sin contenido</span>";
+            break;
+        }
 
-          echo "<tr class='{$rowClass}'>
+
+        echo "<tr class='{$rowClass}'>
                   <td>{$correo}</td>
                   <td>{$nombreEmpresa}</td>
                   <td>{$badge}</td>
@@ -99,10 +100,27 @@ if(!$result){
 
 <!-- Estilos de filas por estado -->
 <style>
-.fila-revision td { background-color: #fff3cd !important; } /* amarillo */
-.fila-correcto td { background-color: #d4edda !important; } /* verde */
-.fila-incorrecto td { background-color: #f8d7da !important; } /* rojo */
-.fila-sin-contenido td { background-color: #cddbf7ff !important; color: #212529 !important; } /* gris */
+  .fila-revision td {
+    background-color: #fff3cd !important;
+  }
+
+  /* amarillo */
+  .fila-correcto td {
+    background-color: #d4edda !important;
+  }
+
+  /* verde */
+  .fila-incorrecto td {
+    background-color: #f8d7da !important;
+  }
+
+  /* rojo */
+  .fila-sin-contenido td {
+    background-color: #cddbf7ff !important;
+    color: #212529 !important;
+  }
+
+  /* gris */
 </style>
 
 <script>
