@@ -312,25 +312,19 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
               <td
                 <?php
                   $estado = strtolower($row['revision_estado'] ?? 'pendiente');
-                  $claseEstado = '';
-                  if ($estado === 'pendiente') $claseEstado = 'estado-pendiente';
-                  elseif ($estado === 'aprobado') $claseEstado = 'estado-aprobado';
-                  elseif ($estado === 'rechazado') $claseEstado = 'estado-rechazado';
+                  $claseEstado = 'bg-white text-center';
+                  // Asignar imagen según estado
+                  $imgEstado = '';
+                  if ($estado === 'pendiente') $imgEstado = '../assets/img/estado_pendiente.png';
+                  elseif ($estado === 'aprobado') $imgEstado = '../assets/img/estado_aprobado.png';
+                  elseif ($estado === 'rechazado') $imgEstado = '../assets/img/estado_rechazado.png';
                 ?>
                 class="<?= $claseEstado ?>"
               >
-                <?php if ($rol === 'administrador' || $rol === 'consultor'): ?>
-                  <select class="form-select form-select-sm estado-select" data-id="<?= $row['id'] ?>">
-                    <?php foreach ($estados_revision as $estadoOpt): ?>
-                      <option value="<?= $estadoOpt ?>" <?= $row['revision_estado'] === $estadoOpt ? 'selected' : '' ?>><?= ucfirst($estadoOpt) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                <?php else: ?>
-                  <?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?>
-                <?php endif; ?>
+                <img src="<?= $imgEstado ?>" alt="<?= ucfirst($estado) ?>" style="height:56px; width:auto; background:#fff;" />
               </td>
               <td>
-                <a href="visualizar_archivo.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
+                <a href="visualizar_archivo_split.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
                   <i class="bi bi-eye"></i>
                 </a>
                 <button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarArchivo('<?= $row['id'] ?>', '<?= htmlspecialchars($row['nombre_archivo'], ENT_QUOTES) ?>')" title="Eliminar Archivo">
