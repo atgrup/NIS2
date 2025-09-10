@@ -312,16 +312,16 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
               <td
                 <?php
                   $estado = strtolower($row['revision_estado'] ?? 'pendiente');
-                  $claseEstado = 'bg-white text-center';
-                  // Asignar imagen según estado
+                  $claseEstado = 'text-center align-middle';
                   $imgEstado = '';
-                  if ($estado === 'pendiente') $imgEstado = '../assets/img/estado_pendiente.png';
-                  elseif ($estado === 'aprobado') $imgEstado = '../assets/img/estado_aprobado.png';
-                  elseif ($estado === 'rechazado') $imgEstado = '../assets/img/estado_rechazado.png';
+                  if ($estado === 'pendiente') $imgEstado = '../assets/img/pendiente.png';
+                  elseif ($estado === 'aprobado') $imgEstado = '../assets/img/aprobado.png';
+                  elseif ($estado === 'rechazado') $imgEstado = '../assets/img/rechazado.png';
                 ?>
-                class="<?= $claseEstado ?>"
+                class="<?= $claseEstado ?> d-flex justify-content-center align-items-center"
+                style="padding:0;"
               >
-                <img src="<?= $imgEstado ?>" alt="<?= ucfirst($estado) ?>" style="height:56px; width:auto; background:#fff;" />
+                <img src="<?= $imgEstado ?>" alt="<?= ucfirst($estado) ?>" style="width:100px; height:auto; object-fit:contain; display:block; margin: 2px;" />
               </td>
               <td>
                 <a href="visualizar_archivo_split.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
@@ -410,6 +410,14 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
     modal.show();
   }
   </script>
+<script>
+// Recarga la tabla si se cambia el estado desde otra pestaña/ventana
+window.addEventListener('storage', function(e) {
+  if (e.key === 'recargarTablaArchivos') {
+    location.reload();
+  }
+});
+</script>
 
   <!-- Script: Subida de archivos vía AJAX -->
   <script>
