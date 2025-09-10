@@ -17,7 +17,8 @@ if (!isset($_GET['id'])) {
 $id_archivo = intval($_GET['id']);
 
 // Obtener info del archivo
-$stmt = $conn->prepare("SELECT a.id, a.nombre_archivo, p.nombre AS nombre_plantilla, a.fecha_subida, pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado FROM archivos_subidos a LEFT JOIN plantillas p ON a.plantilla_id = p.id LEFT JOIN proveedores pr ON a.proveedor_id = pr.id LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios WHERE a.id = ?");
+
+$stmt = $conn->prepare("SELECT a.id, a.nombre_archivo, p.nombre AS nombre_plantilla, a.fecha_subida, pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado, a.comentario FROM archivos_subidos a LEFT JOIN plantillas p ON a.plantilla_id = p.id LEFT JOIN proveedores pr ON a.proveedor_id = pr.id LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios WHERE a.id = ?");
 $stmt->bind_param('i', $id_archivo);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -28,22 +29,24 @@ if (!$archivo) {
 }
 
 // Procesar cambio de estado de revisión
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['revision_estado'])) {
-    $nuevo_estado = $_POST['revision_estado'];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && (isset($_POST['revision_estado']) || isset($_POST['comentario']))) {
+    $nuevo_estado = $_POST['revision_estado'] ?? $archivo['revision_estado'];
+    $nuevo_comentario = isset($_POST['comentario']) ? trim($_POST['comentario']) : $archivo['comentario'];
     $estados_validos = ['pendiente', 'aprobado', 'rechazado'];
     if (in_array($nuevo_estado, $estados_validos)) {
-        $stmt = $conn->prepare("UPDATE archivos_subidos SET revision_estado = ? WHERE id = ?");
-        $stmt->bind_param('si', $nuevo_estado, $id_archivo);
+        $stmt = $conn->prepare("UPDATE archivos_subidos SET revision_estado = ?, comentario = ? WHERE id = ?");
+        $stmt->bind_param('ssi', $nuevo_estado, $nuevo_comentario, $id_archivo);
         $stmt->execute();
         $stmt->close();
         // Refrescar los datos del archivo tras el cambio
-        $stmt = $conn->prepare("SELECT a.id, a.nombre_archivo, p.nombre AS nombre_plantilla, a.fecha_subida, pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado FROM archivos_subidos a LEFT JOIN plantillas p ON a.plantilla_id = p.id LEFT JOIN proveedores pr ON a.proveedor_id = pr.id LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios WHERE a.id = ?");
+        $stmt = $conn->prepare("SELECT a.id, a.nombre_archivo, p.nombre AS nombre_plantilla, a.fecha_subida, pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado, a.comentario FROM archivos_subidos a LEFT JOIN plantillas p ON a.plantilla_id = p.id LEFT JOIN proveedores pr ON a.proveedor_id = pr.id LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios WHERE a.id = ?");
         $stmt->bind_param('i', $id_archivo);
         $stmt->execute();
         $result = $stmt->get_result();
         $archivo = $result->fetch_assoc();
         $stmt->close();
-        $mensaje_estado = 'Estado actualizado correctamente.';
+        $mensaje_estado = 'Información actualizada correctamente.';
     } else {
         $mensaje_estado = 'Estado no válido.';
     }
@@ -187,32 +190,54 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['revision_estado'])) {
         <div>
             <div class="info-title">Información del archivo</div>
             <ul class="info-list">
-                <li><strong>Nombre:</strong> <span><?php echo htmlspecialchars($archivo['nombre_archivo']); ?></span></li>
-                <li><strong>Fecha de subida:</strong> <span><?php echo htmlspecialchars($archivo['fecha_subida']); ?></span></li>
-                <li><strong>Plantilla asociada:</strong> <span><?php echo htmlspecialchars($archivo['nombre_plantilla'] ?? 'N/A'); ?></span></li>
-                <li><strong>Empresa:</strong> <span><?php echo htmlspecialchars($archivo['nombre_empresa'] ?? 'N/A'); ?></span></li>
-                <li><strong>Email:</strong> <span><?php echo isset($archivo['correo_usuario']) ? htmlspecialchars($archivo['correo_usuario']) : 'N/A'; ?></span></li>
+                <li><strong>Nombre:</strong> <span><?= htmlspecialchars($archivo['nombre_archivo']); ?></span></li>
+                <li><strong>Fecha de subida:</strong> <span><?= htmlspecialchars($archivo['fecha_subida']); ?></span></li>
+                <li><strong>Plantilla asociada:</strong> <span><?= htmlspecialchars($archivo['nombre_plantilla'] ?? 'N/A'); ?></span></li>
+                <li><strong>Empresa:</strong> <span><?= htmlspecialchars($archivo['nombre_empresa'] ?? 'N/A'); ?></span></li>
+                <li><strong>Email:</strong> <span><?= isset($archivo['correo_usuario']) ? htmlspecialchars($archivo['correo_usuario']) : 'N/A'; ?></span></li>
+
+                <?php if (isset($_SESSION['rol']) && strtolower($_SESSION['rol']) === 'proveedor'): ?>
+                    <li><strong>Estado de revisión:</strong> <span><?= ucfirst($archivo['revision_estado']) ?></span></li>
+                    <?php if (!empty($archivo['comentario'])): ?>
+                        <li>
+                            <div>
+                                <strong>Comentario:</strong>
+                                <div style="word-break: break-word;">
+                                    <?= nl2br(htmlspecialchars($archivo['comentario'])) ?>
+                                </div>
+                            </div>
+                        </li>
+                    <?php endif; ?>
+                <?php endif; ?>
             </ul>
-            <!-- Desplegable de estado de revisión -->
-            <form method="POST" style="margin-top: 28px; width:100%; max-width:420px;">
-                <div class="mb-3">
-                    <label for="revision_estado" class="form-label" style="font-weight:600; color:#072989;">Estado de revisión</label>
-                    <select class="form-select" id="revision_estado" name="revision_estado">
-                        <?php
-                        $estados = [
-                            'pendiente' => 'Pendiente',
-                            'aprobado' => 'Aprobado',
-                            'rechazado' => 'Rechazado'
-                        ];
-                        foreach ($estados as $valor => $texto) {
-                            $selected = ($archivo['revision_estado'] === $valor) ? 'selected' : '';
-                            echo "<option value='$valor' $selected>$texto</option>";
-                        }
-                        ?>
-                    </select>
-                </div>
-                <button type="submit" class="btn bg-mi-color">Guardar</button>
-            </form>
+
+            <?php if (!isset($_SESSION['rol']) || strtolower($_SESSION['rol']) !== 'proveedor'): ?>
+                <form method="POST" style="margin-top: 28px; width:100%; max-width:420px;">
+                    <div class="mb-3" style="display:flex; align-items:center;">
+                        <strong style="color:#072989; min-width:140px; font-weight:700; font-size:1.05rem;">Estado de revisión:</strong>
+                        <select class="form-select ms-2" id="revision_estado" name="revision_estado" style="width:auto; min-width:140px;">
+                            <?php
+                            $estados = [
+                                'pendiente' => 'Pendiente',
+                                'aprobado' => 'Aprobado',
+                                'rechazado' => 'Rechazado'
+                            ];
+                            foreach ($estados as $valor => $texto) {
+                                $selected = ($archivo['revision_estado'] === $valor) ? 'selected' : '';
+                                echo "<option value='$valor' $selected>$texto</option>";
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="mb-3" style="width:100%;">
+                                                <strong style="color:#072989; font-weight:700; font-size:1.05rem; display:block; margin-bottom:6px;">Comentario:</strong>
+                                                <div style="position:relative;">
+                                <textarea class="form-control" name="comentario" rows="3" maxlength="500" style="width:calc(100% + 60px); max-width:none; border:2px solid #072989; border-radius:10px; margin-bottom:8px; position:relative; left:0; right:-60px;" placeholder="Escribe un comentario para el proveedor..."><?= htmlspecialchars($archivo['comentario'] ?? '') ?></textarea>
+                                                </div>
+                    </div>
+                    <button type="submit" class="btn bg-mi-color">Guardar</button>
+                </form>
+            <?php endif; ?>
             <?php if (isset($mensaje_estado)): ?>
                 <div class="alert alert-success mt-2" style="max-width:420px;"> <?= htmlspecialchars($mensaje_estado) ?> </div>
             <?php endif; ?>
@@ -221,35 +246,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['revision_estado'])) {
     </div>
 </div>
 <script>
-// AJAX para actualizar el estado de revisión sin recargar
+// Autocompletar comentario si se selecciona 'aprobado' y limpiar si se cambia a otra opción
+document.addEventListener('DOMContentLoaded', function() {
+    var selectEstado = document.getElementById('revision_estado');
+    var textareaComentario = document.querySelector('textarea[name="comentario"]');
+    if (selectEstado && textareaComentario) {
+        selectEstado.addEventListener('change', function() {
+            if (this.value === 'aprobado') {
+                if (textareaComentario.value === '' || textareaComentario.value === 'El archivo ha sido aprobado.') {
+                    textareaComentario.value = 'El archivo ha sido aprobado.';
+                }
+            } else {
+                if (textareaComentario.value === 'El archivo ha sido aprobado.') {
+                    textareaComentario.value = '';
+                }
+            }
+        });
+    }
+});
+
+// AJAX para actualizar el estado de revisión y comentario sin recargar
 const formEstado = document.querySelector('form[method="POST"]');
 if (formEstado) {
   formEstado.addEventListener('submit', function(e) {
     e.preventDefault();
-    const select = document.getElementById('revision_estado');
-    const estado = select.value;
     const btn = formEstado.querySelector('button[type="submit"]');
     btn.disabled = true;
     btn.textContent = 'Actualizando...';
+
+    // Enviar TODOS los campos del formulario (estado + comentario)
+    const formData = new FormData(formEstado);
+
     fetch(window.location.href, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: 'revision_estado=' + encodeURIComponent(estado)
+      body: formData
     })
     .then(res => res.text())
     .then(html => {
-      // Extraer el nuevo estado y mensaje del HTML devuelto
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
-      // Actualizar el mensaje
       const msg = doc.querySelector('.alert-success');
       const oldMsg = document.querySelector('.alert-success');
       if (oldMsg) oldMsg.remove();
       if (msg) formEstado.insertAdjacentElement('afterend', msg);
       btn.disabled = false;
       btn.textContent = 'Guardar';
-      // Señal para recargar la tabla en otras pestañas
       localStorage.setItem('recargarTablaArchivos', Date.now());
+      location.reload();
     })
     .catch(() => {
       alert('Error al actualizar el estado');
@@ -259,5 +302,6 @@ if (formEstado) {
   });
 }
 </script>
+
 </body>
 </html>
