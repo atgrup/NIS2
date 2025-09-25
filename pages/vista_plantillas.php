@@ -75,7 +75,7 @@ if (!$result) {
       <thead class="table-light">
         <tr>
           <th>Nombre de la plantilla</th>
-          <th>Consultor</th>
+          <th>Autor</th>
           <th>Tipo</th>
           <th data-no-sort>Acciones</th>
         </tr>

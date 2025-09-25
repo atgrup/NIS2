@@ -30,9 +30,17 @@ $result = $conexion->query($sql);
 if (!$result) {
   die("Error en la consulta SQL: " . $conexion->error);
 }
-
 ?>
 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Listado de proveedores</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-4">
 <div>
   <table class="table table-bordered table-hover" id="tablaProveedores">
     <thead class="table-light">
@@ -71,8 +79,6 @@ if (!$result) {
             $badge = "<span class='badge text-dark fs-6'>Sin contenido</span>";
             break;
         }
-
-
         echo "<tr class='{$rowClass}'>
                   <td>{$correo}</td>
                   <td>{$nombreEmpresa}</td>
@@ -160,27 +166,28 @@ if (!$result) {
     </div>
   </div>
 </div>
+</body>
+</html>
 
 <!-- Estilos de filas por estado -->
 <style>
   .fila-revision td {
-    background-color: #fff3cd !important;
+    background-color: #ffe082 !important;
   }
 
   /* amarillo */
   .fila-correcto td {
-    background-color: #d4edda !important;
+    background-color: #a5d6a7 !important;
   }
 
   /* verde */
   .fila-incorrecto td {
-    background-color: #f8d7da !important;
+    background-color: #ef9a9a !important;
   }
 
   /* rojo */
   .fila-sin-contenido td {
-    background-color: #cddbf7ff !important;
-    color: #212529 !important;
+    background-color: #90caf9 !important;
   }
 
   /* gris */

@@ -106,7 +106,7 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
       <!-- Columna de la derecha para información adicional y un elemento gráfico. -->
       <div class="col-md-5 info-text">
         <!-- Un enlace para volver a la página anterior. `onclick="window.history.back(); return false;"` utiliza JavaScript para navegar hacia atrás sin recargar la página. -->
-        <a href="#" onclick="window.history.back(); return false;" class="back-arrow mb-3 d-block">&#8592;</a>
+        <a href="../index.php" class="back-arrow mb-3 d-block">&#8592;</a>
         <h3>Si ya eres proveedor o en caso que necesites darte de alta como uno….</h3>
         <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
 

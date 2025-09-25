@@ -223,9 +223,7 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
              <div class="mb-3">
-              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
-                Subir Archivo
-              </button>
+              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">Subir Archivo</button>
             </div>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>

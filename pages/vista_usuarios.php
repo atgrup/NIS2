@@ -1,4 +1,24 @@
-<div>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Listado Consultores</title>
+
+  <!-- Bootstrap CSS y iconos -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* Ocultar la primera columna (#) en la tabla */
+    table.consultores-table th:first-child,
+    table.consultores-table td:first-child {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
     <table id="tablaUsuarios" class="table table-bordered table-hover">
         <thead class="table-light">
             <tr>
@@ -200,3 +220,5 @@ function mostrarAlertaBootstrap(mensaje, tipo = 'info') {
   }, 4000);
 }
 </script>
+</body>
+</html>
