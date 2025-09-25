@@ -21,9 +21,9 @@
         rel="stylesheet">
 </head>
 
-<body class="d-flex flex-column vh-100">
+<body class="d-flex flex-column 100%">
     <!-- Barra de navegación -->
-    <nav class="container d-flex justify-content-between align-items-center py-3 flex-nowrap" style="height: 20vh;">
+    <nav class="container d-flex justify-content-between align-items-center py-3 flex-nowrap" style="height: 20%;">
         <!-- Título de la página (recortado si es demasiado largo) -->
         <h1 class="tituloIndice text-truncate m-0" style="max-width: 60vw;">Bienvenido/a</h1>
 
@@ -35,7 +35,7 @@
     </nav>
 
     <!-- Contenido principal -->
-    <main class="d-flex justify-content-center align-items-center my-4" style="height: 80vh;">
+    <main class="d-flex justify-content-center align-items-center my-4" style="height: 80%;">
         <section class=" container section-fondo text-white rounded p-4 d-flex flex-column justify-content-center ">
             <!-- Subtítulo -->
             <div class="subtitulo-index fs-5 fw-bold mb-3">Nuevas restricciones de la NIS2</div>

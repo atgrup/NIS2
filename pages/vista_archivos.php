@@ -290,7 +290,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
   <div>
     <?php if (isset($archivosRes) && $archivosRes && $archivosRes->num_rows > 0): ?>
       <table class="table table-bordered table-hover archivos-table">
-        <thead>
+        <thead class="table-light">
           <tr>
             <th>Nombre archivo</th>
             <th>Plantilla</th>
@@ -298,7 +298,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
             <th>Empresa</th>
             <th>Usuario</th>
             <th>Estado revisión</th>
-            <th>Acciones</th>
+            <th data-no-sort>Acciones</th>
           </tr>
         </thead>
         <tbody>
