@@ -246,7 +246,22 @@ h4 {
   align-self: center;
   flex-direction: column;
 }
+/* Adaptación a pantallas pequeñas */
 @media (max-width: 900px) {
+  .indexStencil {
+    position: static;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    border-radius: 0 0 30px 30px;
+    height: auto;
+  }
+  .contenedorTablaStencil {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+@media (max-width: 300px) {
   .indexStencil {
     position: static;
     width: 100%;
