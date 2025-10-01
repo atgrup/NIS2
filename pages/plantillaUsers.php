@@ -223,9 +223,7 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
              <div class="mb-3">
-              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
-                Subir Archivo
-              </button>
+              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">Subir Archivo</button>
             </div>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
@@ -418,20 +416,18 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 
 
   <!-- Modal Subir Archivo -->
- <!-- Botón para abrir el modal (por si lo necesitas) -->
-
+<!-- Botón para abrir el modal (por si lo necesitas) -->
 
 <!-- Modal -->
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content"> <!-- FONDO DEL MODAL -->
-      <div class="modal-header">
+      <div class="modal-header bg-mi-color text-white">
         <h5 class="modal-title" id="modalSubirArchivoLabel">Subir archivo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      
       <div class="modal-body">
-        <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
+        <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo_rellenado.php">
           <div class="mb-3">
             <label for="archivo" class="form-label">Selecciona un archivo</label>
             <input type="file" class="form-control" id="archivo-modal" name="archivo" required accept=".pdf">
@@ -440,11 +436,25 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
           <div class="mb-3">
             <label for="plantilla" class="form-label success">Selecciona una plantilla</label>
             <select class="form-select " id="plantilla" name="plantilla_id">
-              <!-- Opciones dinámicas o estáticas -->
+              <?php
+                // Mostrar todas las plantillas disponibles
+                require_once dirname(__DIR__) . '/api/includes/conexion.php';
+                $queryPlantillas = "SELECT id, nombre FROM plantillas ORDER BY fecha_subida DESC";
+                $resultPlantillas = $conexion->query($queryPlantillas);
+                if ($resultPlantillas && $resultPlantillas->num_rows > 0) {
+                  while ($row = $resultPlantillas->fetch_assoc()) {
+                    echo '<option value="' . $row['id'] . '">' . htmlspecialchars($row['nombre']) . '</option>';
+                  }
+                } else {
+                  echo '<option value="">No hay plantillas disponibles</option>';
+                }
+              ?>
             </select>
           </div>
 
-          <button type="submit" class="btn btn-primary">Subir</button>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Subir</button>
+          </div>
         </form>
       </div>
     </div>

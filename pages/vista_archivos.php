@@ -290,7 +290,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
   <div>
     <?php if (isset($archivosRes) && $archivosRes && $archivosRes->num_rows > 0): ?>
       <table class="table table-bordered table-hover archivos-table">
-        <thead>
+        <thead class="table-light">
           <tr>
             <th>Nombre archivo</th>
             <th>Plantilla</th>
@@ -298,7 +298,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
             <th>Empresa</th>
             <th>Usuario</th>
             <th>Estado revisión</th>
-            <th>Acciones</th>
+            <th data-no-sort>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -312,25 +312,19 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
               <td
                 <?php
                   $estado = strtolower($row['revision_estado'] ?? 'pendiente');
-                  $claseEstado = '';
-                  if ($estado === 'pendiente') $claseEstado = 'estado-pendiente';
-                  elseif ($estado === 'aprobado') $claseEstado = 'estado-aprobado';
-                  elseif ($estado === 'rechazado') $claseEstado = 'estado-rechazado';
+                  $claseEstado = 'text-center align-middle';
+                  $imgEstado = '';
+                  if ($estado === 'pendiente') $imgEstado = '../assets/img/pendiente.png';
+                  elseif ($estado === 'aprobado') $imgEstado = '../assets/img/aprobado.png';
+                  elseif ($estado === 'rechazado') $imgEstado = '../assets/img/rechazado.png';
                 ?>
-                class="<?= $claseEstado ?>"
+                class="<?= $claseEstado ?> d-flex justify-content-center align-items-center"
+                style="padding:0;"
               >
-                <?php if ($rol === 'administrador' || $rol === 'consultor'): ?>
-                  <select class="form-select form-select-sm estado-select" data-id="<?= $row['id'] ?>">
-                    <?php foreach ($estados_revision as $estadoOpt): ?>
-                      <option value="<?= $estadoOpt ?>" <?= $row['revision_estado'] === $estadoOpt ? 'selected' : '' ?>><?= ucfirst($estadoOpt) ?></option>
-                    <?php endforeach; ?>
-                  </select>
-                <?php else: ?>
-                  <?= ucfirst(htmlspecialchars($row['revision_estado'] ?? 'pendiente')) ?>
-                <?php endif; ?>
+                <img src="<?= $imgEstado ?>" alt="<?= ucfirst($estado) ?>" style="width:100px; height:auto; object-fit:contain; display:block; margin: 2px;" />
               </td>
               <td>
-                <a href="visualizar_archivo.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
+                <a href="visualizar_archivo_split.php?id=<?= $row['id'] ?>" target="_blank" class="btn btn-sm btn-info me-1" title="Ver documento">
                   <i class="bi bi-eye"></i>
                 </a>
                 <button class="btn btn-sm btn-danger" onclick="mostrarModalEliminarArchivo('<?= $row['id'] ?>', '<?= htmlspecialchars($row['nombre_archivo'], ENT_QUOTES) ?>')" title="Eliminar Archivo">
@@ -416,6 +410,14 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
     modal.show();
   }
   </script>
+<script>
+// Recarga la tabla si se cambia el estado desde otra pestaña/ventana
+window.addEventListener('storage', function(e) {
+  if (e.key === 'recargarTablaArchivos') {
+    location.reload();
+  }
+});
+</script>
 
   <!-- Script: Subida de archivos vía AJAX -->
   <script>

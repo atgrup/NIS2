@@ -84,7 +84,7 @@ if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
       <!-- Columna de la derecha para información adicional. -->
       <div class="col-md-5 info-text">
         <!-- Un enlace para volver a la página anterior. `onclick="window.history.back(); return false;"` utiliza JavaScript para navegar hacia atrás sin recargar la página. -->
-        <a href="#" onclick="window.history.back(); return false;" class="back-arrow mb-3 d-block">&#8592;</a>
+        <a href="../index.php" class="back-arrow mb-3 d-block">&#8592;</a>
         <h3>¿Ya eres proveedor? Inicia sesión para acceder a tu cuenta.</h3>
         <p>Si aún no te has registrado, verifica que cuentas con la documentación actualizada y que cumples con los requisitos de la normativa NIS2 antes de darte de alta.</p>
 
