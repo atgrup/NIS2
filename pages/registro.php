@@ -22,6 +22,7 @@ if (isset($_GET['success']) && $_GET['success'] === '1') {
         $mensaje = "❌ Error desconocido al registrar.";
     }
 }
+
 ?>
 
 <!DOCTYPE html>

@@ -1,67 +1,58 @@
 <?php
-require_once '../includes/conexion.php'; 
+require 'conexion.php'; // tu conexión a la base de datos
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $correo = $_POST['email'];
-    $password = $_POST['password'];
-    $repeat = $_POST['repeat-password'];
+// Comprobar que se envió el formulario por POST
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $email = $_POST['email'];
     $nombre_empresa = $_POST['nombre_empresa'];
-    
-    $tipo_usuario_id = 2; // PROVEEDOR
+    $password = $_POST['password'];
+    $repeat_password = $_POST['repeat-password'];
 
-    if ($password !== $repeat) {
-        header("Location: ../../pages/registro.php?error=contraseña");
+    // Verificar que las contraseñas coincidan
+    if ($password !== $repeat_password) {
+        header("Location: ../../registro.php?error=pass");
         exit;
     }
 
     // Verificar si el correo ya existe
-    $stmt_check = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ? LIMIT 1");
-    $stmt_check->bind_param("s", $correo);
-    $stmt_check->execute();
-    $stmt_check->store_result();
-    if ($stmt_check->num_rows > 0) {
-        $stmt_check->close();
-        $conexion->close();
-        header("Location: ../../pages/registro.php?error=correo");
+    $stmt = $conn->prepare("SELECT id FROM usuarios WHERE email = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+
+    if ($stmt->num_rows > 0) {
+        header("Location: ../../registro.php?error=email");
         exit;
     }
-    $stmt_check->close();
 
-    // Hashear contraseña
-    $hash = password_hash($password, PASSWORD_DEFAULT);
+    // Generar hash de la contraseña
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
 
-    // Insertar usuario
-    $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, ?)");
-    $stmt->bind_param("ssi", $correo, $hash, $tipo_usuario_id);
+    // Generar código de verificación
+    $verification_code = bin2hex(random_bytes(16));
 
+    // Insertar el usuario con email no verificado
+    $stmt = $conn->prepare("INSERT INTO usuarios (email, nombre_empresa, password, email_verified, verification_code) VALUES (?, ?, ?, 0, ?)");
+    $stmt->bind_param("ssss", $email, $nombre_empresa, $password_hash, $verification_code);
     if ($stmt->execute()) {
-        // Obtener id del usuario insertado
-        $usuario_id = $conexion->insert_id;
+        // Enviar correo de verificación
+        $verification_link = "https://tusitio.com/verify.php?code=$verification_code";
+        $subject = "Verifica tu correo - NIS2";
+        $message = "Hola, $nombre_empresa!<br><br>Por favor verifica tu correo haciendo clic en el siguiente enlace:<br><a href='$verification_link'>$verification_link</a><br><br>Gracias.";
+        $headers = "From: no-reply@tusitio.com\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+        mail($email, $subject, $message, $headers);
 
-        // Insertar en proveedores
-        $stmt2 = $conexion->prepare("INSERT INTO proveedores (usuario_id, nombre_empresa) VALUES (?, ?)");
-        $stmt2->bind_param("is", $usuario_id, $nombre_empresa);
-
-        if ($stmt2->execute()) {
-            $stmt2->close();
-            $stmt->close();
-            $conexion->close();
-            header("Location: ../../pages/login.php?registro=ok");
-            exit;
-        } else {
-            // Error insertando proveedor
-            $stmt2->close();
-            $stmt->close();
-            $conexion->close();
-            header("Location: ../../pages/registro.php?error=bd_proveedor");
-            exit;
-        }
+        // Redirigir con mensaje de éxito
+        header("Location: ../../registro.php?success=1");
+        exit;
     } else {
-        // Error insertando usuario
-        $stmt->close();
-        $conexion->close();
-        header("Location: ../../pages/registro.php?error=bd_usuario");
+        header("Location: ../../registro.php?error=unknown");
         exit;
     }
+} else {
+    // Acceso directo no permitido
+    header("Location: ../../registro.php");
+    exit;
 }
 ?>

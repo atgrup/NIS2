@@ -459,10 +459,10 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
       // Restauramos el botón al estado inicial.
       submitBtn.disabled = false;
       submitBtn.innerHTML = '<i class="bi bi-upload"></i> Subir Archivo';
-    });
+    })
+            
   });
   </script>
-
   <!-- Script: Validación de archivo (solo PDF) -->
   <script>
   /**

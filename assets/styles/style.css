@@ -246,35 +246,202 @@ h4 {
   align-self: center;
   flex-direction: column;
 }
-/* Adaptación a pantallas pequeñas */
-@media (max-width: 900px) {
-  .indexStencil {
-    position: static;
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    border-radius: 0 0 30px 30px;
-    height: auto;
+/* -------------------- */
+/* Responsive completo para móviles y tablets */
+/* Sobrescribe inline con !important */
+/* -------------------- */
+
+/* Móviles extra pequeños (≤320px) */
+@media (max-width: 320px) {
+  .stencil{
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
+
+  .indexStencil , .menuNav {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 8px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1rem !important;
+    text-align: center !important;
+    margin: 4px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 4px !important;
+  }
+
   .contenedorTablaStencil {
-    margin-left: 0;
-    width: 100%;
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 4px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 10px !important;
+  }
+  .contenedorTablaStencil{
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: column !important ;
   }
 }
-@media (max-width: 300px) {
-  .indexStencil {
-    position: static;
-    width: 100%;
-    min-width: 0;
-    max-width: none;
-    border-radius: 0 0 30px 30px;
-    height: auto;
+
+/* Móviles estándar (≤480px) */
+@media (max-width: ≤480px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 10px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin: 5px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 5px !important;
+  }
+
   .contenedorTablaStencil {
-    margin-left: 0;
-    width: 100%;
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 5px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 12px !important;
   }
 }
+
+/* Tablets pequeñas (≤720px) */
+@media (max-width: ≤720px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 12px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.3rem !important;
+    text-align: center !important;
+    margin: 6px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 6px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Tablets medianas (≤900px) */
+@media (max-width: ≤900px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 14px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.4rem !important;
+    text-align: center !important;
+    margin: 8px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 8px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 14px !important;
+  }
+}
+
 /* --- Botones de la navegación --- */
 .menuNav .btn-outline-light {
   border: 1px solid white;
@@ -353,14 +520,4 @@ table, th, td {
 .footerNaV form {
   padding: 0;
   margin: 0 auto;
-}
-@media (max-width: 900px) {
-  .indexStencil {
-    position: relative;
-  }
-  .footerNaV {
-    position: static;
-    bottom: auto;
-    margin-top: 30px;
-  }
 }
