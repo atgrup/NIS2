@@ -2,12 +2,17 @@
 require '../includes/conexion.php';
 
 $mensaje = "";
+
 $verificado_ok = false;
 
 // Procesar POST del código de verificación
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     $code = $_POST['code'];
 
+
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
+    $code = $_POST['code'];
     $stmt = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
     $stmt->bind_param("s", $code);
     $stmt->execute();
@@ -15,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     if ($stmt->affected_rows > 0) {
         $mensaje = "✅ Tu correo ha sido verificado. Ya puedes iniciar sesión.";
         $verificado_ok = true;
+
     } else {
         $mensaje = "❌ Código inválido o ya verificado.";
     }
@@ -28,6 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Verificación de correo</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-light">
 
@@ -39,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
             <?php echo $mensaje; ?>
         </div>
     <?php endif; ?>
+
 
     <?php if(!$verificado_ok): ?>
     <form method="POST">
@@ -52,6 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     <?php else: ?>
         <a href="../../pages/login.php" class="btn btn-success w-100">Ir a Iniciar sesión</a>
     <?php endif; ?>
+
+    <form method="POST">
+        <div class="mb-3">
+            <label for="code" class="form-label">Introduce tu código de verificación</label>
+            <input type="text" class="form-control" id="code" name="code" placeholder="Código enviado por correo" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Verificar</button>
+    </form>
 </div>
 
 </body>

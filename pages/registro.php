@@ -4,7 +4,8 @@ $tipo_alerta = "";
 $mostrarModal = false;
 $codigo_verificacion = "";
 
-// Manejo de mensajes de error o éxito
+
+
 if (isset($_GET['error'])) {
     $mostrarModal = true;
     switch($_GET['error']){
@@ -27,9 +28,15 @@ if (isset($_GET['error'])) {
     $mostrarModal = true;
     if (isset($_GET['token'])) {
         $codigo_verificacion = $_GET['token'];
+
     }
+} elseif (isset($_GET['success']) && $_GET['success'] === '1') {
+    $mensaje = "✅ Registro exitoso. Revisa tu correo para la verificación.";
+    $tipo_alerta = "success";
+    $mostrarModal = true;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">
@@ -49,6 +56,14 @@ if (isset($_GET['error'])) {
     <div class="col-md-5">
       <div class="auth-box text-center shadow">
         <h3 class="mb-4">NIS2</h3>
+
+
+        <!-- Mensaje de estado -->
+        <?php if (!empty($mensaje)): ?>
+          <div class="alert <?php echo (str_starts_with($mensaje,'✅') ? 'alert-success' : 'alert-danger'); ?>">
+            <?php echo $mensaje; ?>
+          </div>
+        <?php endif; ?>
 
         <!-- Formulario de registro -->
         <form method="POST" action="../api/auth/procesar_registro.php">
@@ -70,6 +85,7 @@ if (isset($_GET['error'])) {
           </div>
           <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
         </form>
+
       </div>
     </div>
 
@@ -91,11 +107,52 @@ if (isset($_GET['error'])) {
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header <?php echo ($tipo_alerta === 'success' ? 'bg-success text-white' : 'bg-danger text-white'); ?>">
+
+      </div>
+    </div>
+
+    <!-- Columna de información adicional e imagen -->
+    <div class="col-md-5 info-text">
+      <a href="../index.php" class="back-arrow mb-3 d-block">&#8592;</a>
+      <h3>Si ya eres proveedor o necesitas darte de alta como uno…</h3>
+      <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
+      <div class="register-section">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE" class="europe-icon">
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Modal de verificación -->
+<div class="modal fade" id="modalVerificacion" tabindex="-1" aria-labelledby="modalVerificacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalVerificacionLabel">Introduce el código de verificación</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <p>Se ha enviado un código de verificación a tu correo. Ingresa el código para activar tu cuenta.</p>
+        <input type="password" id="codigoUsuario" class="form-control" placeholder="Código de verificación">
+        <small class="text-muted d-block mt-2">Código (para pruebas en consola): <span id="codigoPrueba"></span></small>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" onclick="verificarCodigo()">Verificar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Modal de mensaje malo-->
+<div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header <?php echo $tipo_alerta === 'success' ? 'bg-success text-white' : 'bg-danger text-white'; ?>">
         <h5 class="modal-title">Aviso</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
         <?php echo $mensaje; ?>
+
         <?php if ($tipo_alerta === 'success'): ?>
           <hr>
           <p>Introduce el código de verificación enviado a tu correo:</p>
@@ -107,6 +164,8 @@ if (isset($_GET['error'])) {
         <?php if ($tipo_alerta === 'success'): ?>
         <button type="button" class="btn btn-primary" onclick="verificarCodigo()">Verificar</button>
         <?php endif; ?>
+      </div>
+      <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
@@ -117,6 +176,7 @@ if (isset($_GET['error'])) {
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const mostrarModal = <?php echo ($mostrarModal ? 'true' : 'false'); ?>;
+
     const codigoToken = "<?php echo $codigo_verificacion ?? ''; ?>";
 
     // Mostrar token en consola para pruebas
@@ -129,10 +189,31 @@ document.addEventListener("DOMContentLoaded", function() {
         modal.show();
     }
 
+
+    const codigoToken = "<?php echo $codigo_verificacion ?? ''; ?>"; // Aquí se asegura que llegue
+
+    // Mostrar token en consola para pruebas
+    if(codigoToken) console.log("Token de verificación (pruebas):", codigoToken);
+
+    // Mostrar token en modal (solo para pruebas)
+    const spanCodigo = document.getElementById('codigoPrueba');
+    if(spanCodigo) {
+        spanCodigo.innerText = codigoToken;
+    }
+
+    // Abrir modal si corresponde
+    if(mostrarModal){
+        const modal = new bootstrap.Modal(document.getElementById('modalVerificacion'));
+        modal.show();
+    }
+
+    // Función de verificación con input tipo password
+
     window.verificarCodigo = function(){
         const codigoIngresado = document.getElementById('codigoUsuario').value;
         if(codigoIngresado === codigoToken){
             alert("✅ Código correcto, cuenta activada!");
+
             window.location.href = "../pages/login.php";
         } else {
             alert("❌ Código incorrecto, intenta de nuevo.");
@@ -140,6 +221,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 </script>
+
 
 </body>
 </html>
