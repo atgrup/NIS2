@@ -1,5 +1,5 @@
 <?php
-require_once '../includes/conexion.php'; 
+require 'conexion.php'; // tu conexión a la base de datos
 
 // Solo procesa si la petición es POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -30,7 +30,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: ../../pages/registro.php?error=correo");
         exit;
     }
-    $stmt_check->close();
 
     // Hashear la contraseña de manera segura
     $hash = password_hash($password, PASSWORD_DEFAULT);
@@ -39,6 +38,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, tipo_usuario_id) VALUES (?, ?, ?)");
     $stmt->bind_param("ssi", $correo, $hash, $tipo_usuario_id);
 
+    // Insertar el usuario con email no verificado
+    $stmt = $conn->prepare("INSERT INTO usuarios (email, nombre_empresa, password, email_verified, verification_code) VALUES (?, ?, ?, 0, ?)");
+    $stmt->bind_param("ssss", $email, $nombre_empresa, $password_hash, $verification_code);
     if ($stmt->execute()) {
         // Obtener el ID del usuario recién insertado
         $usuario_id = $conexion->insert_id;
@@ -69,5 +71,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: ../../pages/registro.php?error=bd_usuario");
         exit;
     }
+} else {
+    // Acceso directo no permitido
+    header("Location: ../../registro.php");
+    exit;
 }
 ?>

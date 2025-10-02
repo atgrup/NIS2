@@ -52,6 +52,20 @@ if ($result->num_rows === 1) {
     header("Location: ../../pages/login.php?error=credenciales");
     exit;
 }
-?>
-
-
+// Supongamos que ya obtienes $user de la DB
+if ($user) {
+    if ($user['email_verified'] == 0) {
+        header("Location: ../login.php?error=no_verificado");
+        exit;
+    }
+    // Iniciar sesión
+    session_start();
+    $_SESSION['user_id'] = $user['id'];
+    header("Location: ../dashboard.php");
+    exit;
+} else {
+    header("Location: ../login.php?error=credenciales");
+    exit;
+}
+$stmt->close();
+$conexion->close(); 
