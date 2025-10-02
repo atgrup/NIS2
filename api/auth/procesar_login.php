@@ -11,13 +11,13 @@ if (empty($correo) || empty($password)) {
     exit;
 }
 
+// Obtener usuario y estado de verificación
 $stmt = $conexion->prepare("
-    SELECT u.id_usuarios, u.password, t.nombre AS rol
+    SELECT u.id_usuarios, u.password, u.verificado, t.nombre AS rol
     FROM usuarios u
     INNER JOIN tipo_usuario t ON u.tipo_usuario_id = t.id_tipo_usuario
     WHERE u.correo = ?
 ");
-
 $stmt->bind_param("s", $correo);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -25,35 +25,29 @@ $result = $stmt->get_result();
 if ($result->num_rows === 1) {
     $user = $result->fetch_assoc();
 
+    // <-- AQUÍ colocas la verificación -->
+    if (!$user['verificado']) {
+        header("Location: ../../pages/login.php?error=no_verificado");
+        exit;
+    }
+    // <-- FIN de la verificación -->
+
     if (password_verify($password, $user['password'])) {
         $_SESSION['id_usuario'] = $user['id_usuarios'];
         $_SESSION['correo'] = $correo;
-        $_SESSION['rol'] = $user['rol']; // 'rol' es el nombre del tipo de usuario
-
+        $_SESSION['rol'] = $user['rol'];
         header("Location: ../../pages/plantillaUsers.php");
         exit;
     } else {
         header("Location: ../../pages/login.php?error=credenciales");
         exit;
     }
-} else {
+}
+else {
     header("Location: ../../pages/login.php?error=credenciales");
     exit;
 }
-// Supongamos que ya obtienes $user de la DB
-if ($user) {
-    if ($user['email_verified'] == 0) {
-        header("Location: ../login.php?error=no_verificado");
-        exit;
-    }
-    // Iniciar sesión
-    session_start();
-    $_SESSION['user_id'] = $user['id'];
-    header("Location: ../dashboard.php");
-    exit;
-} else {
-    header("Location: ../login.php?error=credenciales");
-    exit;
-}
+
 $stmt->close();
-$conexion->close(); 
+$conexion->close();
+?>

@@ -6,38 +6,11 @@
     "configurations": [
     
         {
-            "name": "Launch built-in server and Debug",
-            "type": "php",
+            "name": "Launch Chrome",
             "request": "launch",
-            "noDebug": false,
-            "runtimeArgs": [
-                "-S",
-                "localhost:8000",
-                "-t",
-                "."
-            ],
-            "cwd": "${workspaceRoot}/.",
-            "serverReadyAction": {
-                "action": "openExternally"
-            }
-        },
-        {
-            "name": "Launch built-in server and Profile",
-            "type": "php",
-            "request": "launch",
-            "noDebug": true,
-            "runtimeArgs": [
-                "-S",
-                "localhost:8000",
-                "-t",
-                "."
-            ],
-            "cwd": "${workspaceRoot}/.",
-            "serverReadyAction": {
-                "action": "openExternally"
-            },
-            "profile": true,
-            "openProfile": true
+            "type": "chrome",
+            "url": "http://localhost:80/NIS2/index.php",
+            "webRoot": "${workspaceFolder}"
         },
         {
             "name": "Listen for Xdebug",
