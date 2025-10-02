@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Verificar que las contraseñas coincidan
     if ($password !== $repeat_password) {
-        header("Location: ../../registro.php?error=pass");
+        header("Location: ../../pages/registro.php?error=pass");
         exit;
     }
 
@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->store_result();
 
     if ($stmt->num_rows > 0) {
-        header("Location: ../../registro.php?error=email");
+        header("Location: ../../pages/registro.php?error=email");
         exit;
     }
 
@@ -33,11 +33,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $verification_code = bin2hex(random_bytes(16));
 
     // Insertar el usuario con correo no verificado
+
+   $stmt = $conexion->prepare("
+    INSERT INTO usuarios (correo, password, verificado, token_verificacion, tipo_usuario_id)
+    VALUES (?, ?, ?, ?, ?)
+");
+$verificado = 0;
+$tipo_usuario_id = 2; // por defecto proveedor
+$stmt->bind_param("sssis", $email, $password_hash, $verificado, $verification_code, $tipo_usuario_id);
+
+    if ($stmt->execute()) {
+        // Enlace de verificación (solo para pruebas en localhost)
+
    $stmt = $conexion->prepare("INSERT INTO usuarios (correo, password, verificado, token_verificacion, tipo_usuario_id) VALUES (?, ?, 0, ?, 2)");
 $stmt->bind_param("sss", $email, $password_hash, $verification_code);
 
     if ($stmt->execute()) {
         // Enlace de verificación (ajústalo a tu entorno: localhost o dominio real)
+
         $verification_link = "http://localhost/NIS2/api/auth/verify.php?code=$verification_code";
 
         // Preparar email
@@ -51,6 +64,12 @@ $stmt->bind_param("sss", $email, $password_hash, $verification_code);
         $headers = "From: no-reply@tusitio.com\r\n";
         $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
 
+
+        // Enviar correo (para pruebas puedes comentar mail())
+        mail($email, $subject, $message, $headers);
+
+        // Redirigir con token para mostrar modal
+        header("Location: ../../pages/registro.php?success=1&token=$verification_code");
         // Enviar correo
         mail($email, $subject, $message, $headers);
 
@@ -62,8 +81,10 @@ header("Location: ../../pages/registro.php?success=1");
         exit;
     }
 } else {
+
     // Acceso directo no permitido
 header("Location: ../../pages/registro.php?success=1");
+
     exit;
 }
 ?>
