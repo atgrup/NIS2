@@ -1,17 +1,22 @@
 <?php
-// Inicializa la variable `$mensaje` que se usará para mostrar mensajes de estado al usuario.
+// login.php
 $mensaje = "";
+$mostrarModal = false;
 
-// Comprueba si se recibió un parámetro 'error' en la URL a través del método GET y si su valor es 'credenciales'.
-if (isset($_GET['error']) && $_GET['error'] === 'credenciales') {
-    // Si es así, asigna un mensaje de error que indica que las credenciales son incorrectas.
-    $mensaje = "❌ Correo o contraseña incorrectos.";
-// De lo contrario, si se recibió un parámetro 'logout' y su valor es 'ok'...
+if (isset($_GET['error'])) {
+    if ($_GET['error'] === 'credenciales') {
+        $mensaje = "❌ Correo o contraseña incorrectos.";
+        $mostrarModal = true;
+    } elseif ($_GET['error'] === 'no_verificado') {
+        $mensaje = "❌ Usuario no verificado. Revisa tu correo.";
+        $mostrarModal = true;
+    }
 } elseif (isset($_GET['logout']) && $_GET['logout'] === 'ok') {
-    // Asigna un mensaje de éxito que confirma que la sesión se cerró correctamente.
     $mensaje = "✅ Has cerrado sesión correctamente.";
+    $mostrarModal = true;
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

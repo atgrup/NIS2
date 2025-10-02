@@ -25,6 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
         $mensaje = "❌ Código inválido o ya verificado.";
     }
 }
+}
 ?>
 
 <!DOCTYPE html>
