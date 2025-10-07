@@ -6,8 +6,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = $_POST['email'] ?? '';
     $nombre_empresa = $_POST['nombre_empresa'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $repeat_password = $_POST['repeat-password'] ?? '';
+ $password = trim($_POST['password'] ?? '');
+$repeat_password = trim($_POST['repeat_password'] ?? '');
+
+if ($password !== $repeat_password) {
+    header("Location: ../../pages/registro.php?error=pass");
+    exit;
+}
+
 
     // Validación básica
     if ($password !== $repeat_password) {
