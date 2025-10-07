@@ -2,17 +2,11 @@
 require '../includes/conexion.php';
 
 $mensaje = "";
-
 $verificado_ok = false;
 
-// Procesar POST del código de verificación
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     $code = $_POST['code'];
 
-
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
-    $code = $_POST['code'];
     $stmt = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
     $stmt->bind_param("s", $code);
     $stmt->execute();
@@ -20,13 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     if ($stmt->affected_rows > 0) {
         $mensaje = "✅ Tu correo ha sido verificado. Ya puedes iniciar sesión.";
         $verificado_ok = true;
-
     } else {
         $mensaje = "❌ Código inválido o ya verificado.";
     }
 }
-}
 ?>
+
 
 <!DOCTYPE html>
 <html lang="es">

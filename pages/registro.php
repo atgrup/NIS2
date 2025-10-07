@@ -209,16 +209,39 @@ document.addEventListener("DOMContentLoaded", function() {
 
     // Función de verificación con input tipo password
 
-    window.verificarCodigo = function(){
-        const codigoIngresado = document.getElementById('codigoUsuario').value;
-        if(codigoIngresado === codigoToken){
-            alert("✅ Código correcto, cuenta activada!");
+   window.verificarCodigo = function() {
+    const codigoIngresado = document.getElementById('codigoUsuario').value;
 
+    if (!codigoIngresado) {
+        alert("Por favor introduce el código.");
+        return;
+    }
+
+    fetch("../api/auth/verify.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "code=" + encodeURIComponent(codigoIngresado)
+    })
+    .then(res => res.text())
+    .then(html => {
+        // Creamos un DOM temporal para leer el mensaje PHP del verify.php
+        const temp = document.createElement("div");
+        temp.innerHTML = html;
+        const msg = temp.querySelector(".alert")?.textContent || "";
+
+        if (msg.includes("✅")) {
+            alert("✅ Verificación exitosa, ya puedes iniciar sesión.");
             window.location.href = "../pages/login.php";
         } else {
-            alert("❌ Código incorrecto, intenta de nuevo.");
+            alert("❌ Código inválido o ya verificado.");
         }
-    }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error al conectar con el servidor.");
+    });
+};
+
 });
 </script>
 

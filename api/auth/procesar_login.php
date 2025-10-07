@@ -1,53 +1,91 @@
+```php
 <?php
-require_once '../includes/conexion.php';
+require '../includes/conexion.php'; // Conexión a la base de datos
 
-session_start();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-$correo = $_POST['email'] ?? '';
-$password = $_POST['password'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $nombre_empresa = $_POST['nombre_empresa'] ?? '';
+    $password = $_POST['password'] ?? '';
+    $repeat_password = $_POST['repeat-password'] ?? '';
 
-if (empty($correo) || empty($password)) {
-    header("Location: ../../pages/login.php?error=credenciales");
-    exit;
-}
-
-// Obtener usuario y estado de verificación
-$stmt = $conexion->prepare("
-    SELECT u.id_usuarios, u.password, u.verificado, t.nombre AS rol
-    FROM usuarios u
-    INNER JOIN tipo_usuario t ON u.tipo_usuario_id = t.id_tipo_usuario
-    WHERE u.correo = ?
-");
-$stmt->bind_param("s", $correo);
-$stmt->execute();
-$result = $stmt->get_result();
-
-if ($result->num_rows === 1) {
-    $user = $result->fetch_assoc();
-
-    // <-- AQUÍ colocas la verificación -->
-    if (!$user['verificado']) {
-        header("Location: ../../pages/login.php?error=no_verificado");
+    // Validación básica
+    if ($password !== $repeat_password) {
+        header("Location: ../../pages/registro.php?error=pass");
         exit;
     }
-    // <-- FIN de la verificación -->
 
-    if (password_verify($password, $user['password'])) {
-        $_SESSION['id_usuario'] = $user['id_usuarios'];
-        $_SESSION['correo'] = $correo;
-        $_SESSION['rol'] = $user['rol'];
-        header("Location: ../../pages/plantillaUsers.php");
+    // Verificar si el correo ya existe
+    $stmt = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        header("Location: ../../pages/registro.php?error=email");
         exit;
+    }
+
+    // Generar hash de la contraseña
+    $password_hash = password_hash($password, PASSWORD_DEFAULT);
+
+    // Generar token de verificación
+    $verification_code = bin2hex(random_bytes(16));
+    $verificado = 0;
+    $tipo_usuario_id = 2; // Proveedor
+
+    // Insertar usuario
+    $stmt = $conexion->prepare("
+        INSERT INTO usuarios (correo, password, verificado, token_verificacion, tipo_usuario_id)
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    if (!$stmt) {
+        die("Error en la preparación del statement (usuarios): " . $conexion->error);
+    }
+    $stmt->bind_param("ssisi", $email, $password_hash, $verificado, $verification_code, $tipo_usuario_id);
+
+    if ($stmt->execute()) {
+
+        // Obtener ID del usuario recién insertado
+        $usuario_id = $conexion->insert_id;
+
+        // Insertar en proveedores
+        $stmt2 = $conexion->prepare("
+            INSERT INTO proveedores (usuario_id, nombre_empresa, estado)
+            VALUES (?, ?, 'pendiente')
+        ");
+        if (!$stmt2) {
+            die("Error en la preparación del statement (proveedores): " . $conexion->error);
+        }
+        $stmt2->bind_param("is", $usuario_id, $nombre_empresa);
+        $stmt2->execute();
+
+        // Preparar correo de verificación
+        $verification_link = "http://localhost/NIS2/api/auth/verify.php?code=$verification_code";
+        $subject = "Verifica tu correo - NIS2";
+        $message = "
+            <p>Hola, <strong>$nombre_empresa</strong>!</p>
+            <p>Por favor verifica tu correo haciendo clic en el siguiente enlace:</p>
+            <p><a href='$verification_link'>$verification_link</a></p>
+            <p>Gracias.</p>
+        ";
+        $headers = "From: no-reply@tusitio.com\r\n";
+        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+
+        // Enviar correo (comenta esta línea mientras pruebas localmente)
+        mail($email, $subject, $message, $headers);
+
+        // Redirigir con token para mostrar modal
+        header("Location: ../../pages/registro.php?success=1&token=$verification_code");
+        exit;
+
     } else {
-        header("Location: ../../pages/login.php?error=credenciales");
+        header("Location: ../../pages/registro.php?error=unknown");
         exit;
     }
-}
-else {
-    header("Location: ../../pages/login.php?error=credenciales");
+
+} else {
+    // Acceso directo
+    header("Location: ../../pages/registro.php");
     exit;
 }
-
-$stmt->close();
-$conexion->close();
 ?>
