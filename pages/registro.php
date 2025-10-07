@@ -1,4 +1,6 @@
 <?php
+
+
 $mensaje = "";
 $tipo_alerta = "";
 $mostrarModal = false;
@@ -6,6 +8,8 @@ $codigo_verificacion = "";
 
 if (isset($_GET['error'])) {
     $mostrarModal = true;
+        $codigo_verificacion = ""; // Asegúrate de resetear
+
     switch($_GET['error']){
         case 'pass':
             $mensaje = "❌ Las contraseñas no coinciden.";
@@ -72,7 +76,7 @@ if (isset($_GET['error'])) {
           </div>
           <div class="form-group text-start mb-4">
             <label for="repeat-password" class="form-label">Repite la contraseña</label>
-            <input type="password" name="repeat_password" id="repeat_password" class="form-control" placeholder="Repite tu contraseña" required>
+<input type="password" name="repeat_password" id="repeat_password" class="form-control" placeholder="Repite tu contraseña" required>
           </div>
           <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
         </form>
@@ -188,6 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
 });
 </script>
+
 
 </body>
 </html>
