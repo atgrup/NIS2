@@ -1,91 +1,58 @@
-```php
 <?php
 require '../includes/conexion.php'; // Conexión a la base de datos
+session_start();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $email = $_POST['email'] ?? '';
-    $nombre_empresa = $_POST['nombre_empresa'] ?? '';
-    $password = $_POST['password'] ?? '';
-    $repeat_password = $_POST['repeat-password'] ?? '';
+    $password = trim($_POST['password'] ?? '');
 
-    // Validación básica
-    if ($password !== $repeat_password) {
-        header("Location: ../../pages/registro.php?error=pass");
+    // Validación mínima
+    if (empty($email) || empty($password)) {
+        header("Location: ../../pages/login.php?error=credenciales");
         exit;
     }
 
-    // Verificar si el correo ya existe
-    $stmt = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ?");
+    // Buscar usuario por correo
+    $stmt = $conexion->prepare("SELECT * FROM usuarios WHERE correo = ?");
+    if (!$stmt) {
+        die("Error preparando statement: " . $conexion->error);
+    }
     $stmt->bind_param("s", $email);
     $stmt->execute();
-    $stmt->store_result();
-    if ($stmt->num_rows > 0) {
-        header("Location: ../../pages/registro.php?error=email");
+    $result = $stmt->get_result();
+    $user = $result->fetch_assoc();
+
+    if (!$user) {
+        // Usuario no encontrado
+        header("Location: ../../pages/login.php?error=credenciales");
         exit;
     }
 
-    // Generar hash de la contraseña
-    $password_hash = password_hash($password, PASSWORD_DEFAULT);
-
-    // Generar token de verificación
-    $verification_code = bin2hex(random_bytes(16));
-    $verificado = 0;
-    $tipo_usuario_id = 2; // Proveedor
-
-    // Insertar usuario
-    $stmt = $conexion->prepare("
-        INSERT INTO usuarios (correo, password, verificado, token_verificacion, tipo_usuario_id)
-        VALUES (?, ?, ?, ?, ?)
-    ");
-    if (!$stmt) {
-        die("Error en la preparación del statement (usuarios): " . $conexion->error);
-    }
-    $stmt->bind_param("ssisi", $email, $password_hash, $verificado, $verification_code, $tipo_usuario_id);
-
-    if ($stmt->execute()) {
-
-        // Obtener ID del usuario recién insertado
-        $usuario_id = $conexion->insert_id;
-
-        // Insertar en proveedores
-        $stmt2 = $conexion->prepare("
-            INSERT INTO proveedores (usuario_id, nombre_empresa, estado)
-            VALUES (?, ?, 'pendiente')
-        ");
-        if (!$stmt2) {
-            die("Error en la preparación del statement (proveedores): " . $conexion->error);
-        }
-        $stmt2->bind_param("is", $usuario_id, $nombre_empresa);
-        $stmt2->execute();
-
-        // Preparar correo de verificación
-        $verification_link = "http://localhost/NIS2/api/auth/verify.php?code=$verification_code";
-        $subject = "Verifica tu correo - NIS2";
-        $message = "
-            <p>Hola, <strong>$nombre_empresa</strong>!</p>
-            <p>Por favor verifica tu correo haciendo clic en el siguiente enlace:</p>
-            <p><a href='$verification_link'>$verification_link</a></p>
-            <p>Gracias.</p>
-        ";
-        $headers = "From: no-reply@tusitio.com\r\n";
-        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-
-        // Enviar correo (comenta esta línea mientras pruebas localmente)
-        mail($email, $subject, $message, $headers);
-
-        // Redirigir con token para mostrar modal
-        header("Location: ../../pages/registro.php?success=1&token=$verification_code");
-        exit;
-
-    } else {
-        header("Location: ../../pages/registro.php?error=unknown");
+    // Verificar contraseña
+    if (!password_verify($password, $user['password'])) {
+        // Contraseña incorrecta
+        header("Location: ../../pages/login.php?error=credenciales");
         exit;
     }
+
+    // Verificar si está verificado
+    if ($user['verificado'] == 0) {
+        header("Location: ../../pages/login.php?error=no_verificado");
+        exit;
+    }
+
+    // Usuario correcto y verificado → iniciar sesión
+    $_SESSION['user_id'] = $user['id_usuarios'];
+    $_SESSION['tipo_usuario'] = $user['tipo_usuario_id']; // opcional, útil si quieres diferenciar roles
+
+    // Redirigir a vista de archivos o dashboard de proveedor
+    header("Location: ../../pages/vista_archivos.php");
+    exit;
 
 } else {
-    // Acceso directo
-    header("Location: ../../pages/registro.php");
+    // Acceso directo al archivo
+    header("Location: ../../pages/login.php");
     exit;
 }
 ?>

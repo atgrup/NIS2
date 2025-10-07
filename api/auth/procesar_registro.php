@@ -4,22 +4,22 @@ require '../includes/conexion.php'; // Conexión a la base de datos
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
+
     $email = $_POST['email'] ?? '';
     $nombre_empresa = $_POST['nombre_empresa'] ?? '';
- $password = trim($_POST['password'] ?? '');
-$repeat_password = trim($_POST['repeat_password'] ?? '');
-
-if ($password !== $repeat_password) {
-    header("Location: ../../pages/registro.php?error=pass");
-    exit;
+    $password = trim($_POST['password'] ?? '');
+    $repeat_password = trim($_POST['repeat_password'] ?? '');
+var_dump($password, $repeat_password);
+if ($password === $repeat_password) {
+    echo "Las contraseñas coinciden ✅";
+} else {
+    echo "Las contraseñas NO coinciden ❌";
 }
 
 
-    // Validación básica
-    if ($password !== $repeat_password) {
-        header("Location: ../../pages/registro.php?error=pass");
-        exit;
-    }
+
+
+
 
     // Verificar si el correo ya existe en usuarios
     $stmt = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ?");
