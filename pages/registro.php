@@ -72,7 +72,7 @@ if (isset($_GET['error'])) {
           </div>
           <div class="form-group text-start mb-4">
             <label for="repeat-password" class="form-label">Repite la contraseña</label>
-            <input type="password" name="repeat-password" id="repeat-password" class="form-control" placeholder="Repite tu contraseña" required>
+            <input type="password" name="repeat_password" id="repeat_password" class="form-control" placeholder="Repite tu contraseña" required>
           </div>
           <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
         </form>
