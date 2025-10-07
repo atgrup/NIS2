@@ -2,9 +2,10 @@
 session_start();
 
 if (!isset($_SESSION['rol'])) {
-  header("Location: ../api/auth/login.php");
-  exit;
+    header("Location: /NIS2/pages/login.php");
+    exit;
 }
+
 
 $rol = strtolower($_SESSION['rol']);
 $correo = $_SESSION['correo'] ?? null;
