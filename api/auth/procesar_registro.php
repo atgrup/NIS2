@@ -1,4 +1,3 @@
-```php
 <?php
 require '../includes/conexion.php'; // Conexión a la base de datos
 
