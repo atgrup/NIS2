@@ -118,14 +118,9 @@ if ($rol === 'administrador' || $rol === 'consultor') {
 
 } elseif ($rol === 'proveedor') {
     // --- CASO: PROVEEDOR ---
-    // Buscar proveedor_id asociado al usuario
-    $stmt_prov = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
-    $stmt_prov->bind_param("i", $usuario_id);
-    $stmt_prov->execute();
-    $stmt_prov->bind_result($proveedor_id);
-    $stmt_prov->fetch();
-    $stmt_prov->close();
-
+    // Usamos el prov_id de sesión directamente
+    $prov_id_sesion = $prov_id ?? 0; // Si es null, ponemos 0 para evitar errores
+    
     // Contar archivos que pertenecen al proveedor o al usuario
     $sql_total = "
         SELECT COUNT(*) AS total
@@ -133,7 +128,7 @@ if ($rol === 'administrador' || $rol === 'consultor') {
         WHERE proveedor_id = ? OR usuario_id = ?
     ";
     $stmt_total = $conexion->prepare($sql_total);
-    $stmt_total->bind_param("ii", $proveedor_id, $usuario_id);
+    $stmt_total->bind_param("ii", $prov_id_sesion, $usuario_id);
     $stmt_total->execute();
     $total_filas = $stmt_total->get_result()->fetch_assoc()['total'];
 
@@ -155,15 +150,11 @@ if ($rol === 'administrador' || $rol === 'consultor') {
         ORDER BY a.fecha_subida DESC
         LIMIT ?, ?
     ";
-
     $stmt = $conexion->prepare($sql);
-    if (!$stmt) {
-        die("Error en la preparación de la consulta archivos: " . $conexion->error);
-    }
-    $stmt->bind_param("iiii", $proveedor_id, $usuario_id, $inicio, $filas_por_pagina);
+    if (!$stmt) die("Error en la preparación: " . $conexion->error);
+    $stmt->bind_param("iiii", $prov_id_sesion, $usuario_id, $inicio, $filas_por_pagina);
     $stmt->execute();
-    $archivosRes = $stmt->get_result();
-  }else {
+    $archivosRes = $stmt->get_result(); }else {
     // Si el rol es inválido o no está contemplado, no se devuelven resultados.
     $total_filas = 0;
     $archivosRes = null;
