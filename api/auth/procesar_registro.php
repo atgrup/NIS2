@@ -1,8 +1,15 @@
-```php
 <?php
 require '../includes/conexion.php'; // Conexión a la base de datos
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+// Solo procesa si la petición es POST
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Recoge datos del formulario
+    $correo = $_POST['email'];
+    $password = $_POST['password'];
+    $repeat = $_POST['repeat-password'];
+    $nombre_empresa = $_POST['nombre_empresa'];
+    
+    $tipo_usuario_id = 2; // ID fijo para "PROVEEDOR"
 
 
     $email = $_POST['email'] ?? '';
@@ -15,11 +22,6 @@ if ($password === $repeat_password) {
 } else {
     echo "Las contraseñas NO coinciden ❌";
 }
-
-
-
-
-
 
     // Verificar si el correo ya existe en usuarios
     $stmt = $conexion->prepare("SELECT id_usuarios FROM usuarios WHERE correo = ?");
