@@ -58,7 +58,7 @@ unset($_SESSION['mensaje_exito'], $_SESSION['mensaje_error']);
 $rol = strtolower($_SESSION['rol']);
 
 // Guardamos el ID del usuario que inició sesión (clave primaria en la tabla usuarios).
-$usuario_id = $_SESSION['id_usuario'];
+$usuario_id = $_SESSION['id_usuarios'] ?? null;
 
 // ID del proveedor al que pertenece el usuario (si aplica). 
 // Puede ser null si el usuario no está asociado a ningún proveedor.
