@@ -12,10 +12,16 @@ $correo = $_SESSION['correo'] ?? '';
 $usuario_id = $_SESSION['id_usuario'] ?? null;
 $rol = strtolower($_SESSION['rol'] ?? '');
 
-// Verifica que el usuario esté autenticado. Si no, muestra un mensaje de error y detiene el script.
-if (!$correo || !$usuario_id) {
+// Si no hay correo, no hay sesión válida (esto sí aplica a todos)
+if (!$correo) {
     die("Usuario no autenticado.");
 }
+
+// Solo los proveedores requieren tener un id_usuario válido
+if ($rol === 'proveedor' && !$usuario_id) {
+    die("Usuario proveedor no autenticado correctamente.");
+}
+
 
 // Inicializa la variable para el ID del proveedor. Se usará si el usuario es un proveedor.
 $proveedor_id = null;

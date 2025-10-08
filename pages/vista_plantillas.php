@@ -14,11 +14,14 @@ require_once dirname(__DIR__) . '/api/includes/conexion.php'; // Conexión DB
 $usuario_id = $_SESSION['id_usuario'] ?? null;
 $is_admin = false; // Flag para admin (se usará más adelante)
 
-if (!$usuario_id) {
-  // Si no hay sesión, no permitimos el acceso
+$rol = strtolower($_SESSION['rol'] ?? '');
+
+// Si no hay sesión y el rol no es admin ni consultor, denegar acceso
+if (!$usuario_id && $rol !== 'administrador' && $rol !== 'consultor') {
   echo "<p>No estás autenticado. Por favor, inicia sesión.</p>";
   exit;
 }
+
 
 // =============================
 // VERIFICAR SI ES ADMINISTRADOR
