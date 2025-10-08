@@ -298,7 +298,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
             <th>Empresa</th>
             <th>Usuario</th>
             <th>Estado revisión</th>
-            <th data-no-sort>Acciones</th>
+            <th data-no-sort style="width:100px">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -323,7 +323,7 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
 
     // Si el archivo fue subido por un administrador
     if ($rol === 'administrador') {
-        echo htmlspecialchars($empresa ?: '-') . '<strong> administrador</strong>';
+        echo htmlspecialchars($empresa) . '<strong> administrador</strong>';
     } else {
         // Para consultores o proveedores, se muestra empresa + usuario
         echo htmlspecialchars($empresa ?: '-') . ' - ' . $nombre_usuario;
