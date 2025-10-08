@@ -308,8 +308,28 @@ $estados_revision = ['pendiente', 'aprobado', 'rechazado'];
               <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
               <td><?= htmlspecialchars($row['fecha_subida']) ?></td>
               <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
-              <td><?= isset($row['correo_usuario']) ? htmlspecialchars(explode('@', $row['correo_usuario'])[0]) : '-' ?></td>
-              <td
+<td>
+  <?php
+    $correo_usuario = $row['correo_usuario'] ?? null;
+    $empresa = $row['nombre_empresa'] ?? '';
+    $rol = strtolower($_SESSION['rol'] ?? '');
+
+    // Nombre base
+    if ($correo_usuario) {
+        $nombre_usuario = htmlspecialchars(explode('@', $correo_usuario)[0]);
+    } else {
+        $nombre_usuario = '<i>Sin usuario</i>';
+    }
+
+    // Si el archivo fue subido por un administrador
+    if ($rol === 'administrador') {
+        echo htmlspecialchars($empresa ?: '-') . '<strong> administrador</strong>';
+    } else {
+        // Para consultores o proveedores, se muestra empresa + usuario
+        echo htmlspecialchars($empresa ?: '-') . ' - ' . $nombre_usuario;
+    }
+  ?>
+</td>              <td
                 <?php
                   $estado = strtolower($row['revision_estado'] ?? 'pendiente');
                   $claseEstado = 'text-center align-middle';

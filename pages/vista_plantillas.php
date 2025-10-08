@@ -1,4 +1,4 @@
-<?php 
+<?php
 // =============================
 // INICIO DE SESIÓN Y CONEXIÓN
 // =============================
@@ -62,6 +62,7 @@ if (!$result) {
 ?>
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <title>Listado de Plantillas</title>
@@ -84,7 +85,7 @@ if (!$result) {
         </tr>
       </thead>
       <tbody>
-       <?php if ($result->num_rows > 0): ?>
+        <?php if ($result->num_rows > 0): ?>
           <?php while ($row = $result->fetch_assoc()): ?>
             <?php
             // =============================
@@ -95,9 +96,17 @@ if (!$result) {
             $nombre_consultor_raw = $row['nombre_consultor'] ?? '';
 
             // Consultor = parte antes de la @ o texto por defecto si no existe
-            $nombre_consultor_trimmed = $nombre_consultor_raw ? 
-              trim(explode('@', $nombre_consultor_raw)[0]) : '<i>Sin consultor</i>';
-
+            if (empty($nombre_consultor_raw)) {
+              if ($rol === 'administrador') {
+                $nombre_consultor_trimmed = '<span class="text-primary"> administrador</span>';
+              } elseif ($rol === 'consultor') {
+                $nombre_consultor_trimmed = '<span class="text-success">consultor</span>';
+              } else {
+                $nombre_consultor_trimmed = '<i>Sin consultor</i>';
+              }
+            } else {
+              $nombre_consultor_trimmed = trim(explode('@', $nombre_consultor_raw)[0]);
+            }
             // Ruta al archivo en carpeta plantillas
             $ruta_url = '../plantillas_disponibles/' . urlencode($nombre);
             ?>
@@ -120,8 +129,8 @@ if (!$result) {
                 <!-- Eliminar (si no es tipo_usuario_id 2 = consultor/proveedor) -->
                 <?php if ($tipo_usuario_id !== 2): ?>
                   <button class="btn btn-sm btn-danger btn-eliminar"
-                          data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
-                          data-id="<?= htmlspecialchars($id, ENT_QUOTES) ?>">
+                    data-nombre="<?= htmlspecialchars($nombre, ENT_QUOTES) ?>"
+                    data-id="<?= htmlspecialchars($id, ENT_QUOTES) ?>">
                     <i class="bi bi-trash"></i>
                   </button>
                 <?php endif; ?>
@@ -130,7 +139,9 @@ if (!$result) {
           <?php endwhile; ?>
         <?php else: ?>
           <!-- Si no hay plantillas -->
-          <tr><td colspan="4" class="text-center">No hay plantillas.</td></tr>
+          <tr>
+            <td colspan="4" class="text-center">No hay plantillas.</td>
+          </tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -146,7 +157,8 @@ if (!$result) {
   <!-- =============================
        MODAL ELIMINAR PLANTILLA
   ============================== -->
-  <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel" aria-hidden="true">
+  <div class="modal fade" id="modalEliminarPlantilla" tabindex="-1" aria-labelledby="modalEliminarPlantillaLabel"
+    aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header bg-mi-color text-white">
@@ -164,63 +176,64 @@ if (!$result) {
     </div>
   </div>
   <script>
-// =============================
-// ELIMINAR PLANTILLA (con modal + fetch AJAX)
-// =============================
+    // =============================
+    // ELIMINAR PLANTILLA (con modal + fetch AJAX)
+    // =============================
 
-// Detectar click en botón eliminar dentro de la tabla
-document.querySelector('.plantillas-table tbody').addEventListener('click', function(e) {
-  const btn = e.target.closest('button.btn-eliminar');
-  if (!btn) return;
+    // Detectar click en botón eliminar dentro de la tabla
+    document.querySelector('.plantillas-table tbody').addEventListener('click', function (e) {
+      const btn = e.target.closest('button.btn-eliminar');
+      if (!btn) return;
 
-  const nombre = btn.getAttribute('data-nombre');
-  const id = btn.getAttribute('data-id');
-  if (!id) return;
+      const nombre = btn.getAttribute('data-nombre');
+      const id = btn.getAttribute('data-id');
+      if (!id) return;
 
-  mostrarModalEliminarPlantilla(nombre, id);
-});
-
-// Función que muestra modal y ejecuta petición AJAX
-function mostrarModalEliminarPlantilla(nombre, id) {
-  const modalElement = document.getElementById('modalEliminarPlantilla');
-  const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
-  
-  // Texto dinámico en el modal
-  document.getElementById('eliminarPlantillaTexto').textContent = 
-    `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
-
-  // Clonamos el botón para reiniciar listeners anteriores
-  const oldBtn = document.getElementById('btnConfirmarEliminarPlantilla');
-  const newBtn = oldBtn.cloneNode(true);
-  oldBtn.parentNode.replaceChild(newBtn, oldBtn);
-
-  // Al confirmar, hacemos la petición AJAX
-  newBtn.addEventListener('click', function () {
-    fetch('eliminar_plantilla.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: `id=${encodeURIComponent(id)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.success) {
-        // Eliminamos la fila de la tabla
-        const fila = document.querySelector(`tr[data-id="${id}"]`);
-        if (fila) fila.remove();
-        modal.hide();
-      } else {
-        alert('Error: ' + (data.error || 'Error desconocido'));
-      }
-    })
-    .catch(error => {
-      console.error('Error de red:', error);
-      alert('Ocurrió un error. Intenta de nuevo.');
+      mostrarModalEliminarPlantilla(nombre, id);
     });
-  });
 
-  // Mostrar modal
-  modal.show();
-}
+    // Función que muestra modal y ejecuta petición AJAX
+    function mostrarModalEliminarPlantilla(nombre, id) {
+      const modalElement = document.getElementById('modalEliminarPlantilla');
+      const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+
+      // Texto dinámico en el modal
+      document.getElementById('eliminarPlantillaTexto').textContent =
+        `¿Estás seguro de que deseas eliminar la plantilla "${nombre}"?`;
+
+      // Clonamos el botón para reiniciar listeners anteriores
+      const oldBtn = document.getElementById('btnConfirmarEliminarPlantilla');
+      const newBtn = oldBtn.cloneNode(true);
+      oldBtn.parentNode.replaceChild(newBtn, oldBtn);
+
+      // Al confirmar, hacemos la petición AJAX
+      newBtn.addEventListener('click', function () {
+        fetch('eliminar_plantilla.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `id=${encodeURIComponent(id)}`
+        })
+          .then(response => response.json())
+          .then(data => {
+            if (data.success) {
+              // Eliminamos la fila de la tabla
+              const fila = document.querySelector(`tr[data-id="${id}"]`);
+              if (fila) fila.remove();
+              modal.hide();
+            } else {
+              alert('Error: ' + (data.error || 'Error desconocido'));
+            }
+          })
+          .catch(error => {
+            console.error('Error de red:', error);
+            alert('Ocurrió un error. Intenta de nuevo.');
+          });
+      });
+
+      // Mostrar modal
+      modal.show();
+    }
   </script>
 </body>
+
 </html>
