@@ -117,48 +117,53 @@ if ($rol === 'administrador' || $rol === 'consultor') {
     $archivosRes = $stmt->get_result();
 
 } elseif ($rol === 'proveedor') {
-    // --------------------------
-    // CASO: PROVEEDOR
-    // --------------------------
+    // --- CASO: PROVEEDOR ---
+    // Buscar proveedor_id asociado al usuario
+    $stmt_prov = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
+    $stmt_prov->bind_param("i", $usuario_id);
+    $stmt_prov->execute();
+    $stmt_prov->bind_result($proveedor_id);
+    $stmt_prov->fetch();
+    $stmt_prov->close();
 
-    // Contamos únicamente los archivos subidos por este usuario.
-    $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos WHERE usuario_id = ?";
+    // Contar archivos que pertenecen al proveedor o al usuario
+    $sql_total = "
+        SELECT COUNT(*) AS total
+        FROM archivos_subidos
+        WHERE proveedor_id = ? OR usuario_id = ?
+    ";
     $stmt_total = $conexion->prepare($sql_total);
-    if (!$stmt_total) {
-        die("Error en la preparación de la consulta total: " . $conexion->error);
-    }
-    $stmt_total->bind_param("i", $usuario_id);
+    $stmt_total->bind_param("ii", $proveedor_id, $usuario_id);
     $stmt_total->execute();
     $total_filas = $stmt_total->get_result()->fetch_assoc()['total'];
 
-    // Consulta de archivos, pero filtrada solo a los que pertenecen a este usuario.
-    $sql = "SELECT 
-                a.id,
-                a.nombre_archivo, 
-                p.nombre AS nombre_plantilla, 
-                a.fecha_subida, 
-                pr.nombre_empresa, 
-                u.correo AS correo_usuario,
-                a.revision_estado
-            FROM archivos_subidos a
-            LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
-            LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
-            WHERE a.usuario_id = ?
-            ORDER BY a.fecha_subida DESC
-            LIMIT ?, ?";
+    // Obtener los archivos
+    $sql = "
+        SELECT 
+            a.id,
+            a.nombre_archivo, 
+            p.nombre AS nombre_plantilla, 
+            a.fecha_subida, 
+            pr.nombre_empresa, 
+            u.correo AS correo_usuario,
+            a.revision_estado
+        FROM archivos_subidos a
+        LEFT JOIN plantillas p ON a.plantilla_id = p.id
+        LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
+        LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
+        WHERE a.proveedor_id = ? OR a.usuario_id = ?
+        ORDER BY a.fecha_subida DESC
+        LIMIT ?, ?
+    ";
 
     $stmt = $conexion->prepare($sql);
     if (!$stmt) {
         die("Error en la preparación de la consulta archivos: " . $conexion->error);
     }
-
-    // Enlazamos usuario_id + paginación.
-    $stmt->bind_param("iii", $usuario_id, $inicio, $filas_por_pagina);
+    $stmt->bind_param("iiii", $proveedor_id, $usuario_id, $inicio, $filas_por_pagina);
     $stmt->execute();
     $archivosRes = $stmt->get_result();
-
-} else {
+  }else {
     // Si el rol es inválido o no está contemplado, no se devuelven resultados.
     $total_filas = 0;
     $archivosRes = null;

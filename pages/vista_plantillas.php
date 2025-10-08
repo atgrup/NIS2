@@ -17,10 +17,16 @@ $is_admin = false; // Flag para admin (se usará más adelante)
 $rol = strtolower($_SESSION['rol'] ?? '');
 
 // Si no hay sesión y el rol no es admin ni consultor, denegar acceso
-if (!$usuario_id && $rol !== 'administrador' && $rol !== 'consultor') {
+$usuario_id = $_SESSION['id_usuario'] ?? null;
+$rol = strtolower($_SESSION['rol'] ?? '');
+
+$roles_permitidos = ['administrador', 'consultor', 'proveedor'];
+
+if (!in_array($rol, $roles_permitidos)) {
   echo "<p>No estás autenticado. Por favor, inicia sesión.</p>";
   exit;
 }
+
 
 
 // =============================
