@@ -17,7 +17,7 @@ include '../api/includes/conexion.php';
 $rol = $_SESSION['rol'] ?? '';
 
 // Bandera booleana: ¿es administrador?
-$isAdmin = ($rol === 'ADMINISTRADOR');
+$isAdmin = ($rol === 'administrador');
 
 // =============================
 // ELIMINAR CONSULTOR
