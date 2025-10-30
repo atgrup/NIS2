@@ -165,7 +165,7 @@ h4 {
 .tituloIndice {
   color: #5E5E5E;
   font-family: "Instrument Sans", sans-serif;
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(1.5rem, 5vw, 3.75rem);
   white-space: nowrap;
   overflow: hidden;

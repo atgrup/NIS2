@@ -28,25 +28,56 @@
             padding: 10px 20px;
             cursor: pointer;
             border-bottom: 3px solid transparent;
-            transition: all 0.2s ease-in-out;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            color: #aad1ff;
+            transform: translateY(-1px);
         }
 
         .tab-button.active {
-            color: #0d6efd;
-            border-bottom: 3px solid #0d6efd;
+            color: #aad1ff;
+            border-bottom: 3px solid #aad1ff;
         }
 
         .tab-content-section {
             display: none;
+            animation: fadeIn 0.4s ease;
         }
 
         .tab-content-section.active {
             display: block;
         }
 
+        /* 🎨 Fondo azul plano (con degradado muy sutil) */
         .section-fondo {
-            background-color: white;
-            border: 1px solid #dee2e6;
+            background: linear-gradient(135deg, #072989, #0b37b0);
+            color: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            transition: background 0.3s ease;
+        }
+
+        /* Pequeña animación al hacer hover en el fondo (sutil cambio de tono) */
+        .section-fondo:hover {
+            background: linear-gradient(135deg, #0b37b0, #072989);
+        }
+
+        .candadito {
+            width: 100px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
@@ -55,7 +86,7 @@
 
     <!-- NAV -->
     <nav class="container d-flex justify-content-between align-items-center py-3 flex-nowrap">
-        <h1 class="tituloIndice text-truncate m-0">Bienvenido/a</h1>
+        <h1 class="tituloIndice text-truncate m-0 text-primary">Bienvenido/a</h1>
 
         <div class="btnsNav d-flex gap-3 flex-shrink-0">
             <a href="pages/registro.php" class="btn btn-outline-primary fw-bold text-uppercase px-3 py-2">REGISTRARSE</a>
@@ -130,14 +161,9 @@
 
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                // quitar activo a todos los botones
                 buttons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-
-                // ocultar todas las secciones
                 sections.forEach(sec => sec.classList.remove('active'));
-
-                // mostrar la sección correspondiente
                 const target = document.getElementById(btn.dataset.target);
                 target.classList.add('active');
             });
