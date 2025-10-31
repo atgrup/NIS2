@@ -224,12 +224,12 @@ document.addEventListener('DOMContentLoaded', function () {
     var id = button.getAttribute('data-id');
     var correo = button.getAttribute('data-correo');
     var nombreEmpresa = button.getAttribute('data-nombre');
-    var pais = button.getAttribute('data-pais'); // 👈 Nueva línea
+    var pais = button.getAttribute('data-pais'); 
 
     document.getElementById('editarProveedorId').value = id;
     document.getElementById('editarCorreoProveedor').value = correo;
     document.getElementById('editarNombreEmpresa').value = nombreEmpresa;
-    document.getElementById('editarPaisOrigen').value = pais; // 👈 Nueva línea
+    document.getElementById('editarPaisOrigen').value = pais; 
   });
 });
 ;
