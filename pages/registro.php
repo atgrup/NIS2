@@ -64,43 +64,43 @@ if (isset($_GET['error'])) {
 
           <!-- Formulario de registro -->
           <form method="POST" action="../api/auth/procesar_registro.php">
-            <div class="form-group text-start mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" name="email" id="email" class="form-control" placeholder="Ingresa tu email" required>
-            </div>
-            <div class="form-group text-start mb-3">
-              <label for="nombre_empresa" class="form-label">Nombre de la empresa</label>
-              <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-control"
-                placeholder="Ingresa el nombre de tu empresa" required>
-            </div>
-            <div class="form-group text-start mb-3">
-              <label for="pais_origen" class="form-label">País de origen</label>
-              <select name="pais_origen" id="pais_origen" class="form-select" required>
-                <option value="">Selecciona tu país</option>
-                <option value="España">España</option>
-                <option value="Francia">Francia</option>
-                <option value="Alemania">Alemania</option>
-                <option value="Italia">Italia</option>
-                <option value="Portugal">Portugal</option>
-                <option value="Reino Unido">Reino Unido</option>
-                <option value="FuerasUE">Fuera de la UE</option>
-                <option value="Otro">Otro</option>
+  <div class="form-group text-start mb-3">
+    <label for="email" class="form-label">Email</label>
+    <input type="email" name="email" id="email" class="form-control" placeholder="Ingresa tu email" required>
+  </div>
 
-              </select>
-            </div>
+  <div class="form-group text-start mb-3">
+    <label for="nombre_empresa" class="form-label">Nombre de la empresa</label>
+    <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-control" placeholder="Ingresa el nombre de tu empresa" required>
+  </div>
 
-            <div class="form-group text-start mb-3">
-              <label for="password" class="form-label">Contraseña</label>
-              <input type="password" name="password" id="password" class="form-control"
-                placeholder="Ingresa tu contraseña" required>
-            </div>
-            <div class="form-group text-start mb-4">
-              <label for="repeat-password" class="form-label">Repite la contraseña</label>
-              <input type="password" name="repeat_password" id="repeat_password" class="form-control"
-                placeholder="Repite tu contraseña" required>
-            </div>
-            <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
-          </form>
+  <div class="form-group text-start mb-3">
+    <label for="pais_origen" class="form-label">País de origen</label>
+    <select name="pais_origen" id="pais_origen" class="form-select" required>
+      <option value="">Selecciona tu país</option>
+      <option value="España">España</option>
+      <option value="Francia">Francia</option>
+      <option value="Alemania">Alemania</option>
+      <option value="Italia">Italia</option>
+      <option value="Portugal">Portugal</option>
+      <option value="Reino Unido">Reino Unido</option>
+      <option value="Otro">Otro</option>
+    </select>
+  </div>
+
+  <div class="form-group text-start mb-3">
+    <label for="password" class="form-label">Contraseña</label>
+    <input type="password" name="password" id="password" class="form-control" placeholder="Ingresa tu contraseña" required>
+  </div>
+
+  <div class="form-group text-start mb-4">
+    <label for="repeat-password" class="form-label">Repite la contraseña</label>
+    <input type="password" name="repeat_password" id="repeat_password" class="form-control" placeholder="Repite tu contraseña" required>
+  </div>
+
+  <button type="submit" class="btn btn-outline-light w-100 mt-2">REGISTRARSE</button>
+</form>
+
 
         </div>
       </div>
