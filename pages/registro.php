@@ -169,6 +169,8 @@ if (isset($_GET['error'])) {
 
         <div class="register-section">
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE" class="europe-icon">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE"
+            class="europe-icon">
         </div>
       </div>
 
