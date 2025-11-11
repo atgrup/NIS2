@@ -109,11 +109,63 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
 
         if ($stmt->execute()) {
             $_SESSION['success_subida'] = "✅ Archivo subido y registrado correctamente.";
+            // Guardar el id insertado para uso posterior (para generar links en emails)
+            $archivoId = $stmt->insert_id;
         } else {
             $_SESSION['error_subida'] = "❌ Error al guardar en la base de datos: " . $stmt->error;
+            $archivoId = null;
         }
 
         $stmt->close();
+
+        // --- Notificar a los consultores que hay un nuevo archivo ---
+        try {
+            // Obtener lista de correos de consultores (join con usuarios)
+            $sqlCons = "SELECT u.correo, c.nombre FROM consultores c JOIN usuarios u ON c.usuario_id = u.id_usuarios";
+            $resCons = $conexion->query($sqlCons);
+            $consultors = [];
+            if ($resCons) {
+                while ($r = $resCons->fetch_assoc()) {
+                    if (!empty($r['correo'])) $consultors[] = ['email' => $r['correo'], 'name' => $r['nombre'] ?? ''];
+                }
+            }
+
+            if (!empty($consultors)) {
+                require_once __DIR__ . '/notifications/mail_notification.php';
+                $subject = "Nuevo archivo subido por {$correo}";
+                $htmlList = "<p>El proveedor <b>{$correo}</b> ha subido un nuevo archivo:</p>\n<ul>";
+                $htmlList .= "<li>{$nombre_original}</li>";
+                $htmlList .= "</ul>";
+                // Encolar notificaciones para cada consultor
+                foreach ($consultors as $c) {
+                    $to = $c['email'];
+                    $toName = $c['name'] ?? '';
+                    $queueId = enqueueEmail($to, $toName, $subject, $htmlList, '', "Archivo subido: {$nombre_original}", false);
+                    // Si se encoló correctamente, crear token y añadir links de visualización/revisión en la cola
+                    if ($queueId && !empty($archivoId)) {
+                        $meta = ['archivo_id' => $archivoId];
+                        $token = createEmailActionToken($queueId, 'change_state', $archivoId, $meta, 72);
+                        $base = getenv('APP_URL') ?: '';
+                        if (!$base && !empty($_SERVER['HTTP_HOST'])) {
+                            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                            $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+                        }
+                        $base = rtrim($base, '/');
+                        $linkView = ($base ? $base : '') . '/pages/visualizar_archivo_split.php?id=' . $archivoId;
+                        $linkAction = ($base ? $base : '') . '/pages/notifications/action.php?t=' . urlencode($token);
+                        $append = "<p>Ver archivo: <a href=\"{$linkView}\">Ver</a></p><p>Revisar / Modificar estado: <a href=\"{$linkAction}\">Abrir revisión</a></p>";
+                        $upd = $conexion->prepare("UPDATE mail_queue SET body_html = CONCAT(body_html, ?) WHERE id = ?");
+                        if ($upd) {
+                            $upd->bind_param('si', $append, $queueId);
+                            $upd->execute();
+                            $upd->close();
+                        }
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            error_log('Error al notificar consultores tras subida: ' . $e->getMessage());
+        }
 
         // Redirigir al listado
         header("Location: plantillaUsers.php?vista=archivos");

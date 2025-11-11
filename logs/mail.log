@@ -2,3 +2,12 @@
 [2025-11-04 09:45:57] No se han configurado las credenciales SMTP en .env. Copia .env.example a .env y rellena MAIL_USERNAME y MAIL_PASSWORD. Envío cancelado.
 [2025-11-10 11:05:00] Error al enviar el correo: SMTP Error: Could not connect to SMTP host. Failed to connect to server
 [2025-11-11 10:27:12] Faltan parámetros. Se requieren: destinatario, nombre, estado.
+[2025-11-11 10:35:34] Faltan parámetros. Se requieren: destinatario, nombre, estado.
+[2025-11-11 10:36:40] Faltan parámetros. Se requieren: destinatario, nombre, estado.
+[2025-11-11 10:43:37] Faltan parámetros. Se requieren: destinatario, nombre, estado.
+[2025-11-11 10:44:06] Encolado correo a test@example.com (queue id: 1) asunto: Asunto prueba
+[2025-11-11 10:44:24] Error al enviar correo a test@example.com: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server Additional SMTP info: php_network_getaddresses: getaddrinfo failed: Host desconocido. 
+[2025-11-11 10:45:10] Error al enviar correo a test@example.com: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server Additional SMTP info: php_network_getaddresses: getaddrinfo failed: Host desconocido. 
+[2025-11-11 10:52:05] SMTP debug (level 1): SMTP ERROR: Failed to connect to server: php_network_getaddresses: getaddrinfo failed: Host desconocido.  (0)
+[2025-11-11 10:52:05] SMTP debug (level 2): SMTP Error: Could not connect to SMTP host. Failed to connect to server
+[2025-11-11 10:52:05] Error al enviar correo a test@example.com: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server Additional SMTP info: php_network_getaddresses: getaddrinfo failed: Host desconocido. 
