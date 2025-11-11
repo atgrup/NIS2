@@ -8,7 +8,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $repeat = $_POST['repeat-password'];
     $nombre_empresa = $_POST['nombre_empresa'];
-    
+    $pais_origen = $_POST['pais_origen'] ?? '';
+
     $tipo_usuario_id = 2; // ID fijo para "PROVEEDOR"
 
 
@@ -16,6 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre_empresa = $_POST['nombre_empresa'] ?? '';
     $password = trim($_POST['password'] ?? '');
     $repeat_password = trim($_POST['repeat_password'] ?? '');
+        $pais_origen = trim($_POST['pais_origen'] ?? '');
+
 var_dump($password, $repeat_password);
 if ($password === $repeat_password) {
     echo "Las contraseñas coinciden ✅";
