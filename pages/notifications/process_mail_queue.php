@@ -50,11 +50,18 @@ foreach ($rows as $r) {
     $text = $row['body_text'];
     $logInfo = $row['log_info'];
     $includeLog = (int)$row['include_log'] === 1;
+    $attachments = [];
+    if (!empty($row['attachments'])) {
+        $decoded = json_decode($row['attachments'], true);
+        if (is_array($decoded)) $attachments = $decoded;
+    }
     $attempts = (int)$row['attempts'];
     $maxAttempts = (int)$row['max_attempts'];
 
     echo "Procesando queue id={$id} -> {$to}\n";
-    $ok = enviarCorreo($to, $name, $subject, $html, $text);
+    $ok = enviarCorreo($to, $name, $subject, $html, $text, $attachments);
+    // If there are attachments configured for this queue row, pass them to the mail sender
+    // (enviarCorreo doesn't support attachments yet here; we'll add attachment handling below)
     if ($ok) {
         // update status to sent
         $up = $conexion->prepare("UPDATE mail_queue SET status = 'sent', attempts = attempts + 1, updated_at = NOW() WHERE id = ?");

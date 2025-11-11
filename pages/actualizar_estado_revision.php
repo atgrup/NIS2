@@ -61,15 +61,23 @@ if ($stmt->execute()) {
                     // Llamar al helper de notificaciones
                     require_once __DIR__ . '/notifications/mail_notification.php';
                     $asunto = "Estado de su archivo: {$estado}";
-                    $html = "<p>Hola {$proveedorNombre},</p>\n";
-                    $html .= "<p>El archivo <b>{$archivoNombre}</b> ha cambiado su estado a <b>{$estado}</b>.</p>";
-                    // Puedes añadir más detalles o comentarios desde POST si los envías
                     $comentario = $_POST['comentario'] ?? '';
-                    if ($comentario) $html .= "\n<p>Comentario: {$comentario}</p>";
-
-                    // Encolar la notificación para procesamiento asíncrono
                     require_once __DIR__ . '/notifications/mail_notification.php';
-                    $queueId = enqueueEmail($proveedorCorreo, $proveedorNombre, $asunto, $html, '', "Cambio de estado: {$estado}", false);
+                    $base = getenv('APP_URL') ?: '';
+                    if (empty($base) && !empty($_SERVER['HTTP_HOST'])) {
+                        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                        $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+                    }
+                    $base = rtrim($base, '/');
+                    $linkView = ($base ? $base : '') . '/pages/visualizar_archivo_split.php?id=' . $id;
+                    $bodyProv = renderEmailTemplate('proveedor_estado', [
+                        'proveedor_nombre' => $proveedorNombre,
+                        'archivo_nombre' => $archivoNombre,
+                        'new_state' => $estado,
+                        'comentario' => $comentario,
+                        'link_view' => $linkView
+                    ]);
+                    $queueId = enqueueEmail($proveedorCorreo, $proveedorNombre, $asunto, $bodyProv, '', "Cambio de estado: {$estado}", false);
                     // Si se encoló correctamente, crear un token de acción y añadir link en el cuerpo del correo (para permitir acción desde el email)
                     if ($queueId) {
                         $meta = ['new_state' => $estado, 'comentario' => $comentario ?? '', 'changed_by' => $_SESSION['user_id'] ?? null];

@@ -44,7 +44,7 @@ function notif_log(string $message)
 // ---------------------------
 // Función genérica para enviar correo
 // ---------------------------
-function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, $cuerpoTextoPlano = '')
+function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, $cuerpoTextoPlano = '', array $attachments = [])
 {
     // Validación básica de email
     if (!filter_var($destinatario, FILTER_VALIDATE_EMAIL)) {
@@ -93,6 +93,22 @@ function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, 
         $mail->Subject = $asunto;
         $mail->Body    = $cuerpoHtml;
         $mail->AltBody = $cuerpoTextoPlano ?: strip_tags($cuerpoHtml);
+
+        // Attach files if provided and exist
+        foreach ($attachments as $att) {
+            if (!$att) continue;
+            // If relative path provided, try to resolve from project root
+            $path = $att;
+            if (!file_exists($path)) {
+                $alt = __DIR__ . '/../../' . ltrim($att, '/\\');
+                if (file_exists($alt)) $path = $alt;
+            }
+            if (file_exists($path)) {
+                $mail->addAttachment($path);
+            } else {
+                notif_log("Adjunto no encontrado y se omitirá: {$att}");
+            }
+        }
 
         $mail->send();
         notif_log("Correo enviado a {$destinatario} asunto: {$asunto}");
@@ -185,7 +201,7 @@ function read_input(): array
  * Enqueue a single email into mail_queue table.
  * Returns inserted queue id on success or false on failure.
  */
-function enqueueEmail(string $recipient, string $name, string $subject, string $bodyHtml, string $bodyText = '', ?string $logInfo = null, bool $includeLog = false, int $maxAttempts = 3)
+function enqueueEmail(string $recipient, string $name, string $subject, string $bodyHtml, string $bodyText = '', ?string $logInfo = null, bool $includeLog = false, int $maxAttempts = 3, array $attachments = [])
 {
     // Basic validation
     if (!filter_var($recipient, FILTER_VALIDATE_EMAIL)) {
@@ -201,7 +217,7 @@ function enqueueEmail(string $recipient, string $name, string $subject, string $
     }
     require_once $dbPath; // defines $conexion
 
-    $sql = "INSERT INTO mail_queue (recipient_email, recipient_name, subject, body_html, body_text, log_info, include_log, max_attempts, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
+    $sql = "INSERT INTO mail_queue (recipient_email, recipient_name, subject, body_html, body_text, log_info, include_log, max_attempts, attachments, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', NOW())";
     if (!isset($conexion) || !$conexion) {
         notif_log('enqueueEmail: conexion DB no definida');
         return false;
@@ -213,7 +229,8 @@ function enqueueEmail(string $recipient, string $name, string $subject, string $
         return false;
     }
     $inc = $includeLog ? 1 : 0;
-    $stmt->bind_param('ssssssii', $recipient, $name, $subject, $bodyHtml, $bodyText, $logInfo, $inc, $maxAttempts);
+    $attachmentsJson = !empty($attachments) ? json_encode(array_values($attachments)) : null;
+    $stmt->bind_param('ssssssiss', $recipient, $name, $subject, $bodyHtml, $bodyText, $logInfo, $inc, $maxAttempts, $attachmentsJson);
     if ($stmt->execute()) {
         $id = $stmt->insert_id;
         $stmt->close();
@@ -303,4 +320,25 @@ function createEmailActionToken(?int $queueId, string $action, ?int $archivoId =
         $stmt->close();
         return false;
     }
+}
+
+/**
+ * Render simple template from pages/notifications/templates/{name}.html
+ * Replaces {{key}} placeholders with values from $vars array.
+ */
+function renderEmailTemplate(string $templateName, array $vars = []): string
+{
+    $tplPath = __DIR__ . '/templates/' . $templateName . '.html';
+    if (!file_exists($tplPath)) {
+        notif_log("renderEmailTemplate: plantilla no encontrada: {$tplPath}");
+        return '';
+    }
+    $content = file_get_contents($tplPath);
+    foreach ($vars as $k => $v) {
+        $placeholder = '{{' . $k . '}}';
+        $content = str_replace($placeholder, htmlspecialchars((string)$v, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8'), $content);
+    }
+    // Remove unreplaced placeholders
+    $content = preg_replace('/{{[^}]+}}/', '', $content);
+    return $content;
 }

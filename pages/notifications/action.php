@@ -3,6 +3,7 @@
 // Uso: pages/notifications/action.php?t=<token>
 
 require_once __DIR__ . '/../../api/includes/conexion.php';
+if (session_status() === PHP_SESSION_NONE) session_start();
 
 $token = $_GET['t'] ?? $_GET['token'] ?? $_POST['t'] ?? $_POST['token'] ?? null;
 if (!$token) {
@@ -55,7 +56,8 @@ try {
             // Aplicar cambio: leer valores del formulario
             $new_state = $_POST['new_state'] ?? null;
             $comentario = $_POST['comentario'] ?? null;
-            $changed_by = isset($_POST['changed_by']) ? intval($_POST['changed_by']) : null;
+            // Prefer session user id if available, otherwise use posted changed_by
+            $changed_by = $_SESSION['id_usuarios'] ?? (isset($_POST['changed_by']) ? intval($_POST['changed_by']) : null);
             if (!$new_state) throw new Exception('Nuevo estado no especificado.');
 
             // Actualizar el estado
@@ -73,11 +75,14 @@ try {
             $ins->execute();
             $ins->close();
 
-            // Consumir token (marcar expirado)
-            $c = $conexion->prepare("UPDATE email_actions SET expires_at = NOW() WHERE id = ?");
-            $c->bind_param('i', $row['id']);
-            $c->execute();
-            $c->close();
+                // Consumir token (marcar expirado) y registrar auditoría (used_by, used_at, used_ip, user agent)
+                $used_by = $_SESSION['id_usuarios'] ?? null;
+                $used_ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                $used_ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
+                $c = $conexion->prepare("UPDATE email_actions SET expires_at = NOW(), used_by = ?, used_at = NOW(), used_ip = ?, used_user_agent = ? WHERE id = ?");
+                $c->bind_param('isss', $used_by, $used_ip, $used_ua, $row['id']);
+                $c->execute();
+                $c->close();
 
             // Notificar al proveedor (enqueue)
             require_once __DIR__ . '/mail_notification.php';

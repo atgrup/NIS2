@@ -140,7 +140,47 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
                 foreach ($consultors as $c) {
                     $to = $c['email'];
                     $toName = $c['name'] ?? '';
-                    $queueId = enqueueEmail($to, $toName, $subject, $htmlList, '', "Archivo subido: {$nombre_original}", false);
+                    // Prepare attachments: if plantilla_id provided and plantilla has archivo_url, attach it
+                    $attachments = [];
+                    if (!empty($plantilla_id) && is_int($plantilla_id)) {
+                        $pstmt = $conexion->prepare("SELECT archivo_url, nombre FROM plantillas WHERE id = ? LIMIT 1");
+                        if ($pstmt) {
+                            $pstmt->bind_param('i', $plantilla_id);
+                            $pstmt->execute();
+                            $pres = $pstmt->get_result();
+                            if ($pres && $pres->num_rows > 0) {
+                                $prow = $pres->fetch_assoc();
+                                $archivo_url = $prow['archivo_url'] ?? null;
+                                if ($archivo_url) {
+                                    // attempt to resolve relative path
+                                    $path = $archivo_url;
+                                    if (!file_exists($path)) {
+                                        $alt = __DIR__ . '/../plantillas_disponibles/' . ltrim($archivo_url, '/\\');
+                                        if (file_exists($alt)) $path = $alt;
+                                    }
+                                    if (file_exists($path)) $attachments[] = $path;
+                                }
+                            }
+                            $pstmt->close();
+                        }
+                    }
+
+                    // Use template for consultor notification
+                    require_once __DIR__ . '/notifications/mail_notification.php';
+                    $base = getenv('APP_URL') ?: '';
+                    if (!$base && !empty($_SERVER['HTTP_HOST'])) {
+                        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+                        $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
+                    }
+                    $base = rtrim($base, '/');
+                    $linkView = ($base ? $base : '') . '/pages/visualizar_archivo_split.php?id=' . $archivoId;
+                    $queueId = enqueueEmail($to, $toName, $subject, renderEmailTemplate('consultor_new_file', [
+                        'consultor_nombre' => $toName,
+                        'proveedor_correo' => $correo,
+                        'archivo_nombre' => $nombre_original,
+                        'link_view' => $linkView,
+                        'link_action' => ($base ? $base : '') . '/pages/notifications/action.php?t=' . urlencode($token)
+                    ]), '', "Archivo subido: {$nombre_original}", false, 3, $attachments);
                     // Si se encoló correctamente, crear token y añadir links de visualización/revisión en la cola
                     if ($queueId && !empty($archivoId)) {
                         $meta = ['archivo_id' => $archivoId];
