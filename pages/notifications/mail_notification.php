@@ -60,10 +60,40 @@ function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, 
         return false;
     }
 
+    // Pre-check: resolve host and attempt TCP connect to detect DNS/network issues early
+    $host = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
+    $port = (int)(getenv('MAIL_PORT') ?: 587);
+    $secure = strtoupper(getenv('MAIL_SMTP_SECURE') ?: 'STARTTLS');
+    $checkTimeout = 6; // seconds
+    $dnsOk = false;
+    try {
+        // Try DNS resolution
+        $resolved = gethostbynamel($host);
+        if ($resolved && is_array($resolved) && count($resolved) > 0) {
+            $dnsOk = true;
+        }
+    } catch (Throwable $t) {
+        $dnsOk = false;
+    }
+    if (!$dnsOk) {
+        notif_log("SMTP host no resolvible: {$host}. Comprueba MAIL_HOST en .env y la resolución DNS desde el servidor.");
+        return false;
+    }
+    // Try opening TCP socket to host:port
+    $addr = sprintf('%s:%d', $host, $port);
+    $ctx = stream_context_create([]);
+    $fp = @stream_socket_client($addr, $errno, $errstr, $checkTimeout, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$fp) {
+        notif_log("No se puede conectar a SMTP {$addr}: ({$errno}) {$errstr}. Revisa firewall/puerto o usa el puerto correcto para MAIL_SMTP_SECURE.");
+        return false;
+    }
+    // Close quick test socket
+    fclose($fp);
+
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
-        $mail->Host = getenv('MAIL_HOST') ?: 'smtp.gmail.com';
+        $mail->Host = $host;
         $mail->SMTPAuth = true;
         $mail->Username = $username;
         $mail->Password = $password;
@@ -73,7 +103,7 @@ function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, 
         } else {
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         }
-        $mail->Port = (int)(getenv('MAIL_PORT') ?: 587);
+        $mail->Port = $port;
 
         // Debug opcional: redirigir al log si se habilita
         $smtpDebug = (int)(getenv('MAIL_SMTP_DEBUG') ?: 0);

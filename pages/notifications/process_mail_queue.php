@@ -72,13 +72,23 @@ foreach ($rows as $r) {
         echo "Enviado ok id={$id}\n";
     } else {
         $attempts++;
+        // Collect helpful recent log lines to store as error detail
+        $logPath = __DIR__ . '/../../logs/mail.log';
+        $recentErr = null;
+        if (file_exists($logPath)) {
+            $lines = @file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+            if ($lines && count($lines) > 0) {
+                $slice = array_slice($lines, -8);
+                $recentErr = implode(" | ", $slice);
+            }
+        }
+        $errDetail = $recentErr ? substr($recentErr, 0, 2000) : "Error al enviar (intentos={$attempts})";
         $newStatus = $attempts >= $maxAttempts ? 'failed' : 'pending';
-        $err = "Error al enviar (intentos={$attempts})";
         $up = $conexion->prepare("UPDATE mail_queue SET status = ?, attempts = ?, error = ?, updated_at = NOW() WHERE id = ?");
-        $up->bind_param('sisi', $newStatus, $attempts, $err, $id);
+        $up->bind_param('sisi', $newStatus, $attempts, $errDetail, $id);
         $up->execute();
         $up->close();
-        recordMailLog($id, $to, $subject, 'error', $err);
+        recordMailLog($id, $to, $subject, 'error', $errDetail);
         echo "Fallo envio id={$id}, nuevo estado={$newStatus}\n";
     }
 }

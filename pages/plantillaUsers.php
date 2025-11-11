@@ -14,6 +14,8 @@ $nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
 // Conexión BD
 require_once dirname(__DIR__) . '/api/includes/conexion.php'; 
 
+// Notifications are handled via email only. No in-app badge is shown.
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Manejar subida de plantillas
     if (isset($_FILES['plantilla'])) {
@@ -181,7 +183,9 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
   <main class="stencil container-fluid p-0 overflow-hidden">
     <nav class="indexStencil">
       <h1 class="tituloNIS">NIS2</h1>
-      <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+      <div class="d-flex align-items-center gap-2">
+        <h4 class="m-0">Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+      </div>
 
       <div class="menuNav">
         <?php if ($rol === 'administrador'): ?>
