@@ -72,19 +72,13 @@ if ($password === $repeat_password) {
         $stmt2->bind_param("iss", $usuario_id, $nombre_empresa, $estado);
 
         if ($stmt2->execute()) {
-            // Enviar correo de verificación (opcional durante pruebas)
-            $verification_link = "http://localhost/NIS2/api/auth/verify.php?code=$verification_code";
+            // Enviar correo de verificación usando el sistema de notificaciones (enqueue)
+            $verification_link = (getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : 'http://localhost') . "/api/auth/verify.php?code=$verification_code";
             $subject = "Verifica tu correo - NIS2";
-            $message = "
-                <p>Hola, <strong>$nombre_empresa</strong>!</p>
-                <p>Por favor verifica tu cuenta haciendo clic en el siguiente enlace:</p>
-                <p><a href='$verification_link'>$verification_link</a></p>
-                <p>Gracias.</p>
-            ";
-            $headers = "From: no-reply@tusitio.com\r\n";
-            $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-
-            // mail($email, $subject, $message, $headers);
+            // Renderizar plantilla y encolar con helper
+            require_once __DIR__ . '/../../pages/notifications/mail_notification.php';
+            $body = renderEmailTemplate('verification', ['nombre' => $nombre_empresa, 'link' => $verification_link]);
+            enqueueEmail($email, $nombre_empresa, $subject, $body, '', 'Verificación de cuenta', false);
 
             // Redirigir con token para mostrar modal
             header("Location: ../../pages/registro.php?success=1&token=$verification_code");
