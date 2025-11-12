@@ -72,7 +72,7 @@ function getMailer(): PHPMailer
 	$host = $cfg['host'] ?? getenv('MAIL_HOST') ?: 'webmail.atgroup.es';
 	$port = (int)($cfg['port'] ?? getenv('MAIL_PORT') ?: 465);
 	$username = $cfg['username'] ?? getenv('MAIL_USERNAME') ?: 'mandreo@atgroup.es';
-	$password = $cfg['password'] ?? getenv('MAIL_PASSWORD') ?: '';
+	$password = $cfg['password'] ?? getenv('MAIL_PASSWORD') ?: '&togk6Fy^5se';
 	$from = $cfg['from'] ?? getenv('MAIL_FROM') ?: $username;
 	$fromName = $cfg['from_name'] ?? getenv('MAIL_FROM_NAME') ?: 'Notificador NIS2';
 	$secure = $cfg['secure'] ?? getenv('MAIL_SMTP_SECURE') ?? getenv('MAIL_SECURE') ?? 'ssl';
@@ -85,10 +85,10 @@ function getMailer(): PHPMailer
 	$mail->SMTPAuth = true;
 	$mail->Username = $username;
 	$mail->Password = $password;
-	if (strtolower($secure) === 'tls') {
-		$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-	} else {
+	if (strtolower($secure) === 'ssl') {
 		$mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+	} else {
+		$mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
 	}
 	$mail->Port = $port;
 
@@ -132,7 +132,7 @@ function enviarCorreoVerificacion(string $emailDestino, string $token): bool
 		$subject = 'Verifica tu correo electrónico';
 		$mail->Subject = $subject;
 
-		$appUrl = getenv('APP_URL') ?: 'http://localhost';
+		$appUrl = getenv('APP_URL') ?: 'http://localhost/NIS2';
 		$verifyUrl = rtrim($appUrl, '/') . '/api/auth/verify.php?token=' . urlencode($token);
 
 		$body = "<h3>Verifica tu dirección de correo</h3>" .
