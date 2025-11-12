@@ -52,6 +52,52 @@ if (file_exists($configFile)) {
  * Create and return a configured PHPMailer instance.
  * Keep debug output in a log file to avoid red text in PowerShell.
  */
+ function renderEmailTemplate(string $type, array $vars = []): string {
+    switch ($type) {
+        case 'verification':
+            $nombre = htmlspecialchars($vars['nombre'] ?? '');
+            $link = htmlspecialchars($vars['link'] ?? '#');
+
+            return "
+                <html>
+                <body>
+                    <h3>Hola {$nombre},</h3>
+                    <p>Por favor, verifica tu cuenta haciendo clic en el enlace:</p>
+                    <p><a href='{$link}'>Verificar cuenta</a></p>
+                    <p>Si no solicitaste esta verificación, ignora este mensaje.</p>
+                    <br>
+                    <p>Gracias,<br>Equipo NIS2</p>
+                </body>
+                </html>
+            ";
+        default:
+            return "<p>Plantilla no definida para {$type}</p>";
+    }
+}
+if (!function_exists('enqueueEmail')) {
+    /**
+     * Encola un correo para enviar.
+     * Para pruebas, envia directamente usando PHPMailer.
+     */
+    function enqueueEmail(
+        string $to,
+        string $toName,
+        string $subject,
+        string $body,
+        string $altBody = '',
+        string $tag = '',
+        bool $isHtml = true
+    ): bool {
+        // Si no hay altBody y es HTML, ponemos una versión simple
+        if ($altBody === '' && $isHtml) {
+            $altBody = strip_tags($body);
+        }
+
+        // Usamos la función enviarCorreo
+        return enviarCorreo($to, $subject, $body);
+    }
+}
+
 function getMailer(): PHPMailer
 {
 	$mail = new PHPMailer(true);
@@ -133,7 +179,7 @@ function enviarCorreoVerificacion(string $emailDestino, string $token): bool
 		$mail->Subject = $subject;
 
 		$appUrl = getenv('APP_URL') ?: 'http://localhost/NIS2';
-		$verifyUrl = rtrim($appUrl, '/') . '/api/auth/verify.php?token=' . urlencode($token);
+		$verifyUrl = rtrim($appUrl, '/') . '/NIS2/api/auth/verify.php?token=' . urlencode($token);
 
 		$body = "<h3>Verifica tu dirección de correo</h3>" .
 			"<p>Por favor, haz clic en el siguiente enlace para verificar tu cuenta:</p>" .
