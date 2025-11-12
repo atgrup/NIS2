@@ -6,7 +6,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Recoge datos del formulario
     $correo = $_POST['email'];
     $password = $_POST['password'];
-    $repeat = $_POST['repeat-password'];
+    $repeat = $_POST['repeat_password'];
     $nombre_empresa = $_POST['nombre_empresa'];
     $pais_origen = $_POST['pais_origen'] ?? '';
 
