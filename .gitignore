@@ -2,3 +2,6 @@
 # Log files
 logs/
 logs/*.log
+# Local mail config (do not commit)
+pages/notifications/config_mail.php
+config_backups/

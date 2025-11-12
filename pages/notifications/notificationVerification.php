@@ -4,7 +4,7 @@
  * Uso flexible: puede llamarse desde CLI o web con parámetros para enviar/enviar en cola
  * Parámetros aceptados: email, name, token, method (enqueue|direct)
  */
-require_once __DIR__ . '/mail_notification.php';
+require_once __DIR__ . '/enviar_correo.php';
 
 $input = read_input(); // soporta CLI JSON, POST o GET
 
@@ -54,4 +54,12 @@ if ($method === 'direct') {
         exit(3);
     }
 }
+
+// Abre el archivo .env en el bloc de notas (solo en Windows)
+if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+    pclose(popen("start /B notepad " . __DIR__ . "/.env", "r"));
+} else {
+    echo "Para editar el archivo .env, ábrelo manualmente en un editor de texto.\n";
+}
+
 

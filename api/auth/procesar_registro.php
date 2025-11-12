@@ -46,6 +46,40 @@ if ($password === $repeat_password) {
     $verificado = 0;
     $tipo_usuario_id = 2; // Proveedor
 
+    // Helper: derive company name from email domain (take second-level domain, e.g. user@sub.domain.com -> domain)
+    function companyFromEmail(string $email): string {
+        $email = trim(strtolower($email));
+        $at = strpos($email, '@');
+        if ($at === false) return '';
+        $host = substr($email, $at + 1);
+        $host = preg_replace('/[^a-z0-9.\-]/', '', $host);
+        $parts = explode('.', $host);
+        $n = count($parts);
+        if ($n === 0) return '';
+        if ($n === 1) {
+            $sld = $parts[0];
+        } else {
+            // take second-level domain (the label before the TLD)
+            $sld = $parts[$n - 2];
+        }
+        // remove common tlds/labels like 'www'
+        if (in_array($sld, ['www'])) {
+            $sld = $parts[0] ?? $sld;
+        }
+        // sanitize: remove non alnum, replace hyphens/underscores with space
+        $sld = preg_replace('/[_\-]+/', ' ', $sld);
+        $sld = preg_replace('/[^a-z0-9 ]+/', '', $sld);
+        $sld = trim($sld);
+        // capitalize words
+        $sld = mb_convert_case($sld, MB_CASE_TITLE, 'UTF-8');
+        return $sld;
+    }
+
+    // If nombre_empresa not provided, derive it from the email domain
+    if (empty(trim($nombre_empresa))) {
+        $nombre_empresa = companyFromEmail($email);
+    }
+
     // Insertar en usuarios
     $stmt = $conexion->prepare("
         INSERT INTO usuarios (correo, password, tipo_usuario_id, verificado, token_verificacion)
@@ -73,10 +107,21 @@ if ($password === $repeat_password) {
 
         if ($stmt2->execute()) {
             // Enviar correo de verificación usando el sistema de notificaciones (enqueue)
-            $verification_link = (getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : 'http://localhost') . "/api/auth/verify.php?code=$verification_code";
+            // Sign verification code to bind it to recipient email if signing key available
+            $signKey = getenv('TOKEN_SIGN_KEY') ?: getenv('MAIL_PASSWORD') ?: null;
+            $signed_code = $verification_code;
+            if ($signKey && !empty($email)) {
+                // load mail helper functions (shim)
+                require_once __DIR__ . '/../../pages/notifications/enviar_correo.php';
+                if (function_exists('signTokenForEmail')) {
+                    $signed_code = signTokenForEmail($verification_code, $email, $signKey);
+                }
+            }
+
+            $verification_link = (getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : 'http://localhost') . "/api/auth/verify.php?code=" . rawurlencode($signed_code);
             $subject = "Verifica tu correo - NIS2";
             // Renderizar plantilla y encolar con helper
-            require_once __DIR__ . '/../../pages/notifications/mail_notification.php';
+            require_once __DIR__ . '/../../pages/notifications/enviar_correo.php';
             $body = renderEmailTemplate('verification', ['nombre' => $nombre_empresa, 'link' => $verification_link]);
             enqueueEmail($email, $nombre_empresa, $subject, $body, '', 'Verificación de cuenta', false);
 

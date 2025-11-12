@@ -1,28 +1,64 @@
 <?php
 require '../includes/conexion.php';
+// Load mail helper to verify signed tokens if present
+require_once __DIR__ . '/../../pages/notifications/enviar_correo.php';
 
 $mensaje = "";
 $tipo_alerta = "danger";
 $verificado_ok = false;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
-    $code = $_POST['code'];
-
-    // Buscar el usuario con ese token
-    $stmt = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
-    if (!$stmt) {
-        die("Error preparando la verificación: " . $conexion->error);
-    }
-    $stmt->bind_param("s", $code);
+// Helper: given possibly-signed code, return raw code or false
+function resolveSignedCodeToRaw($code)
+{
+    // if not signed, return as is
+    if (strpos($code, '.') === false) return $code;
+    // signed format raw.sig -> extract raw and try to find user by raw
+    list($raw, $sig) = explode('.', $code, 2);
+    global $conexion;
+    $stmt = $conexion->prepare("SELECT correo FROM usuarios WHERE token_verificacion = ? LIMIT 1");
+    if (!$stmt) return false;
+    $stmt->bind_param('s', $raw);
     $stmt->execute();
+    $res = $stmt->get_result();
+    if (!$res || $res->num_rows === 0) {
+        $stmt->close();
+        return false;
+    }
+    $row = $res->fetch_assoc();
+    $stmt->close();
+    $email = $row['correo'] ?? null;
+    if (!$email) return false;
+    if (function_exists('verifySignedTokenWithEmail')) {
+        $ok = verifySignedTokenWithEmail($code, $email);
+        return $ok === false ? false : $raw;
+    }
+    return false;
+}
 
-    if ($stmt->affected_rows > 0) {
-        $mensaje = "✅ Tu correo ha sido verificado. Ya puedes iniciar sesión.";
-        $tipo_alerta = "success";
-        $verificado_ok = true;
-    } else {
-        $mensaje = "❌ Código inválido o ya verificado.";
+if (isset($_POST['code']) || isset($_GET['code'])) {
+    $code = $_POST['code'] ?? $_GET['code'];
+    // If code is signed, resolve to raw using stored user email
+    $raw = resolveSignedCodeToRaw($code);
+    if ($raw === false) {
+        $mensaje = "❌ Código inválido o firma incorrecta.";
         $tipo_alerta = "danger";
+    } else {
+        // Buscar el usuario con ese token (raw)
+        $stmt = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
+        if (!$stmt) {
+            die("Error preparando la verificación: " . $conexion->error);
+        }
+        $stmt->bind_param("s", $raw);
+        $stmt->execute();
+
+        if ($stmt->affected_rows > 0) {
+            $mensaje = "✅ Tu correo ha sido verificado. Ya puedes iniciar sesión.";
+            $tipo_alerta = "success";
+            $verificado_ok = true;
+        } else {
+            $mensaje = "❌ Código inválido o ya verificado.";
+            $tipo_alerta = "danger";
+        }
     }
 }
 

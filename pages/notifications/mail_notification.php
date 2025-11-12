@@ -4,6 +4,18 @@ use PHPMailer\PHPMailer\Exception;
 
 require __DIR__ . '/../../vendor/autoload.php';
 
+// Backwards-compat: if this file is required via enviar_correo.php shim,
+// make sure functions are declared only once. (They already are declared below.)
+
+// Reuse the central PHPMailer factory so all mail sending uses the same config
+// and logging behavior. This file intentionally does NOT pull in Laravel or
+// other frameworks; it uses PHPMailer via the project's composer autoload.
+if (file_exists(__DIR__ . '/enviar_correo.php')) {
+    require_once __DIR__ . '/enviar_correo.php';
+} elseif (file_exists(__DIR__ . '/../notifications/enviar_correo.php')) {
+    require_once __DIR__ . '/../notifications/enviar_correo.php';
+}
+
 // ---------------------------
 // Cargar variables del .env (raíz del proyecto)
 // ---------------------------
@@ -90,33 +102,30 @@ function enviarCorreo($destinatario, $nombreDestinatario, $asunto, $cuerpoHtml, 
     // Close quick test socket
     fclose($fp);
 
-    $mail = new PHPMailer(true);
+    // Use the shared PHPMailer factory. getMailer() is defined in enviar_correo.php
+    // which was required above. This ensures consistent SMTP options and logging.
     try {
-        $mail->isSMTP();
-        $mail->Host = $host;
-        $mail->SMTPAuth = true;
-        $mail->Username = $username;
-        $mail->Password = $password;
-        $secure = getenv('MAIL_SMTP_SECURE') ?: 'STARTTLS';
-        if (strtoupper($secure) === 'SSL') {
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        if (!function_exists('getMailer')) {
+            // Fallback: instantiate directly if factory missing (shouldn't happen)
+            $mail = new PHPMailer(true);
+            $mail->isSMTP();
+            $mail->Host = $host;
+            $mail->SMTPAuth = true;
+            $mail->Username = $username;
+            $mail->Password = $password;
+            $secure = getenv('MAIL_SMTP_SECURE') ?: 'STARTTLS';
+            if (strtoupper($secure) === 'SSL') {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+            } else {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            }
+            $mail->Port = $port;
         } else {
-            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        }
-        $mail->Port = $port;
-
-        // Debug opcional: redirigir al log si se habilita
-        $smtpDebug = (int)(getenv('MAIL_SMTP_DEBUG') ?: 0);
-        $mail->SMTPDebug = $smtpDebug;
-        if ($smtpDebug > 0) {
-            $mail->Debugoutput = function($str, $level) {
-                notif_log("SMTP debug (level {$level}): {$str}");
-            };
+            $mail = getMailer();
         }
 
-        $from = getenv('MAIL_FROM') ?: $username;
-        $fromName = getenv('MAIL_FROM_NAME') ?: 'NIS2';
-        $mail->setFrom($from, $fromName);
+        // Ensure no leftover recipients
+        $mail->clearAllRecipients();
         $mail->addAddress($destinatario, $nombreDestinatario);
 
         $mail->isHTML(true);
@@ -344,12 +353,142 @@ function createEmailActionToken(?int $queueId, string $action, ?int $archivoId =
     if ($stmt->execute()) {
         $stmt->close();
         notif_log("createEmailActionToken: token creado={$token} action={$action} archivo_id={$archivoId} queue_id={$queueId}");
+
+        // Try to generate a signed token that ties to recipient email when possible.
+        // Signing key taken from env TOKEN_SIGN_KEY. If not set, we fall back to MAIL_PASSWORD (less ideal).
+        $signKey = getenv('TOKEN_SIGN_KEY') ?: getenv('MAIL_PASSWORD') ?: null;
+
+        // Determine recipient email: prefer provided queueId -> mail_queue.recipient_email
+        $recipientEmail = null;
+        if ($queueId) {
+            $q = $conexion->prepare("SELECT recipient_email FROM mail_queue WHERE id = ? LIMIT 1");
+            if ($q) {
+                $q->bind_param('i', $queueId);
+                $q->execute();
+                $r = $q->get_result();
+                if ($r && $r->num_rows > 0) {
+                    $rr = $r->fetch_assoc();
+                    $recipientEmail = $rr['recipient_email'] ?? null;
+                }
+                $q->close();
+            }
+        }
+
+        // If meta contains recipient email, try that
+        if (!$recipientEmail && $meta) {
+            if (is_string($meta)) {
+                $decodedMeta = @json_decode($meta, true);
+                if (is_array($decodedMeta) && !empty($decodedMeta['recipient_email'])) $recipientEmail = $decodedMeta['recipient_email'];
+            } elseif (is_array($meta) && !empty($meta['recipient_email'])) {
+                $recipientEmail = $meta['recipient_email'];
+            }
+        }
+
+        // If still not found but caller provided 'bind_email' inside meta array, use it
+        if (!$recipientEmail && is_array($meta) && !empty($meta['bind_email'])) {
+            $recipientEmail = $meta['bind_email'];
+        }
+
+        // If sign key and recipient email available, return signed token
+        if ($signKey && $recipientEmail) {
+            $signed = signTokenForEmail($token, $recipientEmail, $signKey);
+            return $signed;
+        }
+
+        // Fallback: return raw token
         return $token;
     } else {
         notif_log('createEmailActionToken: fallo al ejecutar insert: ' . $stmt->error);
         $stmt->close();
         return false;
     }
+}
+
+
+/**
+ * Sign a token bound to an email address using HMAC-SHA256 and a secret key.
+ * Returns a compact token: {rawtoken}.{base64url(hmac)}
+ */
+function signTokenForEmail(string $rawToken, string $email, string $secretKey): string
+{
+    $data = $rawToken . '|' . strtolower(trim($email));
+    $hmac = hash_hmac('sha256', $data, $secretKey, true);
+    $sig = rtrim(strtr(base64_encode($hmac), '+/', '-_'), '=');
+    return $rawToken . '.' . $sig;
+}
+
+/**
+ * Verify a signed token and return the raw token on success, or false on failure.
+ * This function will attempt to find the expected recipient email from the DB when
+ * given a signed token that corresponds to an email_actions row linked to a queue.
+ */
+function verifySignedToken(string $maybeSigned)
+{
+    global $conexion;
+    if (strpos($maybeSigned, '.') === false) return $maybeSigned; // not signed
+    list($raw, $sig) = explode('.', $maybeSigned, 2);
+    // lookup action row
+    $dbPath = __DIR__ . '/../../api/includes/conexion.php';
+    if (!file_exists($dbPath)) {
+        notif_log('verifySignedToken: conexion.php not found');
+        return false;
+    }
+    require_once $dbPath;
+    $stmt = $conexion->prepare("SELECT id, queue_id, meta FROM email_actions WHERE token = ? LIMIT 1");
+    if (!$stmt) return false;
+    $stmt->bind_param('s', $raw);
+    $stmt->execute();
+    $res = $stmt->get_result();
+    if (!$res || $res->num_rows === 0) {
+        $stmt->close();
+        return false;
+    }
+    $row = $res->fetch_assoc();
+    $stmt->close();
+
+    $recipientEmail = null;
+    if (!empty($row['queue_id'])) {
+        $q = $conexion->prepare("SELECT recipient_email FROM mail_queue WHERE id = ? LIMIT 1");
+        if ($q) {
+            $q->bind_param('i', $row['queue_id']);
+            $q->execute();
+            $r = $q->get_result();
+            if ($r && $r->num_rows > 0) {
+                $rr = $r->fetch_assoc();
+                $recipientEmail = $rr['recipient_email'] ?? null;
+            }
+            $q->close();
+        }
+    }
+    if (!$recipientEmail && !empty($row['meta'])) {
+        $m = @json_decode($row['meta'], true);
+        if (is_array($m) && !empty($m['recipient_email'])) $recipientEmail = $m['recipient_email'];
+    }
+
+    $signKey = getenv('TOKEN_SIGN_KEY') ?: getenv('MAIL_PASSWORD') ?: null;
+    if (!$signKey || !$recipientEmail) {
+        notif_log('verifySignedToken: missing signKey or recipientEmail');
+        return false;
+    }
+
+    $expected = signTokenForEmail($raw, $recipientEmail, $signKey);
+    if (hash_equals($expected, $maybeSigned)) return $raw;
+    return false;
+}
+
+/**
+ * Verify a signed token when the recipient email is already known (e.g. registration verification).
+ * Returns raw token on success, false on failure.
+ */
+function verifySignedTokenWithEmail(string $maybeSigned, string $email): bool|string
+{
+    if (strpos($maybeSigned, '.') === false) return $maybeSigned;
+    list($raw, $sig) = explode('.', $maybeSigned, 2);
+    $signKey = getenv('TOKEN_SIGN_KEY') ?: getenv('MAIL_PASSWORD') ?: null;
+    if (!$signKey) return false;
+    $expected = signTokenForEmail($raw, $email, $signKey);
+    if (hash_equals($expected, $maybeSigned)) return $raw;
+    return false;
 }
 
 /**
@@ -372,3 +511,4 @@ function renderEmailTemplate(string $templateName, array $vars = []): string
     $content = preg_replace('/{{[^}]+}}/', '', $content);
     return $content;
 }
+

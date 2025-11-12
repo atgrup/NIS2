@@ -131,7 +131,8 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
             }
 
             if (!empty($consultors)) {
-                require_once __DIR__ . '/notifications/mail_notification.php';
+                // require mail helper (compatibility shim)
+                require_once __DIR__ . '/notifications/enviar_correo.php';
                 $subject = "Nuevo archivo subido por {$correo}";
                 $htmlList = "<p>El proveedor <b>{$correo}</b> ha subido un nuevo archivo:</p>\n<ul>";
                 $htmlList .= "<li>{$nombre_original}</li>";
@@ -165,40 +166,40 @@ if (isset($_FILES['archivo']) && $_FILES['archivo']['error'] === UPLOAD_ERR_OK) 
                         }
                     }
 
-                    // Use template for consultor notification
-                    require_once __DIR__ . '/notifications/mail_notification.php';
+                    // Prepare base URL
                     $base = getenv('APP_URL') ?: '';
                     if (!$base && !empty($_SERVER['HTTP_HOST'])) {
                         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
                         $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
                     }
                     $base = rtrim($base, '/');
+
+                    // Create an action token BEFORE rendering the template so the email contains a valid link
+                    // Include bind_email in meta so createEmailActionToken can sign the token to this recipient
+                    $meta = ['archivo_id' => $archivoId, 'bind_email' => $to];
+                    $token = createEmailActionToken(null, 'change_state', $archivoId, $meta, 72);
                     $linkView = ($base ? $base : '') . '/pages/visualizar_archivo_split.php?id=' . $archivoId;
-                    $queueId = enqueueEmail($to, $toName, $subject, renderEmailTemplate('consultor_new_file', [
+                    $linkAction = ($base ? $base : '') . '/pages/notifications/action.php?t=' . urlencode($token);
+
+                    // Render the email HTML including the token link
+                    $bodyHtml = renderEmailTemplate('consultor_new_file', [
                         'consultor_nombre' => $toName,
                         'proveedor_correo' => $correo,
                         'archivo_nombre' => $nombre_original,
                         'link_view' => $linkView,
-                        'link_action' => ($base ? $base : '') . '/pages/notifications/action.php?t=' . urlencode($token)
-                    ]), '', "Archivo subido: {$nombre_original}", false, 3, $attachments);
-                    // Si se encoló correctamente, crear token y añadir links de visualización/revisión en la cola
+                        'link_action' => $linkAction
+                    ]);
+
+                    // Enqueue the email
+                    $queueId = enqueueEmail($to, $toName, $subject, $bodyHtml, '', "Archivo subido: {$nombre_original}", false, 3, $attachments);
+
+                    // If enqueue succeeded, associate the mail_queue id with the previously created token
                     if ($queueId && !empty($archivoId)) {
-                        $meta = ['archivo_id' => $archivoId];
-                        $token = createEmailActionToken($queueId, 'change_state', $archivoId, $meta, 72);
-                        $base = getenv('APP_URL') ?: '';
-                        if (!$base && !empty($_SERVER['HTTP_HOST'])) {
-                            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-                            $base = $scheme . '://' . $_SERVER['HTTP_HOST'];
-                        }
-                        $base = rtrim($base, '/');
-                        $linkView = ($base ? $base : '') . '/pages/visualizar_archivo_split.php?id=' . $archivoId;
-                        $linkAction = ($base ? $base : '') . '/pages/notifications/action.php?t=' . urlencode($token);
-                        $append = "<p>Ver archivo: <a href=\"{$linkView}\">Ver</a></p><p>Revisar / Modificar estado: <a href=\"{$linkAction}\">Abrir revisión</a></p>";
-                        $upd = $conexion->prepare("UPDATE mail_queue SET body_html = CONCAT(body_html, ?) WHERE id = ?");
-                        if ($upd) {
-                            $upd->bind_param('si', $append, $queueId);
-                            $upd->execute();
-                            $upd->close();
+                        $ut = $conexion->prepare("UPDATE email_actions SET queue_id = ? WHERE token = ? LIMIT 1");
+                        if ($ut) {
+                            $ut->bind_param('is', $queueId, $token);
+                            $ut->execute();
+                            $ut->close();
                         }
                     }
                 }
