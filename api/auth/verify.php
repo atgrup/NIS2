@@ -1,69 +1,60 @@
 <?php
-require '../includes/conexion.php';
-// Load mail helper to verify signed tokens if present
-require_once __DIR__ . '/../../pages/notifications/enviar_correo.php';
+require '../includes/conexion.php'; // tu conexión a la BD
 
-$mensaje = "";
-$tipo_alerta = "danger";
+$mensaje = '';
+$tipo_alerta = 'danger';
 $verificado_ok = false;
 
-// Helper: given possibly-signed code, return raw code or false
-function resolveSignedCodeToRaw($code)
-{
-    // if not signed, return as is
-    if (strpos($code, '.') === false) return $code;
-    // signed format raw.sig -> extract raw and try to find user by raw
-    list($raw, $sig) = explode('.', $code, 2);
-    global $conexion;
-    $stmt = $conexion->prepare("SELECT correo FROM usuarios WHERE token_verificacion = ? LIMIT 1");
-    if (!$stmt) return false;
-    $stmt->bind_param('s', $raw);
-    $stmt->execute();
-    $res = $stmt->get_result();
-    if (!$res || $res->num_rows === 0) {
-        $stmt->close();
-        return false;
-    }
-    $row = $res->fetch_assoc();
-    $stmt->close();
-    $email = $row['correo'] ?? null;
-    if (!$email) return false;
-    if (function_exists('verifySignedTokenWithEmail')) {
-        $ok = verifySignedTokenWithEmail($code, $email);
-        return $ok === false ? false : $raw;
-    }
-    return false;
+// 🚩 Paso 1: si llega con GET (desde el enlace del correo)
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['code'])) {
+    $code = $_GET['code'];
+    ?>
+    <!-- Página intermedia: reenviará el token sin mostrarlo -->
+    <form id="verifyForm" method="POST" action="verify.php">
+        <input type="hidden" name="code" value="<?php echo htmlspecialchars($code); ?>">
+    </form>
+    <script>
+        // Autoenvía el formulario por POST y limpia la URL
+        document.getElementById('verifyForm').submit();
+    </script>
+    <?php
+    exit;
 }
 
-if (isset($_POST['code']) || isset($_GET['code'])) {
-    $code = $_POST['code'] ?? $_GET['code'];
-    // If code is signed, resolve to raw using stored user email
-    $raw = resolveSignedCodeToRaw($code);
-    if ($raw === false) {
-        $mensaje = "❌ Código inválido o firma incorrecta.";
-        $tipo_alerta = "danger";
-    } else {
-        // Buscar el usuario con ese token (raw)
-        $stmt = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
-        if (!$stmt) {
-            die("Error preparando la verificación: " . $conexion->error);
-        }
-        $stmt->bind_param("s", $raw);
-        $stmt->execute();
+// 🚩 Paso 2: si llega por POST (ya oculto en la URL)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
+    $code = $_POST['code'];
 
-        if ($stmt->affected_rows > 0) {
-            $mensaje = "✅ Tu correo ha sido verificado. Ya puedes iniciar sesión.";
-            $tipo_alerta = "success";
+    // Buscar usuario con ese token
+    $stmt = $conexion->prepare("SELECT id_usuarios, verificado FROM usuarios WHERE token_verificacion = ?");
+    $stmt->bind_param("s", $code);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        if ($row['verificado'] == 1) {
+            $mensaje = "✅ Tu cuenta ya estaba verificada.";
+            $tipo_alerta = 'info';
             $verificado_ok = true;
         } else {
-            $mensaje = "❌ Código inválido o ya verificado.";
-            $tipo_alerta = "danger";
+            // Actualizar a verificado
+            $update = $conexion->prepare("UPDATE usuarios SET verificado = 1 WHERE token_verificacion = ?");
+            $update->bind_param("s", $code);
+            $update->execute();
+
+            $mensaje = "✅ Tu correo ha sido verificado correctamente.";
+            $tipo_alerta = 'success';
+            $verificado_ok = true;
         }
+    } else {
+        $mensaje = "❌ Código inválido o expirado.";
+        $tipo_alerta = 'danger';
     }
+} else {
+    $mensaje = "⚠️ Acceso no válido.";
+    $tipo_alerta = 'warning';
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -74,23 +65,25 @@ if (isset($_POST['code']) || isset($_GET['code'])) {
 </head>
 <body class="d-flex justify-content-center align-items-center vh-100 bg-light">
 
-<div class="card p-4 shadow" style="width: 350px;">
+<div class="card p-4 shadow" style="width: 360px;">
     <h5 class="card-title text-center mb-3">Verificación de correo</h5>
-
-    <div class="alert <?php echo $tipo_alerta === 'success' ? 'alert-success' : 'alert-danger'; ?>" role="alert">
+    
+    <div class="alert alert-<?php echo $tipo_alerta; ?>" role="alert">
         <?php echo $mensaje; ?>
     </div>
 
     <?php if (!$verificado_ok): ?>
-    <form method="POST">
-        <div class="mb-3">
-            <label for="code" class="form-label">Introduce tu código de verificación</label>
-            <input type="password" class="form-control" id="code" name="code" placeholder="Código enviado por correo" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Verificar</button>
-    </form>
+        <!-- Si no está verificado, permite ingresar código manual -->
+        <form method="POST">
+            <div class="mb-3">
+                <label for="code" class="form-label">Introduce tu código de verificación</label>
+                <input type="password" class="form-control" id="code" name="code" placeholder="Código enviado por correo" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Verificar</button>
+        </form>
     <?php else: ?>
-    <a href="../../pages/login.php" class="btn btn-success w-100">Ir a iniciar sesión</a>
+        <!-- Si está verificado, muestra botón de login -->
+        <a href="../../pages/login.php" class="btn btn-success w-100 mt-2">Ir a iniciar sesión</a>
     <?php endif; ?>
 </div>
 
