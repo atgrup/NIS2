@@ -118,7 +118,7 @@ if ($password === $repeat_password) {
                 }
             }
 
-            $verification_link = (getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : 'http://localhost/NIS2/') . "/api/auth/verify.php?code=" . rawurlencode($signed_code);
+            $verification_link = (getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : 'http://localhost/NIS2/') . "api/auth/verify.php?codeProcesarRegistro=" . rawurlencode($signed_code);
             $subject = "Verifica tu correo - NIS2";
             // Renderizar plantilla y encolar con helper
             require_once __DIR__ . '/../../pages/notifications/enviar_correo.php';
