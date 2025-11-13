@@ -16,7 +16,7 @@ $method = strtolower(trim($input['method'] ?? $input['metodo'] ?? 'enqueue'));
 // Construir link de verificación usando APP_URL si está disponible
 $appUrl = getenv('APP_URL') ? rtrim(getenv('APP_URL'), '/') : '';
 if ($appUrl) {
-    $link = $appUrl . "/api/auth/verify.php?code=" . rawurlencode($token);
+    $link = $appUrl . "/NIS2/api/auth/verify.php?code=" . rawurlencode($token);
 } else {
     // fallback a localhost
     $link = "http://localhost/NIS2/api/auth/verify.php?code=" . rawurlencode($token);

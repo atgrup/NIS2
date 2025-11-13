@@ -179,7 +179,7 @@ function enviarCorreoVerificacion(string $emailDestino, string $token): bool
 		$mail->Subject = $subject;
 
 		$appUrl = getenv('APP_URL') ?: 'http://localhost/';
-		$verifyUrl = rtrim($appUrl, '/') . '/NIS2/api/auth/verify.php?tokenEnviarCorreo=' . urlencode($token);
+		$verifyUrl = rtrim($appUrl, '/') . '/NIS2/api/auth/verify.php?token=' . urlencode($token);
 
 		$body = "<h3>Verifica tu dirección de correo</h3>" .
 			"<p>Por favor, haz clic en el siguiente enlace para verificar tu cuenta:</p>" .
