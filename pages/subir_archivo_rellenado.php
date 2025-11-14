@@ -41,14 +41,15 @@ $missing = [];
 // -----------------------------------------------------------
 // FUNCIÓN PARA VERIFICAR QUE token_verificacion NO ES NULL
 // -----------------------------------------------------------
-function tokenVerificacionValido($conexion, $usuario_id) {
+$tokenDB= " ";
+function tokenVerificacionValido($conexion, $usuario_id, $tokenDB) {
     $sql = "SELECT token_verificacion FROM usuarios WHERE id_usuarios = ?";
     $stmt = $conexion->prepare($sql);
     if (!$stmt) return false;
 
     $stmt->bind_param("i", $usuario_id);
     $stmt->execute();
-    $stmt->bind_result($tokenDB);
+    $stmt->bind_result("token_verificacion", $tokenDB);
     $stmt->fetch();
     $stmt->close();
 
