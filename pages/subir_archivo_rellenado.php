@@ -4,97 +4,102 @@ ini_set('display_errors', 1);
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-    
 }
-header('Content-Type: text/plain');
 
+// ------ CAMBIO #1: Header JSON y sin var_dump ------
+// Se eliminó var_dump($_SESSION);
+// Se cambió text/plain por application/json
+header('Content-Type: application/json');
 
-// Obtener valores de forma segura (no lanza notices si no existen)
-
-
-// incluir conexión después de iniciar sesión y obtener variables
+// Incluir conexión
 require '../api/includes/conexion.php';
 
+// -----------------------------------------------------------
+// PRIMERO asignar variables desde sesión / POST / headers
+// -----------------------------------------------------------
+$usuario_id = $_SESSION['id_usuarios'] ?? ($_POST['id_usuarios'] ?? null);
 
-// Validar y devolver cuál falta exactamente (útil para debug)
-$missing = [];
+// --- CAMBIO #2: 'tipo_usuario_id' no existe en tu sesión ---
+// En plantillaUsers.php usas $_SESSION['rol']. Usemos esa variable.
+// Y en la BBDD, 1=admin, 2=proveedor, 3=consultor
+$rol_sesion = $_SESSION['rol'] ?? null;
+$proveedor_id = null; // Lo definiremos ahora
+
+if ($rol_sesion === 'administrador') {
+    $proveedor_id = 1;
+} elseif ($rol_sesion === 'proveedor') {
+    $proveedor_id = 2;
+} elseif ($rol_sesion === 'consultor') {
+    $proveedor_id = 3;
+}
+// -----------------------------------------------------------
+
 
 // -----------------------------------------------------------
-// FUNCIÓN PARA VERIFICAR QUE token_verificacion NO ES NULL
+// FUNCIÓN PARA VERIFICAR QUE EL USUARIO ESTÁ VERIFICADO (token es NULL)
 // -----------------------------------------------------------
-$tokenDB= " ";
-function tokenVerificacionValido($conexion, $usuario_id, $tokenDB) {
+function usuarioEstaVerificado($conexion, $usuario_id) {
     $sql = "SELECT token_verificacion FROM usuarios WHERE id_usuarios = ?";
     $stmt = $conexion->prepare($sql);
     if (!$stmt) return false;
 
     $stmt->bind_param("i", $usuario_id);
     $stmt->execute();
-    $stmt->bind_result("token_verificacion", $tokenDB);
-    $stmt->fetch();
-    $stmt->close();
 
-    // Debe existir y no ser NULL
-    return !empty($tokenDB);
+    $tokenDB = null;
+    $stmt->bind_result($tokenDB);
+
+    if ($stmt->fetch()) {
+        $stmt->close();
+        // ------ CAMBIO #3: Lógica de verificación invertida ------
+        // El usuario está verificado SI el token ESTÁ vacío (empty).
+        return empty($tokenDB);
+    } else {
+        $stmt->close();
+        return false; // Usuario no encontrado
+    }
 }
 
 // -----------------------------------------------------------
-// COMPROBAR QUE EL TOKEN DE VERIFICACIÓN EN LA BD NO SEA NULL
+// VERIFICAR ESTADO EN BD
 // -----------------------------------------------------------
 if (!empty($usuario_id)) {
-    if (!tokenVerificacionValido($conexion, $usuario_id)) {
+    // Usamos la función con el nombre corregido
+    if (!usuarioEstaVerificado($conexion, $usuario_id)) {
         echo json_encode([
             'success' => false,
-            'error' => 'El token de verificación en la base de datos es nulo. No se permite subir archivos.'
+            'error' => 'Usuario no verificado. Por favor, revisa tu correo para activar tu cuenta.'
         ]);
         exit;
     }
 }
-if (empty($usuario_id))       $missing[] = 'usuario_id';
-if (empty($proveedor_id))     $missing[] = 'proveedor_id';
 
-if (empty($token_verificacion)) $missing[] = 'token_verificacion';
-$usuario_id = $_SESSION['id_usuarios'] ?? ($_POST['id_usuarios'] ?? null);
-$proveedor_id = $_SESSION['tipo_usuario_id'] ?? ($_POST['tipo_usuario_id'] ?? null);
-// Intentamos leer token_verificacion primero desde la sesión y, si no está, desde POST (por si se envía así)
-$token_verificacion = $_SESSION['token_verificacion'] 
-    ?? ($_POST['token_verificacion'] ?? null);
+// -----------------------------------------------------------
+// VALIDAR VARIABLES FALTANTES
+// -----------------------------------------------------------
+$missing = [];
+if (empty($usuario_id)) $missing[] = 'usuario_id';
+if (empty($proveedor_id)) $missing[] = 'proveedor_id (rol)'; // El rol no se pudo determinar
 
-// Si no viene por POST, mirar cabecera Authorization (útil para APIs)
-if (empty($token_verificacion)) {
-    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
-        $auth = trim($_SERVER['HTTP_AUTHORIZATION']);
-    } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $auth = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
-    } else {
-        $auth = null;
-    }
+// ------ CAMBIO #4: Eliminada la comprobación de token ------
+// if (empty($token_verificacion)) $missing[] = 'token_verificacion';
 
-    if ($auth && stripos($auth, 'Bearer ') === 0) {
-        $token_verificacion = substr($auth, 7);
-    }
-}
 if (!empty($missing)) {
     echo json_encode([
         'success' => false,
-        'error' => 'Usuario no autenticado: faltan variables',
+        'error' => 'Usuario no autenticado: faltan variables de sesión',
         'faltan' => $missing,
-        // opcional: mostrar en qué parte se estaban buscando (solo para debug)
         'debug' => [
-            'session_id_usuarios' => isset($_SESSION['id_usuarios']),
-            'session_tipo_usuario_id' => isset($_SESSION['tipo_usuario_id']),
-            'session_token_verificacion' => isset($_SESSION['token_verificacion']),
-            'post_token_verificacion' => isset($_POST['token_verificacion']),
-            'post_id_usuarios' => isset($_POST['id_usuarios']),
-            'post_tipo_usuario_id' => isset($_POST['tipo_usuario_id']),
-            'http_authorization_present' => !empty($auth)
+            'session_id_usuarios_set' => isset($_SESSION['id_usuarios']),
+            'session_rol_set' => isset($_SESSION['rol']),
         ]
     ]);
     exit;
 }
 
-
-// Procesar archivo subido
+// -----------------------------------------------------------
+// PROCESAR ARCHIVO (igual que tu código original)
+// -----------------------------------------------------------
 if (!isset($_FILES['archivo']) || $_FILES['archivo']['error'] !== UPLOAD_ERR_OK) {
     echo json_encode(['success' => false, 'error' => 'No se seleccionó archivo o hubo un error al subirlo']);
     exit;
@@ -118,44 +123,61 @@ if (!move_uploaded_file($archivo['tmp_name'], '../' . $ruta_destino)) {
 $plantilla_id = !empty($_POST['plantilla_id']) ? (int)$_POST['plantilla_id'] : null;
 
 // -----------------------------------------------------------
-//  NUEVA LÓGICA SEGÚN tipo_usuario_id
+// LÓGICA DE INSERCIÓN (MODIFICADA PARA USAR ROL)
 // -----------------------------------------------------------
-if ($proveedor_id == 2) {
-    // Insertar en archivos_subidos
+
+// $proveedor_id (el ID de rol) ya lo definimos arriba.
+// 2 = proveedor, 3 = consultor
+
+if ($proveedor_id == 2) { // Si es Proveedor
     $stmt = $conexion->prepare("
         INSERT INTO archivos_subidos 
-        (id, proveedor_id, usuario_id, archivo_url, nombre_archivo, comentario, fecha_subida, revision_estado, plantilla_uuid, plantilla_id)
-        VALUES (?, ?, ?, ?, ?, ?,  NOW(), 'pendiente', ?, ?)
+        (proveedor_id, usuario_id, archivo_url, nombre_archivo, fecha_subida, revision_estado, plantilla_id)
+        VALUES (?, ?, ?, ?, NOW(), 'pendiente', ?)
     ");
 
-} elseif ($proveedor_id == 3) {
-    // Insertar en plantillas
+    if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => $conexion->error]);
+        exit;
+    }
+    
+    // Necesitamos el ID del proveedor (de la tabla 'proveedores'), no el ID de rol
+    $stmt_prov = $conexion->prepare("SELECT id FROM proveedores WHERE usuario_id = ?");
+    $stmt_prov->bind_param("i", $usuario_id);
+    $stmt_prov->execute();
+    $id_proveedor_tabla = null;
+    $stmt_prov->bind_result($id_proveedor_tabla);
+    $stmt_prov->fetch();
+    $stmt_prov->close();
+
+    $stmt->bind_param("iisss", $id_proveedor_tabla, $usuario_id, $ruta_destino, $nombre_original, $plantilla_id);
+
+} elseif ($proveedor_id == 3) { // Si es Consultor
     $stmt = $conexion->prepare("
         INSERT INTO plantillas
-        (id, nombre, descripcion, consultor_id, archivo_url, fecha_subida)
-        VALUES (?, ?, ?, ?, ?, NOW())
+        (nombre, consultor_id, archivo_url, fecha_subida)
+        VALUES (?, ?, ?, NOW())
     ");
-} else {
-    echo json_encode(['success' => false, 'error' => 'tipo_usuario_id no válido']);
+
+     if (!$stmt) {
+        echo json_encode(['success' => false, 'error' => $conexion->error]);
+        exit;
+    }
+
+    // Necesitamos el ID del consultor (de la tabla 'consultores')
+    $stmt_cons = $conexion->prepare("SELECT id FROM consultores WHERE usuario_id = ?");
+    $stmt_cons->bind_param("i", $usuario_id);
+    $stmt_cons->execute();
+    $id_consultor_tabla = null;
+    $stmt_cons->bind_result($id_consultor_tabla);
+    $stmt_cons->fetch();
+    $stmt_cons->close();
+
+    $stmt->bind_param("sis", $nombre_original, $id_consultor_tabla, $ruta_destino);
+
+} else { // Si es Admin (rol 1) o desconocido
+    echo json_encode(['success' => false, 'error' => 'Tu rol no tiene permisos para subir este tipo de archivo.']);
     exit;
-}
-// -----------------------------------------------------------
-
-if (!$stmt) {
-    echo json_encode(['success' => false, 'error' => $conexion->error]);
-    exit;
-}
-
-$prov_id_final = $proveedor_id ?? 0;
-$user_id_final = $usuario_id;
-
-if ($proveedor_id == 2) {
-    // bind para archivos_subidos (5 campos)
-    $stmt->bind_param("ssiii", $nombre_original, $ruta_destino, $prov_id_final, $user_id_final, $plantilla_id);
-
-} elseif ($proveedor_id == 3) {
-    // bind para plantillas (4 campos)
-    $stmt->bind_param("ssii", $nombre_original, $ruta_destino, $prov_id_final, $user_id_final);
 }
 
 if (!$stmt->execute()) {
@@ -163,7 +185,6 @@ if (!$stmt->execute()) {
     exit;
 }
 
-// Retornar éxito
 echo json_encode(['success' => true, 'archivo_id' => $stmt->insert_id]);
 $stmt->close();
 ?>

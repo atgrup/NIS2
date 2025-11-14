@@ -9,7 +9,6 @@ $verificado_ok = false;
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['code'])) {
     $code = $_GET['code'];
     ?>
-    <!-- Página intermedia: reenviará el token sin mostrarlo -->
     <form id="verifyForm" method="POST" action="verify.php">
         <input type="hidden" name="code" value="<?php echo htmlspecialchars($code); ?>">
     </form>
@@ -37,8 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
             $tipo_alerta = 'info';
             $verificado_ok = true;
         } else {
-            // Actualizar a verificado
-            $update = $conexion->prepare("UPDATE usuarios SET verificado = 1 WHERE token_verificacion = ?");
+            // ------ INICIO DE LA CORRECCIÓN ------
+            // Actualizar a verificado Y LIMPIAR EL TOKEN
+            $update = $conexion->prepare("UPDATE usuarios SET verificado = 1, token_verificacion = NULL WHERE token_verificacion = ?");
+            // ------ FIN DE LA CORRECCIÓN ------
+            
             $update->bind_param("s", $code);
             $update->execute();
 
@@ -73,7 +75,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
     </div>
 
     <?php if (!$verificado_ok): ?>
-        <!-- Si no está verificado, permite ingresar código manual -->
         <form method="POST">
             <div class="mb-3">
                 <label for="code" class="form-label">Introduce tu código de verificación</label>
@@ -82,7 +83,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['code'])) {
             <button type="submit" class="btn btn-primary w-100">Verificar</button>
         </form>
     <?php else: ?>
-        <!-- Si está verificado, muestra botón de login -->
         <a href="../../pages/login.php" class="btn btn-success w-100 mt-2">Ir a iniciar sesión</a>
     <?php endif; ?>
 </div>

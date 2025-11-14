@@ -75,7 +75,6 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
 <body class="p-4">
 
 <?php if ($rol === 'consultor' || $rol === 'proveedor'): ?>
-<!-- Modal Subir Archivo -->
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1">
   <div class="modal-dialog">
     <form id="formSubirArchivoModal" enctype="multipart/form-data">
@@ -87,7 +86,8 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
         <div class="modal-body">
           <div class="mb-3">
             <label for="archivo-modal" class="form-label">Seleccionar Archivo</label>
-            <input type="file" name="archivo_vista" id="archivo-modal" class="form-control" required accept=".pdf">
+            
+            <input type="file" name="archivo" id="archivo-modal" class="form-control" required accept=".pdf">
             <div class="form-text">Formatos permitidos: PDF</div>
           </div>
           <div class="mb-3">
@@ -110,7 +110,6 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
 </div>
 <?php endif; ?>
 
-<!-- Tabla Archivos -->
 <div class="table-responsive mt-3">
 <?php if ($archivosRes && $archivosRes->num_rows > 0): ?>
 <table class="table table-bordered table-hover">
@@ -160,7 +159,10 @@ if(form){
         if(data.success){
           bootstrap.Modal.getInstance(document.getElementById('modalSubirArchivo')).hide();
           form.reset();
-          document.querySelector('table tbody').insertAdjacentHTML('afterbegin', data.htmlFila);
+          // He quitado la línea de 'data.htmlFila' porque tu PHP no la genera
+          // En su lugar, simplemente recargamos la página para ver el nuevo archivo
+          alert('¡Archivo subido con éxito!');
+          window.location.reload(); 
         } else {
           alert('Error: '+(data.error||'desconocido'));
         }
