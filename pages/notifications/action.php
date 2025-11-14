@@ -5,12 +5,25 @@
 require_once __DIR__ . '/../../api/includes/conexion.php';
 if (session_status() === PHP_SESSION_NONE) session_start();
 
+// Load mail helper (for verifySignedToken)
+require_once __DIR__ . '/enviar_correo.php';
+
+// Accept signed tokens in the form raw.sig (created by signTokenForEmail)
 $token = $_GET['t'] ?? $_GET['token'] ?? $_POST['t'] ?? $_POST['token'] ?? null;
 if (!$token) {
     http_response_code(400);
     echo "Token no especificado.";
     exit;
 }
+
+// If token is signed, verify signature and extract raw token
+$maybe = verifySignedToken($token);
+if ($maybe === false) {
+    http_response_code(400);
+    echo "Token inválido o firma incorrecta.";
+    exit;
+}
+$token = $maybe;
 
 // Buscar token
 $stmt = $conexion->prepare("SELECT id, token, queue_id, action, archivo_id, meta, expires_at, created_at FROM email_actions WHERE token = ? LIMIT 1");
@@ -85,7 +98,8 @@ try {
                 $c->close();
 
             // Notificar al proveedor (enqueue)
-            require_once __DIR__ . '/mail_notification.php';
+            // Load mail helper via compatibility shim
+            require_once __DIR__ . '/enviar_correo.php';
             $asuntoProv = "Estado de su archivo: {$new_state}";
             $htmlProv = "<p>Hola,</p><p>El archivo <b>{$archivo_nombre}</b> cambió su estado a <b>{$new_state}</b>.</p>";
             // obtener email del proveedor

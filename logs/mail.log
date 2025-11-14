@@ -11,3 +11,15 @@
 [2025-11-11 10:52:05] SMTP debug (level 1): SMTP ERROR: Failed to connect to server: php_network_getaddresses: getaddrinfo failed: Host desconocido.  (0)
 [2025-11-11 10:52:05] SMTP debug (level 2): SMTP Error: Could not connect to SMTP host. Failed to connect to server
 [2025-11-11 10:52:05] Error al enviar correo a test@example.com: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server Additional SMTP info: php_network_getaddresses: getaddrinfo failed: Host desconocido. 
+[2025-11-12 10:33:02] Error al enviar correo a lgonzalez@atgroup.es: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server
+[2025-11-12 10:49:03] Error al enviar correo a lgonzalez@atgroup.es: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server
+[2025-11-12 10:49:50] SMTP debug (level 1): SMTP ERROR: Failed to connect to server:  (0)
+[2025-11-12 10:49:50] SMTP debug (level 2): SMTP Error: Could not connect to SMTP host. Failed to connect to server
+[2025-11-12 10:49:50] Error al enviar correo a lgonzalez@atgroup.es: SMTP Error: Could not connect to SMTP host. Failed to connect to server SMTP server error: Failed to connect to server
+[2025-11-12 11:51:36] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.
+[2025-11-12 11:57:43] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.
+[2025-11-12 12:04:52] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.
+[2025-11-12 12:05:14] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.
+[2025-11-12 12:21:21] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.
+[2025-11-12 12:27:04] Error al enviar el correo a tu_correo@dominio.com: SMTP Error: Could not authenticate.
+[2025-11-12 12:27:20] Error al enviar el correo a lgonzalez@atgroup.es: SMTP Error: Could not authenticate.

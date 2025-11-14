@@ -58,11 +58,11 @@ if ($stmt->execute()) {
                 $proveedorNombre = $row['nombre_empresa'] ?: '';
 
                 if ($proveedorCorreo) {
-                    // Llamar al helper de notificaciones
-                    require_once __DIR__ . '/notifications/mail_notification.php';
+                    // Llamar al helper de notificaciones (centralizado)
+                    // Load mail helper via the compatibility shim
+                    require_once __DIR__ . '/notifications/enviar_correo.php';
                     $asunto = "Estado de su archivo: {$estado}";
                     $comentario = $_POST['comentario'] ?? '';
-                    require_once __DIR__ . '/notifications/mail_notification.php';
                     $base = getenv('APP_URL') ?: '';
                     if (empty($base) && !empty($_SERVER['HTTP_HOST'])) {
                         $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -80,7 +80,9 @@ if ($stmt->execute()) {
                     $queueId = enqueueEmail($proveedorCorreo, $proveedorNombre, $asunto, $bodyProv, '', "Cambio de estado: {$estado}", false);
                     // Si se encoló correctamente, crear un token de acción y añadir link en el cuerpo del correo (para permitir acción desde el email)
                     if ($queueId) {
-                        $meta = ['new_state' => $estado, 'comentario' => $comentario ?? '', 'changed_by' => $_SESSION['user_id'] ?? null];
+                        // Try several session keys to be compatible with various session naming conventions
+                        $changedBy = $_SESSION['id_usuarios'] ?? $_SESSION['user_id'] ?? $_SESSION['id_usuario'] ?? null;
+                        $meta = ['new_state' => $estado, 'comentario' => $comentario ?? '', 'changed_by' => $changedBy];
                         $token = createEmailActionToken($queueId, 'change_state', $id, $meta, 72);
                         if ($token) {
                             // Construir link absoluto: preferir APP_URL si está configurada, si no, usar host de la petición

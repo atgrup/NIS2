@@ -4,7 +4,7 @@
 // Usage (CLI) send test: php mail_diagnostics.php send_test:you@example.com
 // Usage (Web): open this file in browser and use form to run a test send
 
-require_once __DIR__ . '/mail_notification.php';
+require_once __DIR__ . '/enviar_correo.php';
 
 // Include DB connection for queries
 $dbPath = __DIR__ . '/../../api/includes/conexion.php';

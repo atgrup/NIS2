@@ -14,7 +14,6 @@ $nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
 // Conexión BD
 require_once dirname(__DIR__) . '/api/includes/conexion.php'; 
 
-// Notifications are handled via email only. No in-app badge is shown.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Manejar subida de plantillas

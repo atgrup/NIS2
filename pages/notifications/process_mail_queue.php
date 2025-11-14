@@ -1,7 +1,8 @@
 <?php
 // Worker to process mail_queue entries. Run via CLI or cron.
 set_time_limit(0);
-require_once __DIR__ . '/mail_notification.php';
+// Use the compatibility shim which loads the centralized mail helper
+require_once __DIR__ . '/enviar_correo.php';
 // include DB connexion
 $dbPath = __DIR__ . '/../../api/includes/conexion.php';
 if (!file_exists($dbPath)) {
@@ -59,9 +60,39 @@ foreach ($rows as $r) {
     $maxAttempts = (int)$row['max_attempts'];
 
     echo "Procesando queue id={$id} -> {$to}\n";
-    $ok = enviarCorreo($to, $name, $subject, $html, $text, $attachments);
-    // If there are attachments configured for this queue row, pass them to the mail sender
-    // (enviarCorreo doesn't support attachments yet here; we'll add attachment handling below)
+    // Prefer the shared PHPMailer instance from getMailer() to ensure consistent config
+    $ok = false;
+    if (function_exists('getMailer')) {
+        try {
+            $mail = getMailer();
+            $mail->clearAllRecipients();
+            $mail->addAddress($to, $name);
+            $mail->isHTML(true);
+            $mail->Subject = $subject;
+            $mail->Body = $html;
+            $mail->AltBody = $text ?: strip_tags($html);
+            // attachments
+            if (!empty($attachments) && is_array($attachments)) {
+                foreach ($attachments as $att) {
+                    if (!$att) continue;
+                    $path = $att;
+                    if (!file_exists($path)) {
+                        $alt = __DIR__ . '/../../' . ltrim($att, '/\\');
+                        if (file_exists($alt)) $path = $alt;
+                    }
+                    if (file_exists($path)) $mail->addAttachment($path);
+                }
+            }
+            $mail->send();
+            $ok = true;
+        } catch (Exception $e) {
+            $ok = false;
+        }
+    } else {
+        // Fallback to existing helper function
+        $ok = enviarCorreo($to, $name, $subject, $html, $text, $attachments);
+    }
+
     if ($ok) {
         // update status to sent
         $up = $conexion->prepare("UPDATE mail_queue SET status = 'sent', attempts = attempts + 1, updated_at = NOW() WHERE id = ?");

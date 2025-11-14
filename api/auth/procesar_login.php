@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Determinar rol basado en tipo_usuario_id
     switch ($user['tipo_usuario_id']) {
         case 1:
-            $rol = 'administrador'; // antes era 'admin', ahora coincide con plantillaUsers.php
+            $rol = 'administrador'; 
             break;
         case 2:
             $rol = 'proveedor';
@@ -50,10 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             break;
     }
 
-    // Guardar sesión
-    $_SESSION['user_id'] = $user['id_usuarios'];
-    $_SESSION['rol'] = $rol;
-    $_SESSION['correo'] = $user['correo'];
+    // ------ INICIO DEL CAMBIO ------
+    // Guardar sesión CON TODAS LAS VARIABLES
+    $_SESSION['id_usuarios'] = $user['id_usuarios'];     // El script de subida necesita este
+    $_SESSION['tipo_usuario_id'] = $user['tipo_usuario_id']; // El script de subida necesita este
+    $_SESSION['rol'] = $rol;                         // plantillaUsers.php necesita este
+    $_SESSION['correo'] = $user['correo'];             // Ambos scripts necesitan este
+    // ------ FIN DEL CAMBIO ------
 
     // Redirigir al panel principal
     header("Location: /NIS2/pages/plantillaUsers.php");

@@ -4,7 +4,7 @@
  * Espera recibir: destinatario, nombre, estado, (opcional) comentarios, logInfo, includeLog
  * Se puede invocar por CLI con JSON o por POST/GET.
  */
-require_once __DIR__ . '/mail_notification.php';
+require_once __DIR__ . '/enviar_correo.php';
 
 $input = read_input();
 $destinatario = $input['destinatario'] ?? null;
