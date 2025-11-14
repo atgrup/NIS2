@@ -34,8 +34,40 @@ if (empty($token_verificacion)) {
 // incluir conexión después de iniciar sesión y obtener variables
 require '../api/includes/conexion.php';
 
+
 // Validar y devolver cuál falta exactamente (útil para debug)
 $missing = [];
+
+// -----------------------------------------------------------
+// FUNCIÓN PARA VERIFICAR QUE token_verificacion NO ES NULL
+// -----------------------------------------------------------
+function tokenVerificacionValido($conexion, $usuario_id) {
+    $sql = "SELECT token_verificacion FROM usuarios WHERE id_usuarios = ?";
+    $stmt = $conexion->prepare($sql);
+    if (!$stmt) return false;
+
+    $stmt->bind_param("i", $usuario_id);
+    $stmt->execute();
+    $stmt->bind_result($tokenDB);
+    $stmt->fetch();
+    $stmt->close();
+
+    // Debe existir y no ser NULL
+    return !empty($tokenDB);
+}
+
+// -----------------------------------------------------------
+// COMPROBAR QUE EL TOKEN DE VERIFICACIÓN EN LA BD NO SEA NULL
+// -----------------------------------------------------------
+if (!empty($usuario_id)) {
+    if (!tokenVerificacionValido($conexion, $usuario_id)) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'El token de verificación en la base de datos es nulo. No se permite subir archivos.'
+        ]);
+        exit;
+    }
+}
 if (empty($usuario_id))       $missing[] = 'usuario_id';
 if (empty($proveedor_id))     $missing[] = 'proveedor_id';
 if (empty($token_verificacion)) $missing[] = 'token_verificacion';
