@@ -10,26 +10,7 @@ header('Content-Type: text/plain');
 
 
 // Obtener valores de forma segura (no lanza notices si no existen)
-$usuario_id = $_SESSION['id_usuarios'] ?? ($_POST['id_usuarios'] ?? null);
-$proveedor_id = $_SESSION['tipo_usuario_id'] ?? ($_POST['tipo_usuario_id'] ?? null);
-// Intentamos leer token_verificacion primero desde la sesión y, si no está, desde POST (por si se envía así)
-$token_verificacion = $_SESSION['token_verificacion'] 
-    ?? ($_POST['token_verificacion'] ?? null);
 
-// Si no viene por POST, mirar cabecera Authorization (útil para APIs)
-if (empty($token_verificacion)) {
-    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
-        $auth = trim($_SERVER['HTTP_AUTHORIZATION']);
-    } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
-        $auth = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
-    } else {
-        $auth = null;
-    }
-
-    if ($auth && stripos($auth, 'Bearer ') === 0) {
-        $token_verificacion = substr($auth, 7);
-    }
-}
 
 // incluir conexión después de iniciar sesión y obtener variables
 require '../api/includes/conexion.php';
@@ -71,8 +52,28 @@ if (!empty($usuario_id)) {
 }
 if (empty($usuario_id))       $missing[] = 'usuario_id';
 if (empty($proveedor_id))     $missing[] = 'proveedor_id';
-if (empty($token_verificacion)) $missing[] = 'token_verificacion';
 
+if (empty($token_verificacion)) $missing[] = 'token_verificacion';
+$usuario_id = $_SESSION['id_usuarios'] ?? ($_POST['id_usuarios'] ?? null);
+$proveedor_id = $_SESSION['tipo_usuario_id'] ?? ($_POST['tipo_usuario_id'] ?? null);
+// Intentamos leer token_verificacion primero desde la sesión y, si no está, desde POST (por si se envía así)
+$token_verificacion = $_SESSION['token_verificacion'] 
+    ?? ($_POST['token_verificacion'] ?? null);
+
+// Si no viene por POST, mirar cabecera Authorization (útil para APIs)
+if (empty($token_verificacion)) {
+    if (!empty($_SERVER['HTTP_AUTHORIZATION'])) {
+        $auth = trim($_SERVER['HTTP_AUTHORIZATION']);
+    } elseif (!empty($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+        $auth = trim($_SERVER['REDIRECT_HTTP_AUTHORIZATION']);
+    } else {
+        $auth = null;
+    }
+
+    if ($auth && stripos($auth, 'Bearer ') === 0) {
+        $token_verificacion = substr($auth, 7);
+    }
+}
 if (!empty($missing)) {
     echo json_encode([
         'success' => false,
