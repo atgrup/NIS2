@@ -87,7 +87,7 @@ $plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
         <div class="modal-body">
           <div class="mb-3">
             <label for="archivo-modal" class="form-label">Seleccionar Archivo</label>
-            <input type="file" name="archivo" id="archivo-modal" class="form-control" required accept=".pdf">
+            <input type="file" name="archivo_vista" id="archivo-modal" class="form-control" required accept=".pdf">
             <div class="form-text">Formatos permitidos: PDF</div>
           </div>
           <div class="mb-3">
