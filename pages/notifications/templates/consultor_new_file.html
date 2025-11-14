@@ -1,0 +1,10 @@
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<p>Hola <strong>{{consultor_nombre}}</strong>,</p>
+<p>El proveedor <strong>{{proveedor_correo}}</strong> ha subido un nuevo archivo: <strong>{{archivo_nombre}}</strong>.</p>
+<p>Puedes ver el archivo aquí: <a href="{{link_view}}">Ver archivo</a></p>
+<p>Si quieres revisar y cambiar el estado, usa este enlace seguro: <a href="{{link_action}}">Revisar / Modificar estado</a></p>
+{{#if_attachment}}<p>Se ha adjuntado la plantilla relacionada.</p>{{/if_attachment}}
+</body>
+</html>

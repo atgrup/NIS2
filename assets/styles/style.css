@@ -83,18 +83,40 @@ h4 {
   border: 1px solid white;
   color: white;
   font-weight: bold !important;
+  background: none !important;
 }
-
 .btn-outline-light:hover {
-  background-color: white;
-  color: #002f86;
-  border: 1px solid #002f86;
+  background-color: white !important;
+  color: #002f86 !important;
+  border: 1px solid #002f86 !important;
 }
-
-.back-arrow {
-  font-size: 3rem;
-  color: #002f86;
-  text-decoration: none;
+.bg-mi-color {
+  background-color: #072989!important;
+  color: white!important;
+  border-radius: 10px !important;
+  padding: 8px 15px !important;
+  font-family: "Instrument Sans", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  margin: 10px;
+}
+.bg-mi-color:hover{
+  opacity: 80%;
+}
+.btn-paginacion.active-paginacion {
+    background-color: #072989 !important;
+    border-color: #072989 !important;
+    color: white !important;
+}
+.btnUser {
+  background: none;
+  color: white;
+  border: none;
+}
+.logout {
+  border: 1px solid white;
+  border-radius: 10px;
+  padding: 3px 10px;
 }
 
 /* Contenedores y secciones */
@@ -143,7 +165,7 @@ h4 {
 .tituloIndice {
   color: #5E5E5E;
   font-family: "Instrument Sans", sans-serif;
-  font-weight: 700;
+  font-weight: 400;
   font-size: clamp(1.5rem, 5vw, 3.75rem);
   white-space: nowrap;
   overflow: hidden;
@@ -184,7 +206,7 @@ h4 {
   border: 0.5px solid white;
   border-radius: 20px;
   padding: 20px;
-  max-width: 100%;
+  width: 100%;
   box-sizing: border-box;
 }
 
@@ -194,40 +216,294 @@ h4 {
 
 /* PLANTILLAUSERS.PHP */
 .indexStencil {
-  width: 290px;
-  height: 895px;
+  width: 270px;
+  min-width: 220px;
+  max-width: 350px;
+  height: 100vh;
   background: #072989;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 10;
 }
-
 .stencil {
   display: flex;
   flex-direction: row;
+  min-height: 100vh;
 }
-
 .contenedorTablaStencil {
   border-radius: 40px;
   background: #FFF;
-  padding: 30px;
-  width: 73%;
-  height: 850px;
+  padding: 20px;
+  margin-left: 270px;
+  width: calc(100% - 270px);
+  min-width: 260px;
+  max-width: 1600px;
+  height: auto;
+  min-height: 600px;
   display: flex;
   align-self: center;
   flex-direction: column;
-  margin-left: 20px;
+}
+/* -------------------- */
+/* Responsive completo para móviles y tablets */
+/* Sobrescribe inline con !important */
+/* -------------------- */
+
+/* Móviles extra pequeños (≤320px) */
+@media (max-width: 320px) {
+  .stencil{
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .indexStencil , .menuNav {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 8px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1rem !important;
+    text-align: center !important;
+    margin: 4px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 4px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 4px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 10px !important;
+  }
+  .contenedorTablaStencil{
+    display: flex !important;
+    flex-wrap: wrap !important;
+    flex-direction: column !important ;
+  }
 }
 
+/* Móviles estándar (≤480px) */
+@media (max-width: ≤480px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 10px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin: 5px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 5px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 5px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 12px !important;
+  }
+}
+
+/* Tablets pequeñas (≤720px) */
+@media (max-width: ≤720px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 12px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.3rem !important;
+    text-align: center !important;
+    margin: 6px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 6px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 6px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Tablets medianas (≤900px) */
+@media (max-width: ≤900px) {
+  main.stencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .indexStencil {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    flex-shrink: 0 !important;
+    align-items: center !important;
+    padding: 14px !important;
+  }
+
+  .indexStencil h1.tituloNIS,
+  .indexStencil h4 {
+    font-size: 1.4rem !important;
+    text-align: center !important;
+    margin: 8px 0 !important;
+  }
+
+  .indexStencil .menuNav .cajaArchivos {
+    width: 100% !important;
+    margin-bottom: 8px !important;
+  }
+
+  .contenedorTablaStencil {
+    width: 100% !important;
+    flex-grow: 1 !important;
+    overflow-x: auto !important;
+    padding: 8px !important;
+  }
+
+  .contenedorTablaStencil table {
+    width: 100% !important;
+    table-layout: auto !important;
+    font-size: 14px !important;
+  }
+}
+
+/* --- Botones de la navegación --- */
+.menuNav .btn-outline-light {
+  border: 1px solid white;
+  color: white;
+  font-weight: bold !important;
+  background: none !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+  font-family: "Instrument Sans", sans-serif !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  margin: 4px 0 !important;
+  box-shadow: none !important;
+  font-size: 0.95rem !important;
+  width: 160px !important;
+  min-width: 120px;
+  max-width: 90%;
+  display: block;
+  margin: 6px auto !important;
+}
+.menuNav .btn-outline-light:hover {
+  background-color: white !important;
+  color: #072989 !important;
+  border: 1px solid #072989 !important;
+}
+
+/* Mejorar el scroll y evitar overflow */
 .stencilBody {
   background-color: #E6E6E6;
+  overflow-x: hidden;
 }
 
-.cajaArchivos {
-  display: flex;
-  flex-direction: row;
-  color: white;
-  justify-content: center;
-  gap: 20px;
+/* Tamaño de texto para tablas */
+table, th, td {
+  font-size: 14px;
+}
+.table {
+  font-size: 14px;
 }
 
+/* Tamaño de texto para el select de estado en tablas */
+.estado-select {
+  font-size: 14px !important;
+}
+
+/* Colores para el estado de revisión en la tabla de archivos */
+.estado-pendiente {
+  background-color: #ffe5b4 !important; /* naranja claro */
+  color: #b26a00 !important;
+}
+.estado-aprobado {
+  background-color: #d4f8d4 !important; /* verde claro */
+  color: #218838 !important;
+}
+.estado-rechazado {
+  background-color: #ffd6d6 !important; /* rojo claro */
+  color: #c82333 !important;
+}
+/* --- Footer de la nav siempre abajo, sin mover el contenedor principal --- */
+.indexStencil {
+  position: fixed;
+}
 .footerNaV {
   color: #FFF;
   font-family: "Instrument Sans";
@@ -235,77 +511,13 @@ h4 {
   font-weight: 400;
   text-align: center;
   position: absolute;
-  bottom: 40px;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  width: 100%;
+  padding: 0 10px;
 }
-
 .footerNaV form {
-  padding: 20px;
-}
-
-.menuNav {
-  margin-top: 50px;
-  gap: 0.5rem;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-.menuNav .cajaArchivos {
-  flex: 1 1 45%;
-  min-width: 140px;
-}
-@media (max-width: 768px) {
-  .menuNav .cajaArchivos {
-    flex: 1 1 100%;
-  }
-  .input-group {
-    width: 100% !important;
-    position: static !important;
-    margin-top: 1rem;
-  }
-}
-.imgEmpresa {
-  position: absolute;
-  top: 120%;
-  border-radius: 120px;
-  width: 60px;
-}
-
-.bg-mi-color {
-  background-color: #072989!important;
-  color: white!important;
-  border-radius: 10px !important;
-  padding: 8px 15px !important;
-  font-family: "Instrument Sans", sans-serif !important;
-  font-weight: 700 !important;
-  text-transform: uppercase !important;
-  margin: 10px;
-}
-
-.bg-mi-color:hover{
-  opacity: 80%;
-}
-
-.btn-paginacion.active-paginacion {
-    background-color: #072989 !important;
-    border-color: #072989 !important;
-    color: white !important;
-}
-
-.btnUser {
-  background: none;
-  color: white;
-  border: none;
-}
-
-.logout {
-  border: 1px solid white;
-  border-radius: 10px;
-  padding: 3px 10px;
-}
-
-/*MODAL  ESTILOS*/
-.form-label-modal{
-  color:gray;
+  padding: 0;
+  margin: 0 auto;
 }

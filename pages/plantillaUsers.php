@@ -2,20 +2,19 @@
 session_start();
 
 if (!isset($_SESSION['rol'])) {
-  header("Location: ../api/auth/login.php");
-  exit;
+    header("Location: /NIS2/pages/login.php");
+    exit;
 }
+
 
 $rol = strtolower($_SESSION['rol']);
 $correo = $_SESSION['correo'] ?? null;
 $nombre = $correo ? explode('@', $correo)[0] : 'Invitado';
 
 // Conexión BD
-$conexion = new mysqli('jordio35.sg-host.com', 'u74bscuknwn9n', 'ad123456-', 'dbs1il8vaitgwc');
-if ($conexion->connect_error) {
-  die("Error de conexión: " . $conexion->connect_error);
-}
+require_once dirname(__DIR__) . '/api/includes/conexion.php'; 
 
+// Notifications are handled via email only. No in-app badge is shown.
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Manejar subida de plantillas
@@ -44,16 +43,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         $ruta_fisica = $carpeta_plantillas . $nombre_original;
 
-        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {
-            $stmt = $conexion->prepare("INSERT INTO plantillas (nombre, uuid, consultor_id) VALUES (?, ?, ?)");
-            $stmt->bind_param("ssi", $nombre_original, $uuid, $consultor_id);
-            $stmt->execute();
-            $stmt->close();
+        if (move_uploaded_file($archivo['tmp_name'], $ruta_fisica)) {  
+          // Preparar consulta con columnas: nombre, descripcion, consultor_id, archivo_url, fecha_subida (fecha con NOW())
+          $stmt = $conexion->prepare("INSERT INTO plantillas (nombre, descripcion, consultor_id, archivo_url, fecha_subida) VALUES (?, ?, ?, ?, NOW())");
 
-            echo "<script>window.location.href='plantillaUsers.php?vista=plantillas';</script>";
-            exit;
-        } else {
-            echo "<script>alert('❌ Error al mover la plantilla');</script>";
+          if ($stmt === false) {
+              die("Error en la preparación: " . $conexion->error);
+          }
+
+          $stmt->bind_param("ssis", $nombre_original, $descripcion, $consultor_id, $ruta_fisica);
+          $stmt->execute();
+          $stmt->close();
+
+          echo "<script>window.location.href='plantillaUsers.php?vista=plantillas';</script>";
+          exit;
         }
     }
 // Manejar subida de archivos
@@ -180,7 +183,9 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
   <main class="stencil container-fluid p-0 overflow-hidden">
     <nav class="indexStencil">
       <h1 class="tituloNIS">NIS2</h1>
-      <h4>Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+      <div class="d-flex align-items-center gap-2">
+        <h4 class="m-0">Hola, <?php echo htmlspecialchars($nombre); ?></h4>
+      </div>
 
       <div class="menuNav">
         <?php if ($rol === 'administrador'): ?>
@@ -223,9 +228,7 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
         <div class="btns me-auto d-flex flex-wrap gap-2">
           <?php if ($vista === 'archivos'): ?>
              <div class="mb-3">
-              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">
-                Subir Archivo
-              </button>
+              <button type="button" class="btn bg-mi-color w-100" data-bs-toggle="modal" data-bs-target="#modalSubirArchivo">Subir Archivo</button>
             </div>
           <?php endif; ?>
           <?php if ($vista === 'plantillas' && ($rol === 'administrador' || $rol === 'consultor')): ?>
@@ -248,38 +251,48 @@ function generar_paginacion($url_base, $pagina_actual, $total_paginas) {
         </div>
 
         <!-- Buscador -->
-        <div class="input-group" style="max-width: 300px;">
-          <span class="input-group-text">
-            <img src="../assets/img/search.png" alt="Buscar">
-          </span>
-          <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
-        </div>
-      </div> <!-- Cierre d-flex align-items-center -->
+        <?php if ($vista === 'archivos'): ?>
+          <!-- Buscador para proveedores -->
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <img src="../assets/img/search.png" alt="Buscar">
+            </span>
+            <input type="text" class="form-control" placeholder="Buscar archivos..." id="buscadorArchivos"> 
+          </div>
+        <?php else: ?>
+          <!-- Buscador para otros roles -->
+          <div class="input-group" style="max-width: 300px;">
+            <span class="input-group-text">
+              <img src="../assets/img/search.png" alt="Buscar">
+            </span>
+            <input type="text" class="form-control" placeholder="Buscar..." id="buscadorUsuarios"> 
+          </div>
+        <?php endif; ?>
+    </div> <!-- Cierre d-flex align-items-center -->
 
-      <div class="headertable">
-        <?php
-          switch ($vista) {
-            case 'plantillas':
-              include 'vista_plantillas.php';
-              break;
-            case 'usuarios':
-              include 'vista_usuarios.php';
-              break;
-            case 'consultores':
-              include 'vista_consultores.php';
-              break;
-            case 'proveedores':
-              include 'vista_proveedores.php';
-              break;
-            default:
-              include 'vista_archivos.php';
-              break;
-          }
-        ?>
-      </div>
-    </div> <!-- Cierre contenedorTablaStencil -->
-
-  </main> <!-- Cierre main -->
+    <div class="headertable">
+      <?php
+        switch ($vista) {
+          case 'plantillas':
+            include 'vista_plantillas.php';
+            break;
+          case 'usuarios':
+            include 'vista_usuarios.php';
+            break;
+          case 'consultores':
+            include 'vista_consultores.php';
+            break;
+          case 'proveedores':
+            include 'vista_proveedores.php';
+            break;
+          default:
+            include 'vista_archivos.php';
+            break;
+        }
+      ?>
+    </div>
+  </div> <!-- Cierre contenedorTablaStencil -->
+</main> <!-- Cierre main -->
 <?php
 
 $alertaPassword = isset($_SESSION['error']) && $_SESSION['error'] === "Las contraseñas no coinciden.";
@@ -408,40 +421,50 @@ $mostrarModal = $alertaPassword || $alertaCorreo || $alertaExito;
 
 
   <!-- Modal Subir Archivo -->
- <!-- Botón para abrir el modal (por si lo necesitas) -->
-
+<!-- Botón para abrir el modal (por si lo necesitas) -->
 
 <!-- Modal -->
 <div class="modal fade" id="modalSubirArchivo" tabindex="-1" aria-labelledby="modalSubirArchivoLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content"> <!-- FONDO DEL MODAL -->
-      <div class="modal-header">
+      <div class="modal-header bg-mi-color text-white">
         <h5 class="modal-title" id="modalSubirArchivoLabel">Subir archivo</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
-      
       <div class="modal-body">
-        <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo.php">
+        <form id="formSubirArchivoModal" method="POST" enctype="multipart/form-data" action="subir_archivo_rellenado.php">
           <div class="mb-3">
             <label for="archivo" class="form-label">Selecciona un archivo</label>
-            <input type="file" class="form-control" id="archivo-modal" name="archivo" required>
+            <input type="file" class="form-control" id="archivo-modal" name="archivo" required accept=".pdf">
           </div>
 
           <div class="mb-3">
             <label for="plantilla" class="form-label success">Selecciona una plantilla</label>
             <select class="form-select " id="plantilla" name="plantilla_id">
-              <!-- Opciones dinámicas o estáticas -->
+              <?php
+                // Mostrar todas las plantillas disponibles
+                require_once dirname(__DIR__) . '/api/includes/conexion.php';
+                $queryPlantillas = "SELECT id, nombre FROM plantillas ORDER BY fecha_subida DESC";
+                $resultPlantillas = $conexion->query($queryPlantillas);
+                if ($resultPlantillas && $resultPlantillas->num_rows > 0) {
+                  while ($row = $resultPlantillas->fetch_assoc()) {
+                    echo '<option value="' . $row['id'] . '">' . htmlspecialchars($row['nombre']) . '</option>';
+                  }
+                } else {
+                  echo '<option value="">No hay plantillas disponibles</option>';
+                }
+              ?>
             </select>
           </div>
 
-          <button type="submit" class="btn btn-primary">Subir</button>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Subir</button>
+          </div>
         </form>
       </div>
     </div>
   </div>
 </div>
-
-
 </body>
 <script>
   document.getElementById('formCrearConsultor').addEventListener('submit', function(e) {
