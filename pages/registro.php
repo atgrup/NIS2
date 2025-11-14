@@ -19,6 +19,18 @@ if (isset($_GET['error'])) {
 }
 ?>
 
+<?php if (!empty($codigo_verificacion)): ?> 
+<!-- 🔹 NUEVO: Ocultar token de la URL -->
+<form id="hideTokenForm" method="POST" action="">
+  <input type="hidden" name="token" value="<?php echo htmlspecialchars($codigo_verificacion); ?>">
+</form>
+<script>
+  // Autoenvía el formulario y limpia el token de la URL
+  document.getElementById('hideTokenForm').submit();
+</script>
+<?php exit; endif; ?> 
+<!-- 🔹 FIN NUEVO -->
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
