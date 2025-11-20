@@ -1,57 +1,66 @@
 <?php
-
+// ⚡️ FORZAR QUE SE MUESTREN LOS ERRORES
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 $mensaje = "";
 $tipo_alerta = "";
 $mostrarModal = false;
 $codigo_verificacion = "";
 
-if (isset($_GET['error'])) {
-  $mostrarModal = true;
-  $codigo_verificacion = ""; // Asegúrate de resetear
+// 1. Comprobar si la página se está recargando por POST (para ocultar el token)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
+    $mensaje = "✅ Registro exitoso. Revisa tu correo para la verificación.";
+    $tipo_alerta = "success";
+    $mostrarModal = true;
+    $codigo_verificacion = $_POST['token'];
+}
+// 2. Comprobar si es un GET con error
+elseif (isset($_GET['error'])) {
+    $mostrarModal = true;
+    $codigo_verificacion = ""; // Asegúrate de resetear
 
-  switch ($_GET['error']) {
-    case 'pass':
-      $mensaje = "❌ Las contraseñas no coinciden.";
-      $tipo_alerta = "danger";
-      break;
-    case 'email':
-      $mensaje = "❌ Este correo ya está registrado.";
-      $tipo_alerta = "danger";
-      break;
-    case 'unknown':
-      $mensaje = "❌ Error desconocido al registrar.";
-      $tipo_alerta = "danger";
-      break;
-if (isset($_GET['error'])) {
-  $mostrarModal = true;
-  switch ($_GET['error']) {
-    case 'pass': $mensaje = "❌ Las contraseñas no coinciden."; $tipo_alerta = "danger"; break;
-    case 'email': $mensaje = "❌ Este correo ya está registrado."; $tipo_alerta = "danger"; break;
-    case 'unknown': $mensaje = "❌ Error desconocido al registrar."; $tipo_alerta = "danger"; break;
-  }
-} elseif (isset($_GET['success']) && $_GET['success'] === '1') {
-  $mensaje = "✅ Registro exitoso. Revisa tu correo para la verificación.";
-  $tipo_alerta = "success";
-  $mostrarModal = true;
-
-
-  if (isset($_GET['token'])) $codigo_verificacion = $_GET['token'];
-main
+    switch ($_GET['error']) {
+        case 'pass':
+            $mensaje = "❌ Las contraseñas no coinciden.";
+            $tipo_alerta = "danger";
+            break;
+        case 'email':
+            $mensaje = "❌ Este correo ya está registrado.";
+            $tipo_alerta = "danger";
+            break;
+        case 'db1':
+        case 'db2':
+        case 'db3':
+        case 'db4':
+        case 'db5':
+        case 'proveedor':
+        case 'usuario':
+            $mensaje = "❌ Error interno del servidor. Por favor, contacta a soporte.";
+            $tipo_alerta = "danger";
+            break;
+        default:
+            $mensaje = "❌ Error desconocido al registrar.";
+            $tipo_alerta = "danger";
+            break;
+    }
+}
+// 3. Comprobar si es un GET con éxito (la primera vez que llega)
+elseif (isset($_GET['success']) && $_GET['success'] === '1' && isset($_GET['token'])) {
+    // ESTE BLOQUE OCULTA EL TOKEN DE LA URL
+    $codigo_verificacion = $_GET['token'];
+    ?>
+    <form id="hideTokenForm" method="POST" action="registro.php">
+      <input type="hidden" name="token" value="<?php echo htmlspecialchars($codigo_verificacion); ?>">
+    </form>
+    <script>
+      document.getElementById('hideTokenForm').submit();
+    </script>
+    <?php
+    exit; // Detiene la carga de la página para que el formulario se envíe
 }
 ?>
-
-<?php if (!empty($codigo_verificacion)): ?> 
-<!-- 🔹 NUEVO: Ocultar token de la URL -->
-<form id="hideTokenForm" method="POST" action="">
-  <input type="hidden" name="token" value="<?php echo htmlspecialchars($codigo_verificacion); ?>">
-</form>
-<script>
-  // Autoenvía el formulario y limpia el token de la URL
-  document.getElementById('hideTokenForm').submit();
-</script>
-<?php exit; endif; ?> 
-<!-- 🔹 FIN NUEVO -->
 
 <!DOCTYPE html>
 <html lang="es">
@@ -93,7 +102,6 @@ main
     }
 
     .auth-box h3 { color: #fff; font-weight: 700; }
-
     .form-label { color: #f8f9fa; }
 
     .form-control {
@@ -101,9 +109,7 @@ main
       color: white;
       border: 1px solid rgba(255,255,255,0.3);
     }
-
     .form-control::placeholder { color: rgba(255,255,255,0.7); }
-
     .btn-outline-light:hover { background-color: rgba(255,255,255,0.2); }
 
     .info-text h3 {
@@ -111,10 +117,7 @@ main
       font-weight: 700;
       text-shadow: 0 2px 5px rgba(0,0,0,0.4);
     }
-
-    .info-text p {
-      color: rgba(255,255,255,0.85);
-    }
+    .info-text p { color: rgba(255,255,255,0.85); }
 
     .back-arrow {
       font-size: 1.2rem;
@@ -122,41 +125,24 @@ main
       color: #fff;
       opacity: 0.8;
     }
-
     .back-arrow:hover { opacity: 1; }
-
     .europe-icon { width: 50px; margin-top: 1rem; }
   </style>
 </head>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
-</head>
 
-<body class="d-flex align-items-center justify-content-center body-auth">
-
+<body class="d-flex align-items-center justify-content: center body-auth">
   <main class="main-container container-fluid">
-
-
-<body class="d-flex align-items-center justify-content-center body-auth">
-  <main class="main-container container-fluid">
- main
     <div class="row w-100 justify-content-center align-items-center">
 
       <div class="col-md-5">
-          <h3 class="mb-4">NIS2</h3>
-
-          <!-- Mensaje de estado -->
         <div class="auth-box text-center">
           <h3 class="mb-4">NIS2</h3>
 
-          <?php if (!empty($mensaje)): ?>
-            <div class="alert <?php echo (str_starts_with($mensaje, '✅') ? 'alert-success' : 'alert-danger'); ?>">
+          <?php if (!empty($mensaje) && $tipo_alerta === 'danger'): ?>
+            <div class="alert alert-danger">
               <?php echo $mensaje; ?>
             </div>
           <?php endif; ?>
-
-
- main
 
           <form method="POST" action="../api/auth/procesar_registro.php">
             <div class="form-group text-start mb-3">
@@ -165,7 +151,7 @@ main
             </div>
             <div class="form-group text-start mb-3">
               <label for="nombre_empresa" class="form-label">Nombre de la empresa</label>
-              <input type="text" name="nombre_empresa" id="nombre_empresa" class="form-control" placeholder="Ingresa el nombre de tu empresa" required>
+              <input type="text" name="nombre_empresa" id="nombre_empresa" class_control" placeholder="Ingresa el nombre de tu empresa" required>
             </div>
             <div class="form-group text-start mb-3">
               <label for="pais_origen" class="form-label">País de origen</label>
@@ -193,18 +179,11 @@ main
         </div>
       </div>
 
-      <!-- Columna de información adicional -->
-      <div class="col-md-5 info-text">
-        <a href="../index.php" class="back-arrow mb-3 d-block">&#8592;</a>
-        <h3>Si ya eres proveedor o necesitas darte de alta como uno…</h3>
-
       <div class="col-md-5 info-text text-center text-md-start mt-4 mt-md-0">
         <a href="../index.php" class="back-arrow mb-3 d-block">&#8592;</a>
         <h3>Si ya eres proveedor o necesitas darte de alta como uno…</h3>
- main
         <p>Puedes revisar si tienes los documentos necesarios y actuales que cumplen con la normativa de la NIS2.</p>
         <div class="register-section">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE" class="europe-icon">
           <img src="https://upload.wikimedia.org/wikipedia/commons/b/b7/Flag_of_Europe.svg" alt="UE"
             class="europe-icon">
         </div>
@@ -213,14 +192,12 @@ main
     </div>
   </main>
 
-  <!-- Modal de mensaje -->
   <div class="modal fade" id="modalMensaje" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div
-          class="modal-header <?php echo $tipo_alerta === 'success' ? 'bg-success text-white' : 'bg-danger text-white'; ?>">
-          <h5 class="modal-title">Aviso</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Error en el Registro</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <?php echo $mensaje; ?>
@@ -232,19 +209,19 @@ main
     </div>
   </div>
 
-  <!-- Modal de verificación -->
   <div class="modal fade" id="modalVerificacion" tabindex="-1" aria-labelledby="modalVerificacionLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="modalVerificacionLabel">Introduce el código de verificación</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title" id="modalVerificacionLabel">¡Registro Exitoso!</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body">
+          <p><?php echo $mensaje; ?></p>
           <p>Se ha enviado un código de verificación a tu correo. Ingresa el código para activar tu cuenta.</p>
-          <input type="password" id="codigoUsuario" class="form-control" placeholder="Código de verificación">
-          <small class="text-muted d-block mt-2">Código (para pruebas en consola): <span
+          <input type="text" id="codigoUsuario" class="form-control" placeholder="Código de verificación">
+          <small class="text-muted d-block mt-2">Código (para pruebas): <span
               id="codigoPrueba"></span></small>
         </div>
         <div class="modal-footer">
@@ -254,26 +231,26 @@ main
     </div>
   </div>
 
- main
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       const mostrarModal = <?php echo ($mostrarModal ? 'true' : 'false'); ?>;
       const codigoToken = "<?php echo $codigo_verificacion ?? ''; ?>";
+      const tipoAlerta = "<?php echo $tipo_alerta ?? ''; ?>";
 
-      // Mostrar token en consola para pruebas
+      // Mostrar token en consola y en el modal para pruebas
       if (codigoToken) console.log("Token de verificación:", codigoToken);
       const spanCodigo = document.getElementById('codigoPrueba');
       if (spanCodigo) spanCodigo.innerText = codigoToken;
 
       // Abrir modal correcto
       if (mostrarModal) {
-        if (codigoToken) {
-          // Mostrar modal de verificación
+        if (tipoAlerta === 'success' && codigoToken) {
+          // Mostrar modal de verificación (éxito)
           const modal = new bootstrap.Modal(document.getElementById('modalVerificacion'));
           modal.show();
-        } else {
-          // Mostrar solo modal de mensaje
+        } else if (tipoAlerta === 'danger') {
+          // Mostrar solo modal de mensaje (error)
           const modal = new bootstrap.Modal(document.getElementById('modalMensaje'));
           modal.show();
         }
@@ -287,18 +264,19 @@ main
           return;
         }
 
+        // Enviar por POST para ocultar el código
+        const formData = new FormData();
+        formData.append('code', codigoIngresado);
+
         fetch("../api/auth/verify.php", {
           method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "code=" + encodeURIComponent(codigoIngresado)
+          body: formData
         })
           .then(res => res.text())
           .then(html => {
-            const temp = document.createElement("div");
-            temp.innerHTML = html;
-            const msg = temp.querySelector(".alert")?.textContent || "";
-
-            if (msg.includes("✅")) {
+            // El script verify.php devuelve una página HTML de confirmación
+            // Buscamos un mensaje de éxito en esa página
+            if (html.includes("✅")) {
               alert("✅ Verificación exitosa, ya puedes iniciar sesión.");
               window.location.href = "../pages/login.php";
             } else {
@@ -313,7 +291,5 @@ main
     });
   </script>
 
-
 </body>
-
 </html>
