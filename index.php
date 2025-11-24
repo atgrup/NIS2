@@ -1,3 +1,9 @@
+<?php
+// ⚡️ ESTAS SON LAS LÍNEAS QUE AÑADIMOS PARA VER ERRORES
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+?>
 <!DOCTYPE html>
 <html lang="es">
 
@@ -8,10 +14,8 @@
 
     <link rel="stylesheet" href="assets/styles/style.css">
 
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    <!-- Fuente -->
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -147,7 +151,6 @@
 
 <body class="d-flex flex-column min-vh-100">
 
-    <!-- NAV -->
     <nav class="container-fluid d-flex justify-content-between align-items-center py-3 px-4 flex-nowrap">
         <h1 class="tituloIndice text-truncate m-0">Bienvenido/a</h1>
 
@@ -157,7 +160,6 @@
         </div>
     </nav>
 
-    <!-- MAIN -->
     <main class="container my-4 flex-grow-1">
         <section class="section-fondo">
             <div class="text-center mb-4">
@@ -166,7 +168,6 @@
                 <button class="tab-button" data-target="proveedor">Proveedor</button>
             </div>
 
-            <!-- HOME -->
             <div id="home" class="tab-content-section active">
                 <h4 class="mb-3">NIS2 – Directiva Europea de Ciberseguridad</h4>
                 <p>
@@ -186,7 +187,6 @@
                 </div>
             </div>
 
-            <!-- CONSULTOR -->
             <div id="consultor" class="tab-content-section">
                 <h4 class="mb-3">Rol del Consultor</h4>
                 <p>
@@ -208,7 +208,6 @@
                 </p>
             </div>
 
-            <!-- PROVEEDOR -->
             <div id="proveedor" class="tab-content-section">
                 <h4 class="mb-3">Rol del Proveedor</h4>
                 <p>
@@ -217,7 +216,7 @@
                 <p>
                     Debe subir a la plataforma todas las <strong>plantillas y formularios</strong> requeridos por el consultor o la organización, asegurando su correcta cumplimentación.  
                     Además, debe mantener actualizada la información sobre los controles de seguridad, auditorías internas y evidencias de mitigación de riesgos.
-                </p>
+                </D>
                 <ul>
                     <li>Subida de documentación y plantillas requeridas</li>
                     <li>Gestión y actualización de medidas de seguridad</li>
@@ -236,10 +235,8 @@
         © 2025 Plataforma NIS2 - Todos los derechos reservados
     </footer>
 
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- SCRIPT PARA TOGGLE -->
     <script>
         const buttons = document.querySelectorAll('.tab-button');
         const sections = document.querySelectorAll('.tab-content-section');
