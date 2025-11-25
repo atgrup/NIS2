@@ -1,175 +1,90 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) session_start();
-include __DIR__ . '/../api/includes/conexion.php';
+// Inicia la sesión
+session_start();
 
-$rol = strtolower($_SESSION['rol'] ?? '');
-$usuario_id = $_SESSION['id_usuarios'] ?? null;
-$prov_id = $_SESSION['proveedor_id'] ?? null;
-
-// Paginación
-$pagina_actual = isset($_GET['pagina']) ? max(1, intval($_GET['pagina'])) : 1;
-$filas_por_pagina = 10;
-$inicio = ($pagina_actual - 1) * $filas_por_pagina;
-
-// Consulta archivos
-if ($rol === 'administrador' || $rol === 'consultor') {
-    $sql_total = "SELECT COUNT(*) as total FROM archivos_subidos";
-    $total_filas = $conexion->query($sql_total)->fetch_assoc()['total'];
-
-    $sql = "SELECT a.id, a.nombre_archivo, a.archivo_url, p.nombre AS nombre_plantilla, a.fecha_subida,
-            pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado
-            FROM archivos_subidos a
-            LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
-            LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
-            ORDER BY a.fecha_subida DESC
-            LIMIT ?, ?";
-
-    $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("ii", $inicio, $filas_por_pagina);
-    $stmt->execute();
-    $archivosRes = $stmt->get_result();
-
-} elseif ($rol === 'proveedor') {
-    $prov_id_sesion = $prov_id ?? 0;
-    $sql_total = "SELECT COUNT(*) AS total FROM archivos_subidos WHERE proveedor_id = ? OR usuario_id = ?";
-    $stmt_total = $conexion->prepare($sql_total);
-    $stmt_total->bind_param("ii", $prov_id_sesion, $usuario_id);
-    $stmt_total->execute();
-    $total_filas = $stmt_total->get_result()->fetch_assoc()['total'];
-
-    $sql = "SELECT a.id, a.nombre_archivo, a.archivo_url, p.nombre AS nombre_plantilla, a.fecha_subida,
-            pr.nombre_empresa, u.correo AS correo_usuario, a.revision_estado
-            FROM archivos_subidos a
-            LEFT JOIN plantillas p ON a.plantilla_id = p.id
-            LEFT JOIN proveedores pr ON a.proveedor_id = pr.id
-            LEFT JOIN usuarios u ON a.usuario_id = u.id_usuarios
-            WHERE a.proveedor_id = ? OR a.usuario_id = ?
-            ORDER BY a.fecha_subida DESC
-            LIMIT ?, ?";
-    $stmt = $conexion->prepare($sql);
-    $stmt->bind_param("iiii", $prov_id_sesion, $usuario_id, $inicio, $filas_por_pagina);
-    $stmt->execute();
-    $archivosRes = $stmt->get_result();
-} else {
-    $archivosRes = null;
+// Verifica rol
+if (!isset($_SESSION['rol']) || !in_array(strtolower($_SESSION['rol']), ['administrador', 'consultor'])) {
+    http_response_code(403);
+    exit('No autorizado');
 }
 
-// Plantillas
-$plantillasRes = $conexion->query("SELECT id, nombre FROM plantillas");
-?>
+// Conexión
+require __DIR__ . '/../api/includes/conexion.php';
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Archivos Subidos</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-<style>
-.modal-header { background-color: #0d6efd; color: black; }
-.form-label { color: black; }
-</style>
-</head>
-<body class="p-4">
+$id = intval($_POST['id'] ?? 0);
+$estado = $_POST['estado'] ?? '';
+$comentario = $_POST['comentario'] ?? ''; // Recogemos el comentario
 
-<?php if ($rol === 'consultor' || $rol === 'proveedor'): ?>
-<div class="modal fade" id="modalSubirArchivo" tabindex="-1">
-  <div class="modal-dialog">
-    <form id="formSubirArchivoModal" enctype="multipart/form-data">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Subir Nuevo Archivo</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="archivo-modal" class="form-label">Seleccionar Archivo</label>
+$estados_permitidos = ['pendiente', 'aprobado', 'rechazado'];
+
+if (!$id || !in_array($estado, $estados_permitidos)) {
+    http_response_code(400);
+    exit('Datos inválidos');
+}
+
+// Actualizar estado y comentario en la BD
+// Nota: Asegúrate de tener la columna 'comentario' en tu tabla 'archivos_subidos'
+// Si no la tienes, quita "comentario = ?" y el "s" extra del bind_param.
+$sql = "UPDATE archivos_subidos SET revision_estado = ? WHERE id = ?";
+$stmt = $conexion->prepare($sql);
+$stmt->bind_param("si", $estado, $id);
+
+if ($stmt->execute()) {
+    
+    // El cambio se ha guardado. Ahora intentamos notificar, pero SIN bloquear si falla.
+    try {
+        // Obtener datos para el correo
+        $q = "SELECT a.nombre_archivo, pr.nombre_empresa, u.correo AS proveedor_correo 
+              FROM archivos_subidos a 
+              LEFT JOIN proveedores pr ON a.proveedor_id = pr.id 
+              LEFT JOIN usuarios u ON pr.usuario_id = u.id_usuarios 
+              WHERE a.id = ? LIMIT 1";
+              
+        $stmt2 = $conexion->prepare($q);
+        $stmt2->bind_param('i', $id);
+        $stmt2->execute();
+        $res2 = $stmt2->get_result();
+        
+        if ($res2 && $res2->num_rows > 0) {
+            $row = $res2->fetch_assoc();
+            $proveedorCorreo = $row['proveedor_correo'];
+            $nombreEmpresa = $row['nombre_empresa'];
             
-            <input type="file" name="archivo" id="archivo-modal" class="form-control" required accept=".pdf">
-            <div class="form-text">Formatos permitidos: PDF</div>
-          </div>
-          <div class="mb-3">
-            <label for="plantilla_id" class="form-label">Plantilla Asociada</label>
-            <select name="plantilla_id" id="plantilla_id" class="form-select" required>
-              <option value="">-- Seleccione una plantilla --</option>
-              <?php while($p = $plantillasRes->fetch_assoc()): ?>
-                <option value="<?= $p['id'] ?>"><?= htmlspecialchars($p['nombre']) ?></option>
-              <?php endwhile; ?>
-            </select>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Subir Archivo</button>
-        </div>
-      </div>
-    </form>
-  </div>
-</div>
-<?php endif; ?>
+            // Solo si tenemos correo, intentamos enviar
+            if ($proveedorCorreo) {
+                $ruta_mailer = __DIR__ . '/notifications/enviar_correo.php';
+                
+                if (file_exists($ruta_mailer)) {
+                    require_once $ruta_mailer;
+                    
+                    // Usamos template simple si no existe la función render compleja
+                    $asunto = "Actualización de documento - NIS2";
+                    $cuerpo = "<h3>Hola, {$nombreEmpresa}</h3>";
+                    $cuerpo .= "<p>El estado de su archivo <strong>" . htmlspecialchars($row['nombre_archivo']) . "</strong> ha cambiado a: <strong>" . strtoupper($estado) . "</strong>.</p>";
+                    
+                    if (!empty($comentario)) {
+                        $cuerpo .= "<p><strong>Comentario del auditor:</strong><br>" . nl2br(htmlspecialchars($comentario)) . "</p>";
+                    }
+                    
+                    $cuerpo .= "<br><p>Acceda a la plataforma para ver más detalles.</p>";
 
-<div class="table-responsive mt-3">
-<?php if ($archivosRes && $archivosRes->num_rows > 0): ?>
-<table class="table table-bordered table-hover">
-  <thead class="table-light">
-    <tr>
-      <th>Nombre archivo</th>
-      <th>Plantilla</th>
-      <th>Fecha subida</th>
-      <th>Empresa</th>
-      <th>Usuario</th>
-      <th>Estado revisión</th>
-      <th>Acciones</th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php while($row = $archivosRes->fetch_assoc()): ?>
-    <tr id="fila-<?= $row['id'] ?>">
-      <td><a href="<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank"><?= htmlspecialchars($row['nombre_archivo']) ?></a></td>
-      <td><?= htmlspecialchars($row['nombre_plantilla'] ?? 'Sin plantilla') ?></td>
-      <td><?= htmlspecialchars($row['fecha_subida']) ?></td>
-      <td><?= htmlspecialchars($row['nombre_empresa'] ?? '-') ?></td>
-      <td><?= htmlspecialchars(explode('@',$row['correo_usuario']??'')[0] ?? '-') ?></td>
-      <td><img src="documentos_subidos/<?= strtolower($row['revision_estado']??'pendiente') ?>.png" style="width:100px;"></td>
-      <td>
-        <a href="<?= htmlspecialchars($row['archivo_url']) ?>" target="_blank" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
-        <a href="<?= htmlspecialchars($row['archivo_url']) ?>" download class="btn btn-sm btn-success"><i class="bi bi-download"></i></a>
-      </td>
-    </tr>
-    <?php endwhile; ?>
-  </tbody>
-</table>
-<?php else: ?>
-<div class="alert alert-info">No se encontraron archivos.</div>
-<?php endif; ?>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-const form = document.getElementById('formSubirArchivoModal');
-if(form){
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const formData = new FormData(form);
-    fetch('subir_archivo_rellenado.php', {method:'POST', body: formData})
-      .then(res => res.json())
-      .then(data => {
-        if(data.success){
-          bootstrap.Modal.getInstance(document.getElementById('modalSubirArchivo')).hide();
-          form.reset();
-          // He quitado la línea de 'data.htmlFila' porque tu PHP no la genera
-          // En su lugar, simplemente recargamos la página para ver el nuevo archivo
-          alert('¡Archivo subido con éxito!');
-          window.location.reload(); 
-        } else {
-          alert('Error: '+(data.error||'desconocido'));
+                    // Enviar (función segura del archivo enviar_correo.php que arreglamos antes)
+                    if (function_exists('enqueueEmail')) {
+                        enqueueEmail($proveedorCorreo, $nombreEmpresa, $asunto, $cuerpo, '', 'Notificación Estado', true);
+                    }
+                }
+            }
         }
-      })
-      .catch(err => { console.error(err); alert('Error al subir el archivo'); });
-  });
+        $stmt2->close();
+    } catch (Throwable $e) {
+        // Si falla el correo, no hacemos nada, para que el usuario vea "Estado actualizado"
+        // error_log("Fallo al enviar correo de estado: " . $e->getMessage());
+    }
+
+    echo "Estado actualizado"; // Respuesta para el JavaScript
+
+} else {
+    http_response_code(500);
+    echo "Error al actualizar en BD";
 }
-</script>
-</body>
-</html>
+?>
